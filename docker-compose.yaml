@@ -1,0 +1,45 @@
+name: supmap
+
+services:
+  database:
+    image: postgis/postgis:17-3.5
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - database_data:/var/lib/postgresql/data
+      - ./database/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+  
+  routing_engine:
+    build: ./routing-engine
+    ports:
+      - "8002:8002"
+    volumes:
+      - routing_engine_data:/data/valhalla
+
+  api:
+    build: ./api
+    environment:
+      - POSTGRES_HOST=database
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - NODE_ENV=${NODE_ENV}
+      - JWT_SECRET=${JWT_SECRET}
+      - CRYPTO_KEY=${CRYPTO_KEY}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_REDIRECT_URI=http://localhost:3000/auth/google/callback
+    ports:
+      - "3000:3000"
+    depends_on:
+      - database
+      - routing_engine
+
+volumes:
+  database_data:
+  routing_engine_data:

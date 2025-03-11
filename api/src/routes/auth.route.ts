@@ -1,0 +1,148 @@
+import express from "express";
+import { signInSchema } from "../lib/zod.js";
+import { ZodError } from "zod";
+import { User } from "../models/user.model.js";
+import { Role } from "../models/role.model.js";
+import { Account } from "../models/account.model.js";
+import { UserRole } from "../models/user-role.model.js";
+import jwt from "jsonwebtoken";
+import { oauth2Client as googleOAuth2Client } from "../lib/google-auth-library.js";
+import { verify, encrypt } from "../lib/crypto.js";
+
+export const router = express.Router();
+
+router.post("/auth/signin", async (req, res) => {
+  try {
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET is not set");
+    }
+
+    const { email, password } = await signInSchema.parseAsync(req.body);
+
+    const user = await User.findByEmail(encrypt(email));
+
+    if (!user || !user.password || !(await verify(password, user.password))) {
+      res.status(401).json({ error: "Invalid email or password" });
+      return;
+    }
+
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "30 days" });
+
+    res.status(200).json({ token });
+    return;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      res.status(400).json({ error: error.errors });
+      return;
+    }
+
+    res.status(500).json({ error: "Internal server error" });
+    console.error(error);
+    return;
+  }
+});
+
+router.get("/auth/google", (_req, res) => {
+  try {
+    const authorizeUrl = googleOAuth2Client.generateAuthUrl({
+      access_type: "offline",
+      scope: [
+        "https://www.googleapis.com/auth/userinfo.profile",
+        "https://www.googleapis.com/auth/userinfo.email"
+      ]
+    });
+
+    res.redirect(authorizeUrl);
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+    console.error(error);
+    return;
+  }
+});
+
+router.get("/auth/google/callback", async (req, res) => {
+  try {
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET is not set");
+    }
+
+    const code = req.query.code;
+
+    if (!code) {
+      res.status(400).json({ error: "Code is required" });
+      return;
+    }
+
+    if (typeof code !== "string") {
+      res.status(400).json({ error: "Invalid code" });
+      return;
+    }
+
+    const { tokens } = await googleOAuth2Client.getToken(code);
+
+    if (!tokens.access_token) {
+      res.status(400).json({ error: "Access token is required" });
+      return;
+    }
+
+    googleOAuth2Client.setCredentials(tokens);
+
+    const userInfoResponse = await googleOAuth2Client.request<{
+      email?: string,
+      name?: string,
+      picture?: string,
+      sub?: string
+    }>({
+      url: "https://www.googleapis.com/oauth2/v3/userinfo"
+    });
+
+    if (!userInfoResponse.data.email || !userInfoResponse.data.name || !userInfoResponse.data.picture || !userInfoResponse.data.sub) {
+      res.status(400).json({ error: "Invalid user info" });
+      return;
+    }
+
+    let user = await User.findByEmail(encrypt(userInfoResponse.data.email));
+
+    if (!user) {
+      user = await User.create(encrypt(userInfoResponse.data.email), encrypt(userInfoResponse.data.name), undefined, encrypt(userInfoResponse.data.picture));
+
+      let role = await Role.findByName("User");
+
+      if (!role) {
+        role = await Role.create("User");
+      }
+
+      await UserRole.create(user.id, role.id);
+    }
+
+    const accounts = await Account.findByUserId(user.id);
+
+    if (!accounts.find(account => account.provider === "google")) {
+      if (!tokens.refresh_token) {
+        res.status(400).json({ error: "Refresh token is required" });
+        return;
+      }
+
+      if (!tokens.expiry_date) {
+        res.status(400).json({ error: "Expiry date is required" });
+        return;
+      }
+
+      if (!tokens.scope) {
+        res.status(400).json({ error: "Scope is required" });
+        return;
+      }
+
+      await Account.create(user.id, "google", encrypt(userInfoResponse.data.sub), encrypt(tokens.access_token), encrypt(tokens.refresh_token), new Date(tokens.expiry_date), tokens.scope);
+    }
+
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "30 days" });
+
+    res.status(200).json({ token });
+    return;
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+    console.error(error);
+    return;
+  }
+});

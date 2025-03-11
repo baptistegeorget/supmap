@@ -1,0 +1,7 @@
+name: supmap
+
+services:
+  api:
+    volumes:
+      - ./api:/app
+    command: npm run dev
