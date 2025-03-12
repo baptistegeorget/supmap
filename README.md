@@ -13,6 +13,33 @@ Liste des fonctionnalités :
 
 L'application est disponible via un site web et une application mobile (les fonctionnalités peuvent être différentes entre le site web et l'application mobile).
 
+## Installation
+
+### Configuration
+
+Téléchargez le fichier juste [ici](https://ionissupinfo-my.sharepoint.com/:u:/g/personal/baptiste_georget_supinfo_com/EUhigqWPo-hPuZkBMBM2bnIB_zCmPv5cZh6K8BbXaoAk6g?e=nA368a), et placez le dans le dossier [routing-engine](./routing-engine/).
+
+> _Vous pouvez ajouter n'importe quel fichier avec l'extension `.osm.pbf` dans ce dossier._
+
+Ensuite, dupliquez le fichier [.env.example](.env.example) et renommez le en `.env`, puis suivez les instructions dans ce dernier.
+
+### Déploiement
+
+Une fois la configuration terminée, vous pouvez déployer la solution avec les commandes suivantes.
+
+#### Production
+
+```bash
+docker-compose -f docker-compose.yaml up --build
+```
+
+#### Développement
+
+```bash
+docker-compose up --build
+```
+
+
 ## Contributeurs
 
 - [Léo Bouffard](https://github.com/LeoBouffard)
