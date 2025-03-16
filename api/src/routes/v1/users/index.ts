@@ -1,13 +1,13 @@
 import express from "express";
 import { ZodError } from "zod";
-import { createUserSchema, idSchema, limitSchema, offsetSchema, updateUserSchema } from "@lib/zod.js";
-import { decrypt, encrypt, hash } from "@lib/crypto.js";
-import { auth } from "@middlewares/auth.js";
-import { User } from "@models/user.js";
-import { Role } from "@models/role.js";
-import { UserRole } from "@models/user-role.js";
-import rolesRouter from "@routes/v1/users/roles/index.js";
-import routesRouter from "@routes/v1/users/routes/index.js";
+import { createUserSchema, idSchema, limitSchema, offsetSchema, updateUserSchema } from "../../../lib/zod.js";
+import { decrypt, encrypt, hash } from "../../../lib/crypto.js";
+import { auth } from "../../../middlewares/auth.js";
+import { User } from "../../../models/user.js";
+import { Role } from "../../../models/role.js";
+import { UserRole } from "../../../models/user-role.js";
+import rolesRouter from "./roles/index.js";
+import routesRouter from "./routes/index.js";
 
 const router = express.Router();
 
@@ -16,22 +16,20 @@ router.use("/:userId/routes", auth, routesRouter);
 
 router.get("/", auth, async (req, res) => {
   try {
-    const limit = req.query.limit ? await limitSchema.parseAsync(req.query.limit) : undefined;
-    const offset = req.query.offset ? await offsetSchema.parseAsync(req.query.offset) : undefined;
+    const limit = limitSchema.safeParse(req.query.limit).success ? parseInt(limitSchema.parse(req.query.limit)) : undefined;
+    const offset = offsetSchema.safeParse(req.query.offset).success ? parseInt(offsetSchema.parse(req.query.offset)) : undefined;
 
-    const users = await User.findAll(limit ? parseInt(limit) : undefined, offset ? parseInt(offset) : undefined);
+    let users = await User.findAll(limit, offset);
 
-    const usersResponse = users.map(user => {
-      return {
-        id: user.id,
-        name: decrypt(user.name),
-        email: decrypt(user.email),
-        ...(user.picture ? { picture: decrypt(user.picture) } : {}),
-        createdAt: user.created_at
-      };
+    users = users.map(user => {
+      user.email = decrypt(user.email);
+      user.name = decrypt(user.name);
+      user.password = null;
+      user.picture = user.picture ? decrypt(user.picture) : null;
+      return user;
     });
 
-    res.status(200).json(usersResponse);
+    res.status(200).json(users);
     return;
   } catch (error) {
     if (error instanceof ZodError) {
@@ -47,24 +45,21 @@ router.get("/", auth, async (req, res) => {
 
 router.get("/:userId", auth, async (req, res) => {
   try {
-    const userId = await idSchema.parseAsync(req.params.userId);
+    const userId = idSchema.parse(req.params.userId);
 
-    const user = await User.findById(userId);
+    let user = await User.findById(userId);
 
     if (!user) {
       res.status(404).json({ error: "User not found" });
       return;
     }
 
-    const userResponse = {
-      id: user.id,
-      name: decrypt(user.name),
-      email: decrypt(user.email),
-      ...(user.picture ? { picture: decrypt(user.picture) } : {}),
-      createdAt: user.created_at
-    };
+    user.email = decrypt(user.email);
+    user.name = decrypt(user.name);
+    user.password = null;
+    user.picture = user.picture ? decrypt(user.picture) : null;
 
-    res.status(200).json(userResponse);
+    res.status(200).json(user);
     return;
   } catch (error) {
     if (error instanceof ZodError) {
@@ -80,7 +75,9 @@ router.get("/:userId", auth, async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { name, email, password, picture } = await createUserSchema.parseAsync(req.body);
+    if (!process.env.DEFAULT_ROLE) throw new Error("DEFAULT_ROLE is not set");
+
+    const { name, email, password, picture } = createUserSchema.parse(req.body);
 
     let user = await User.findByEmail(encrypt(email));
 
@@ -89,25 +86,27 @@ router.post("/", async (req, res) => {
       return;
     }
 
-    user = await User.create(encrypt(email), encrypt(name), await hash(password), picture ? encrypt(picture) : undefined);
+    user = await User.create(
+      encrypt(email), 
+      encrypt(name), 
+      await hash(password), 
+      picture ? encrypt(picture) : undefined
+    );
 
-    let role = await Role.findByName("User");
+    let role = await Role.findByName(process.env.DEFAULT_ROLE);
 
     if (!role) {
-      role = await Role.create("User");
+      role = await Role.create(process.env.DEFAULT_ROLE);
     }
 
     await UserRole.create(user.id, role.id);
 
-    const userResponse = {
-      id: user.id,
-      name: decrypt(user.name),
-      email: decrypt(user.email),
-      ...(user.picture ? { picture: decrypt(user.picture) } : {}),
-      createdAt: user.created_at
-    };
+    user.email = decrypt(user.email);
+    user.name = decrypt(user.name);
+    user.password = null;
+    user.picture = user.picture ? decrypt(user.picture) : null;
 
-    res.status(201).setHeader("Location", `/users/${user.id}`).json(userResponse);
+    res.status(201).setHeader("Location", `/v1/users/${user.id}`).json(user);
     return;
   } catch (error) {
     if (error instanceof ZodError) {
@@ -126,21 +125,20 @@ router.patch("/:userId", auth, async (req, res) => {
     const authUser = res.locals.authUser as User.IUser;
     const authUserRoles = res.locals.authUserRoles as Role.IRole[];
 
-    const userId = await idSchema.parseAsync(req.params.userId);
+    const userId = idSchema.parse(req.params.userId);
+    const { name, email, password, picture } = updateUserSchema.parse(req.body);
 
-    if (authUser.id !== userId && !authUserRoles.some(role => role.is_administrator || role.can_manage_users)) {
+    if (authUser.id !== userId && !authUserRoles.some(role => role.isAdministrator || role.canManageUsers)) {
       res.status(403).json({ error: "Access denied" });
       return;
     }
-
+    
     let user = await User.findById(userId);
 
     if (!user) {
       res.status(404).json({ error: "User not found" });
       return;
     }
-
-    const { name, email, password, picture } = await updateUserSchema.parseAsync(req.body);
 
     if (email && email !== decrypt(user.email)) {
       const existingUser = await User.findByEmail(encrypt(email));
@@ -151,17 +149,20 @@ router.patch("/:userId", auth, async (req, res) => {
       }
     }
 
-    user = await User.update(userId, email ? encrypt(email) : user.email, name ? encrypt(name) : user.name, password ? await hash(password) : user.password || undefined, picture ? encrypt(picture) : user.picture || undefined);
+    user = await User.update(
+      userId, 
+      email ? encrypt(email) : user.email, 
+      name ? encrypt(name) : user.name, 
+      password ? await hash(password) : user.password, 
+      picture ? encrypt(picture) : user.picture
+    );
 
-    const userResponse = {
-      id: user.id,
-      name: decrypt(user.name),
-      email: decrypt(user.email),
-      ...(user.picture ? { picture: decrypt(user.picture) } : {}),
-      createdAt: user.created_at
-    };
+    user.email = decrypt(user.email);
+    user.name = decrypt(user.name);
+    user.password = null;
+    user.picture = user.picture ? decrypt(user.picture) : null;
 
-    res.status(200).json(userResponse);
+    res.status(200).json(user);
     return;
   } catch (error) {
     if (error instanceof ZodError) {
@@ -180,9 +181,9 @@ router.delete("/:userId", auth, async (req, res) => {
     const authUser = res.locals.authUser as User.IUser;
     const authUserRoles = res.locals.authUserRoles as Role.IRole[];
 
-    const userId = await idSchema.parseAsync(req.params.userId);
+    const userId = idSchema.parse(req.params.userId);
 
-    if (authUser.id !== userId && !authUserRoles.some(role => role.is_administrator || role.can_manage_users)) {
+    if (authUser.id !== userId && !authUserRoles.some(role => role.isAdministrator || role.canManageUsers)) {
       res.status(403).json({ error: "Access denied" });
       return;
     }

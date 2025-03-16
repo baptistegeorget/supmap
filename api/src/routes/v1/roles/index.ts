@@ -1,30 +1,18 @@
 import express from "express";
 import { ZodError } from "zod";
-import { updateRoleSchema, createRoleSchema, idSchema, limitSchema, offsetSchema } from "@lib/zod.js";
-import { auth } from "@middlewares/auth.js";
-import { Role } from "@models/role.js";
+import { updateRoleSchema, createRoleSchema, idSchema, limitSchema, offsetSchema } from "../../../lib/zod.js";
+import { Role } from "../../../models/role.js";
 
 const router = express.Router();
 
-router.get("/", auth, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const limit = req.query.limit ? await limitSchema.parseAsync(req.query.limit) : undefined;
-    const offset = req.query.offset ? await offsetSchema.parseAsync(req.query.offset) : undefined;
+    const limit = limitSchema.safeParse(req.query.limit).success ? parseInt(limitSchema.parse(req.query.limit)) : undefined;
+    const offset = offsetSchema.safeParse(req.query.offset).success ? parseInt(offsetSchema.parse(req.query.offset)) : undefined;
 
-    const roles = await Role.findAll(limit ? parseInt(limit) : undefined, offset ? parseInt(offset) : undefined);
+    const roles = await Role.findAll(limit, offset);
 
-    const rolesResponse = roles.map(role => {
-      return {
-        id: role.id,
-        name: role.name,
-        isAdministrator: role.is_administrator,
-        canManageUsers: role.can_manage_users,
-        canManageRoles: role.can_manage_roles,
-        canManageAlerts: role.can_manage_alerts
-      };
-    });
-
-    res.status(200).json(rolesResponse);
+    res.status(200).json(roles);
     return;
   } catch (error) {
     if (error instanceof ZodError) {
@@ -38,9 +26,9 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
-router.get("/:roleId", auth, async (req, res) => {
+router.get("/:roleId", async (req, res) => {
   try {
-    const roleId = await idSchema.parseAsync(req.params.roleId);
+    const roleId = idSchema.parse(req.params.roleId);
 
     const role = await Role.findById(roleId);
 
@@ -49,16 +37,7 @@ router.get("/:roleId", auth, async (req, res) => {
       return;
     }
 
-    const roleResponse = {
-      id: role.id,
-      name: role.name,
-      isAdministrator: role.is_administrator,
-      canManageUsers: role.can_manage_users,
-      canManageRoles: role.can_manage_roles,
-      canManageAlerts: role.can_manage_alerts
-    };
-
-    res.status(200).json(roleResponse);
+    res.status(200).json(role);
     return;
   } catch (error) {
     if (error instanceof ZodError) {
@@ -72,41 +51,32 @@ router.get("/:roleId", auth, async (req, res) => {
   }
 });
 
-router.post("/", auth, async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const authUserRoles = res.locals.authUserRoles as Role.IRole[];
 
-    if (!authUserRoles.some(role => role.is_administrator || role.can_manage_roles)) {
+    if (!authUserRoles.some(role => role.isAdministrator || role.canManageRoles)) {
       res.status(403).send({ error: "You do not have permission to create roles" });
       return;
     }
 
-    const { name, isAdministrator, canManageRoles, canManageUsers, canManageAlerts } = await createRoleSchema.parseAsync(req.body);
+    const { name, isAdministrator, canManageRoles, canManageUsers, canManageAlerts } = createRoleSchema.parse(req.body);
 
-    const existingRole = await Role.findByName(name);
-
-    if (existingRole) {
-      res.status(400).json({ error: "Role already exists" });
-      return;
-    }
-
-    if (isAdministrator && !authUserRoles.some(role => role.is_administrator)) {
+    if (isAdministrator && !authUserRoles.some(role => role.isAdministrator)) {
       res.status(403).send({ error: "You do not have permission to create an administrator role" });
       return;
     }
 
-    const role = await Role.create(name, isAdministrator, canManageUsers, canManageRoles, canManageAlerts);
+    let role = await Role.findByName(name);
 
-    const roleResponse = {
-      id: role.id,
-      name: role.name,
-      isAdministrator: role.is_administrator,
-      canManageUsers: role.can_manage_users,
-      canManageRoles: role.can_manage_roles,
-      canManageAlerts: role.can_manage_alerts
-    };
+    if (role) {
+      res.status(400).json({ error: "Role already exists" });
+      return;
+    }
 
-    res.status(201).setHeader("Location", `/roles/${role.id}`).json(roleResponse);
+    role = await Role.create(name, isAdministrator, canManageUsers, canManageRoles, canManageAlerts);
+
+    res.status(201).setHeader("Location", `/v1/roles/${role.id}`).json(role);
     return;
   } catch (error) {
     if (error instanceof ZodError) {
@@ -120,16 +90,23 @@ router.post("/", auth, async (req, res) => {
   }
 });
 
-router.patch("/:roleId", auth, async (req, res) => {
+router.patch("/:roleId", async (req, res) => {
   try {
     const authUserRoles = res.locals.authUserRoles as Role.IRole[];
 
-    const roleId = await idSchema.parseAsync(req.params.roleId);
-
-    if (!authUserRoles.some(role => role.is_administrator || role.can_manage_roles)) {
+    if (!authUserRoles.some(role => role.isAdministrator || role.canManageRoles)) {
       res.status(403).send({ error: "You do not have permission to update roles" });
       return;
     }
+
+    const { name, isAdministrator, canManageRoles, canManageUsers, canManageAlerts } = updateRoleSchema.parse(req.body);
+
+    if (isAdministrator && !authUserRoles.some(role => role.isAdministrator)) {
+      res.status(403).send({ error: "You do not have permission to update role to an administrator role" });
+      return;
+    }
+
+    const roleId = idSchema.parse(req.params.roleId);
 
     let role = await Role.findById(roleId);
 
@@ -137,8 +114,6 @@ router.patch("/:roleId", auth, async (req, res) => {
       res.status(404).json({ error: "Role not found" });
       return;
     }
-
-    const { name, isAdministrator, canManageRoles, canManageUsers, canManageAlerts } = await updateRoleSchema.parseAsync(req.body);
 
     if (name && name !== role.name) {
       const existingRole = await Role.findByName(name);
@@ -149,18 +124,16 @@ router.patch("/:roleId", auth, async (req, res) => {
       }
     }
 
-    role = await Role.update(roleId, name || role.name, isAdministrator, canManageUsers, canManageRoles, canManageAlerts);
+    role = await Role.update(
+      roleId, 
+      name || role.name, 
+      isAdministrator || role.isAdministrator, 
+      canManageUsers || role.canManageUsers, 
+      canManageRoles || role.canManageRoles, 
+      canManageAlerts || role.canManageAlerts
+    );
 
-    const roleResponse = {
-      id: role.id,
-      name: role.name,
-      isAdministrator: role.is_administrator,
-      canManageUsers: role.can_manage_users,
-      canManageRoles: role.can_manage_roles,
-      canManageAlerts: role.can_manage_alerts
-    };
-
-    res.status(200).json(roleResponse);
+    res.status(200).json(role);
     return;
   } catch (error) {
     if (error instanceof ZodError) {
@@ -174,21 +147,26 @@ router.patch("/:roleId", auth, async (req, res) => {
   }
 });
 
-router.delete("/:roleId", auth, async (req, res) => {
+router.delete("/:roleId", async (req, res) => {
   try {
     const authUserRoles = res.locals.authUserRoles as Role.IRole[];
 
-    const roleId = await idSchema.parseAsync(req.params.roleId);
-
-    if (!authUserRoles.some(role => role.is_administrator || role.can_manage_roles)) {
+    if (!authUserRoles.some(role => role.isAdministrator || role.canManageRoles)) {
       res.status(403).send({ error: "You do not have permission to delete roles" });
       return;
     }
+
+    const roleId = idSchema.parse(req.params.roleId);
 
     const role = await Role.findById(roleId);
 
     if (!role) {
       res.status(404).json({ error: "Role not found" });
+      return;
+    }
+
+    if (role.isAdministrator && !authUserRoles.some(role => role.isAdministrator)) {
+      res.status(403).send({ error: "You do not have permission to delete an administrator role" });
       return;
     }
 

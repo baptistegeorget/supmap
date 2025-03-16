@@ -6,16 +6,11 @@
     "esModuleInterop": true,
     "outDir": "./dist",
     "strict": true,
-    "resolveJsonModule": true,
-    "paths": {
-      "@lib/*": ["./src/lib/*"],
-      "@middlewares/*": ["./src/middlewares/*"],
-      "@models/*": ["./src/models/*"],
-      "@routes/*": ["./src/routes/*"]
-    }
+    "resolveJsonModule": true
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "swagger.json"
   ],
   "exclude": [
     "node_modules",

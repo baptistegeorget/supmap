@@ -1,4 +1,6 @@
-type GeometryPoint = {
-    latitude: number;
-    longitude: number;
-}
+type GoogleUserInfoResponse = {
+  email?: string,
+  name?: string,
+  picture?: string,
+  sub?: string
+};

@@ -1,18 +1,15 @@
 import { Router } from "express";
 import { ZodError } from "zod";
-import { idSchema, limitSchema, offsetSchema } from "@lib/zod.js";
-import { Role } from "@models/role.js";
-import { UserRole } from "@models/user-role.js";
-import { User } from "@models/user.js";
+import { idSchema } from "../../../../lib/zod.js";
+import { Role } from "../../../../models/role.js";
+import { UserRole } from "../../../../models/user-role.js";
+import { User } from "../../../../models/user.js";
 
 const router = Router({ mergeParams: true });
 
 router.get("/", async (req, res) => {
   try {
-    const limit = req.query.limit ? await limitSchema.parseAsync(req.query.limit) : undefined;
-    const offset = req.query.offset ? await offsetSchema.parseAsync(req.query.offset) : undefined;
-
-    const userId = await idSchema.parseAsync((req.params as { userId: string }).userId);
+    const userId = idSchema.parse((req.params as { userId: string }).userId);
 
     const user = await User.findById(userId);
 
@@ -21,24 +18,13 @@ router.get("/", async (req, res) => {
       return;
     }
 
-    const userRoles = await UserRole.findByUserId(userId, limit ? parseInt(limit) : undefined, offset ? parseInt(offset) : undefined);
+    const userRoles = await UserRole.findByUserId(userId);
 
     const roles = await Promise.all(userRoles.map(async (userRole) => {
-      return await Role.findById(userRole.role_id) as Role.IRole;
+      return await Role.findById(userRole.roleId) as Role.IRole;
     }));
 
-    const rolesResponse = roles.map(role => {
-      return {
-        id: role.id,
-        name: role.name,
-        isAdministrator: role.is_administrator,
-        canManageUsers: role.can_manage_users,
-        canManageRoles: role.can_manage_roles,
-        canManageAlerts: role.can_manage_alerts
-      };
-    });
-
-    res.status(200).json(rolesResponse);
+    res.status(200).json(roles);
     return;
   } catch (error) {
     if (error instanceof ZodError) {
@@ -54,8 +40,8 @@ router.get("/", async (req, res) => {
 
 router.get("/:roleId", async (req, res) => {
   try {
-    const userId = await idSchema.parseAsync((req.params as { userId: string, roleId: string }).userId);
-    const roleId = await idSchema.parseAsync(req.params.roleId);
+    const userId = idSchema.parse((req.params as { userId: string, roleId: string }).userId);
+    const roleId = idSchema.parse(req.params.roleId);
 
     const user = await User.findById(userId);
 
@@ -71,16 +57,7 @@ router.get("/:roleId", async (req, res) => {
       return;
     }
 
-    const roleResponse = {
-      id: role.id,
-      name: role.name,
-      isAdministrator: role.is_administrator,
-      canManageUsers: role.can_manage_users,
-      canManageRoles: role.can_manage_roles,
-      canManageAlerts: role.can_manage_alerts
-    };
-
-    res.status(200).json(roleResponse);
+    res.status(200).json(role);
     return;
   } catch (error) {
     if (error instanceof ZodError) {
@@ -98,12 +75,13 @@ router.post("/", async (req, res) => {
   try {
     const authUserRoles = res.locals.authUserRoles as Role.IRole[];
 
-    if (!authUserRoles.some(role => role.is_administrator)) {
+    if (!authUserRoles.some(role => role.isAdministrator)) {
       res.status(403).json({ error: "Access denied" });
       return;
     }
 
-    const userId = await idSchema.parseAsync((req.params as { userId: string }).userId);
+    const userId = idSchema.parse((req.params as { userId: string }).userId);
+    const roleId = idSchema.parse(req.body.roleId);
 
     const user = await User.findById(userId);
 
@@ -111,8 +89,6 @@ router.post("/", async (req, res) => {
       res.status(404).json({ error: "User not found" });
       return;
     }
-
-    const roleId = await idSchema.parseAsync(req.body.roleId);
 
     const role = await Role.findById(roleId);
 
@@ -124,26 +100,17 @@ router.post("/", async (req, res) => {
     const userRoles = await UserRole.findByUserId(userId);
 
     const roles = await Promise.all(userRoles.map(async (userRole) => {
-      return await Role.findById(userRole.role_id) as Role.IRole;
+      return await Role.findById(userRole.roleId) as Role.IRole;
     }));
 
-    if (roles.some(r => r.id === roleId)) {
+    if (roles.some(role => role.id === roleId)) {
       res.status(409).json({ error: "Role already assigned" });
       return;
     }
 
     await UserRole.create(userId, roleId);
 
-    const roleResponse = {
-      id: role.id,
-      name: role.name,
-      isAdministrator: role.is_administrator,
-      canManageUsers: role.can_manage_users,
-      canManageRoles: role.can_manage_roles,
-      canManageAlerts: role.can_manage_alerts
-    };
-
-    res.status(201).setHeader("Location", `/users/${user.id}/roles/${role.id}`).json(roleResponse);
+    res.status(201).json({ message: "Role assigned" });
     return;
   } catch (error) {
     if (error instanceof ZodError) {
@@ -161,12 +128,13 @@ router.delete("/:roleId", async (req, res) => {
   try {
     const authUserRoles = res.locals.authUserRoles as Role.IRole[];
 
-    if (!authUserRoles.some(role => role.is_administrator)) {
+    if (!authUserRoles.some(role => role.isAdministrator)) {
       res.status(403).json({ error: "Access denied" });
       return;
     }
 
-    const userId = await idSchema.parseAsync((req.params as { userId: string, roleId: string }).userId);
+    const userId = idSchema.parse((req.params as { userId: string, roleId: string }).userId);
+    const roleId = idSchema.parse(req.params.roleId);
 
     const user = await User.findById(userId);
 
@@ -175,12 +143,21 @@ router.delete("/:roleId", async (req, res) => {
       return;
     }
 
-    const roleId = await idSchema.parseAsync(req.params.roleId);
-
     const role = await Role.findById(roleId);
 
     if (!role) {
       res.status(404).json({ error: "Role not found" });
+      return;
+    }
+
+    const userRoles = await UserRole.findByUserId(userId);
+
+    const roles = await Promise.all(userRoles.map(async (userRole) => {
+      return await Role.findById(userRole.roleId) as Role.IRole;
+    }));
+
+    if (!roles.some(role => role.id === roleId)) {
+      res.status(404).json({ error: "Role not assigned" });
       return;
     }
 
