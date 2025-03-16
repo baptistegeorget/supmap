@@ -1,0 +1,219 @@
+"use client";
+
+import { useState, useEffect } from "react";
+
+export default function Page() {
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editableValue, setEditableValue] = useState("");
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [valueKey, setValueKey] = useState("");
+
+  const correctOldPassword = "motdepasse";
+  const updateSliderState = (input: HTMLInputElement) => {
+    const slider = input.nextSibling as HTMLElement;
+    if (input.checked) {
+      slider.style.backgroundColor = "#3D2683";
+      (slider.firstChild as HTMLElement).style.transform = "translateX(26px)";
+    } else {
+      slider.style.backgroundColor = "#ccc";
+      (slider.firstChild as HTMLElement).style.transform = "translateX(0)";
+    }
+  };
+
+  const handleButtonClick = (value: string, key: string) => {
+    setEditableValue(value);
+    setValueKey(key);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setErrorMessage("");
+  };
+
+  const handleSave = () => {
+    if (valueKey === "mot de passe") {
+      if (oldPassword !== correctOldPassword) {
+        setErrorMessage("L'ancien mot de passe est incorrect.");
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        setErrorMessage("Les nouveaux mots de passe ne correspondent pas.");
+        return;
+      }
+      // Sauvegarder le nouveau mot de passe ici (par exemple, envoyer à un backend)
+      setErrorMessage("");
+      alert(`Votre mot de passe a été mis à jour avec succès.`);
+      setIsModalOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    // Initialiser l'état des sliders lors du premier rendu
+    const toggleInputs = document.querySelectorAll('input[type="checkbox"]');
+    toggleInputs.forEach(input => {
+      updateSliderState(input as HTMLInputElement);
+    });
+  }, []);
+
+  return (
+    <div className="p-5 bg-gray-50">
+
+      {/* Profil */}
+      <div className="bg-white p-5 rounded-lg shadow-md mb-5">
+      <h2 className="text-customOrange text-lg border-customOrange border-b-2 pb-2 mb-5" style={{ textIndent: '10px' }}>Profil</h2>
+        <div className="space-y-4 pl-4">
+          <button
+            className="w-full flex flex-col p-4 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200"
+            onClick={() => handleButtonClick("toto@gmail.com", "email")}
+          >
+            <span className="font-bold">Adresse e-mail</span>
+            <span className="text-gray-600">toto@gmail.com</span>
+          </button>
+          <button
+            className="w-full flex flex-col p-4 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200"
+            onClick={() => handleButtonClick("toto", "nom d'utilisateur")}
+          >
+            <span className="font-bold">Nom d’utilisateur</span>
+            <span className="text-gray-600">toto</span>
+          </button>
+          <button
+            className="w-full flex flex-col p-4 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200"
+            onClick={() => handleButtonClick("*******", "mot de passe")}
+          >
+            <span className="font-bold">Mot de passe</span>
+            <span className="text-gray-600">*******</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Détails des trajets */}
+      <div className="bg-white p-5 rounded-lg shadow-md mb-5">
+        <h2 className="text-customOrange text-lg border-customOrange border-b-2 pb-2 mb-5" style={{ textIndent: '10px' }}>Paramètres de navigation</h2>
+        <div className="space-y-4 pl-4">
+          <div className="flex items-center py-2">
+            <span className="text-gray-800 mr-5">Partager sa position</span>
+            <label className="relative inline-block w-12 h-6">
+              <input
+                type="checkbox"
+                className="opacity-0 w-0 h-0"
+                onChange={(e) => updateSliderState(e.target)}
+              />
+              <span className="relative inline-block w-12 h-6 bg-gray-300 rounded-full cursor-pointer transition-colors duration-300 ease-in-out">
+                <span className="block w-4 h-4 bg-white rounded-full absolute top-[4px] left-[3px] peer-checked:left-[calc(100%-19px)] transition-all duration-300 ease-in-out"></span>
+              </span>
+            </label>
+          </div>
+          <div className="flex items-center py-2">
+            <span className="text-gray-800 mr-5">Éviter les péages</span>
+            <label className="relative inline-block w-12 h-6">
+              <input
+                type="checkbox"
+                className="opacity-0 w-0 h-0"
+                onChange={(e) => updateSliderState(e.target)}
+              />
+              <span className="relative inline-block w-12 h-6 bg-gray-300 rounded-full cursor-pointer transition-colors duration-300 ease-in-out">
+                <span className="block w-4 h-4 bg-white rounded-full absolute top-[4px] left-[3px] peer-checked:left-[calc(100%-19px)] transition-all duration-300 ease-in-out"></span>
+              </span>
+            </label>
+          </div>
+          <div className="flex items-center py-2">
+            <span className="text-gray-800 mr-5">Éviter les autoroutes</span>
+            <label className="relative inline-block w-12 h-6">
+              <input
+                type="checkbox"
+                className="opacity-0 w-0 h-0"
+                onChange={(e) => updateSliderState(e.target)}
+              />
+              <span className="relative inline-block w-12 h-6 bg-gray-300 rounded-full cursor-pointer transition-colors duration-300 ease-in-out">
+                <span className="block w-4 h-4 bg-white rounded-full absolute top-[4px] left-[3px] peer-checked:left-[calc(100%-19px)] transition-all duration-300 ease-in-out"></span>
+              </span>
+            </label>
+          </div>
+          <div className="flex items-center py-2">
+            <span className="text-gray-800 mr-5">Garder la carte orientée vers le nord</span> {/* Ajout de mr-4 pour espacer */}
+            <label className="relative inline-block w-12 h-6">
+              <input
+                type="checkbox"
+                defaultChecked
+                className="opacity-0 w-0 h-0"
+                onChange={(e) => updateSliderState(e.target)}
+              />
+              <span className="relative inline-block w-12 h-6 bg-gray-300 rounded-full cursor-pointer transition-colors duration-300 ease-in-out">
+                <span className="block w-4 h-4 bg-white rounded-full absolute top-[4px] left-[3px] peer-checked:left-[calc(100%-19px)] transition-all duration-300 ease-in-out"></span>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        {/* Modal */}
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+            <div className="bg-white p-10 rounded-lg text-center w-[550px]">
+              <h2 className="font-bold text-xl mb-6">Modifier {valueKey}</h2>
+              {/* Dynamique : selon le champ à modifier */}
+              {valueKey === "mot de passe" ? (
+                <div>
+                  <div className="mb-4">
+                    <input
+                      type="password"
+                      value={oldPassword}
+                      onChange={(e) => setOldPassword(e.target.value)}
+                      placeholder="Ancien mot de passe"
+                      className="w-4/5 p-2 border-b-2 border-[#3D2683] focus:outline-none focus:ring-0 focus:border-t focus:border-r focus:border-l focus:border-[#3D2683] focus:border-b-2 focus:bg-gray-100 rounded-t-lg transition hover:bg-gray-200"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Nouveau mot de passe"
+                      className="w-4/5 p-2 border-b-2 border-[#3D2683] focus:outline-none focus:ring-0 focus:border-t focus:border-r focus:border-l focus:border-[#3D2683] focus:border-b-2 focus:bg-gray-100 rounded-t-lg transition hover:bg-gray-200"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Confirmer le mot de passe"
+                      className="w-4/5 p-2 border-b-2 border-[#3D2683] focus:outline-none focus:ring-0 focus:border-t focus:border-r focus:border-l focus:border-[#3D2683] focus:border-b-2 focus:bg-gray-100 rounded-t-lg transition hover:bg-gray-200"
+                    />
+                  </div>
+                  {errorMessage && <div className="text-red-500">{errorMessage}</div>}
+                </div>
+              ) : (
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    value={editableValue}
+                    onChange={(e) => setEditableValue(e.target.value)}
+                    placeholder={valueKey === "email" ? "Adresse e-mail" : "Nom d'utilisateur"}
+                    className="w-4/5 p-2 border-b-2 border-[#3D2683] focus:outline-none focus:ring-0 focus:border-t focus:border-r focus:border-l focus:border-[#3D2683] focus:border-b-2 focus:bg-gray-100 rounded-t-lg transition hover:bg-gray-200"
+                  />
+                </div>
+              )}
+              <button
+                className="w-[210px] py-2 mt-6 mx-2 bg-[#F15B4E] text-white rounded-md hover:opacity-80"
+                onClick={handleCloseModal}
+              >
+                Annuler
+              </button>
+              <button
+                className="w-[210px] py-2 mt-6 mx-2 bg-[#3D2683] text-white rounded-md hover:opacity-80"
+                onClick={handleSave}
+              >
+                Sauvegarder
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

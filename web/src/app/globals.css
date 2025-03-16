@@ -1,0 +1,31 @@
+@import '@fontsource/be-vietnam-pro';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Be Vietnam Pro', Arial, Helvetica, sans-serif;
+}
+
+/* centrer verticalement le zoom*/
+.leaflet-control-zoom {
+  position: absolute;
+  top: 300;
+  right: 8px; /* Ajuster la distance par rapport au bord droit */
+  z-index: 1000;
+}

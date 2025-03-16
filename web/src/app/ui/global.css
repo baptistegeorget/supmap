@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+* {
+  font-family: 'Indivisible', sans-serif;
+}
+
+.zoomControl {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1000;
+  cursor: pointer;
+}
+
+.zoomContainer {
+  border-radius: 20px;
+  width: 40px;
+  height: 90px;
+  border: 2px solid rgb(209 213 219 / var(--tw-border-opacity, 1));
+}
+
+.zoomButton,
+.zoomOutButton {
+  height: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  @apply text-customPurple bg-white;
+}
+
+.zoomButton {
+  font-size: 24px;
+  border-top-left-radius: 25px;
+  border-top-right-radius: 25px;
+}
+
+.zoomOutButton {
+  font-size: 30px;
+  border-bottom-left-radius: 25px;
+  border-bottom-right-radius: 25px;
+}
+
+.zoomButton:hover,
+.zoomOutButton:hover {
+  background-color: rgb(243 244 246);
+  @apply text-customOrange;
+}
+
+.locateButtonContainer {
+  position: absolute;
+  right: 10px;
+  top: calc(45% + 120px);
+  transform: translateY(-50%);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+}
+
+.locateButton {
+  border-radius: 25px;
+  width: 40px;
+  height: 40px;
+  font-size: 24px;
+  @apply text-customPurple;
+  cursor: pointer;
+  margin: 0;
+}
+
+.locateButton img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.locateButton:hover img {
+  content: url('/recentrer_hover.png'); /* Change the image on hover */
+}
