@@ -7,16 +7,12 @@ services:
       - POSTGRES_DB=supmap
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    ports:
-      - "5432:5432"
     volumes:
       - database_data:/var/lib/postgresql/data
       - ./database/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
   
   routing_engine:
     build: ./routing-engine
-    ports:
-      - "8002:8002"
     volumes:
       - routing_engine_data:/data/valhalla
 
@@ -33,14 +29,22 @@ services:
       - CRYPTO_KEY=${CRYPTO_KEY}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      - GOOGLE_REDIRECT_URI=http://localhost:3000/auth/google/callback
+      - GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback
       - DEFAULT_ROLE=user
       - ROUTING_ENGINE_URL=http://routing_engine:8002
-    ports:
-      - "3000:3000"
     depends_on:
       - database
       - routing_engine
+
+  web:
+    build: ./web
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+    ports:
+      - "80:3000"
+    depends_on:
+      - api
 
 volumes:
   database_data:

@@ -1,9 +1,26 @@
 name: supmap
 
 services:
+  database:
+    ports:
+      - "5432:5432"
+
+  routing_engine:
+    ports:
+      - "8002:8002"
+
   api:
     environment:
       - NODE_ENV=development
+    ports:
+      - "8000:8000"
     volumes:
       - ./api:/app
+    command: sh -c "npm install && npm run dev"
+
+  web:
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./web:/app
     command: sh -c "npm install && npm run dev"
