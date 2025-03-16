@@ -1,4 +1,4 @@
-import { pool } from "../lib/pg.js";
+import { pool } from "@lib/pg.js";
 
 export namespace User {
   export interface IUser {

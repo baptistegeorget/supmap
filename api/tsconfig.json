@@ -5,7 +5,14 @@
     "moduleResolution": "nodenext",
     "esModuleInterop": true,
     "outDir": "./dist",
-    "strict": true
+    "strict": true,
+    "resolveJsonModule": true,
+    "paths": {
+      "@lib/*": ["./src/lib/*"],
+      "@middlewares/*": ["./src/middlewares/*"],
+      "@models/*": ["./src/models/*"],
+      "@routes/*": ["./src/routes/*"]
+    }
   },
   "include": [
     "src/**/*.ts"

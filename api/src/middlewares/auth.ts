@@ -1,10 +1,10 @@
-import express from "express";
+import { Request, Response, NextFunction} from "express";
 import jwt from "jsonwebtoken";
-import { User } from "../models/user.model.js";
-import { Role } from "../models/role.model.js";
-import { UserRole } from "../models/user-role.model.js";
+import { User } from "@models/user.js";
+import { Role } from "@models/role.js";
+import { UserRole } from "@models/user-role.js";
 
-export async function auth(req: express.Request, res: express.Response, next: express.NextFunction) {
+export async function auth(req: Request, res: Response, next: NextFunction) {
   try {
     if (!process.env.JWT_SECRET) {
       throw new Error("JWT_SECRET is not set");

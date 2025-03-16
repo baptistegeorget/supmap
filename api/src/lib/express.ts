@@ -1,11 +1,9 @@
 import express from "express";
-import { router as authRouter } from "../routes/auth.route.js";
-import { router as usersRouter } from "../routes/users.route.js";
-import { router as rolesRouter } from "../routes/roles.route.js";
+import swaggerUIExpress from "swagger-ui-express";
+import swaggerDocumentation from "../../swagger.json" with { type: "json" };
+import v1Router from "@routes/v1/index.js";
 
 export const app = express();
 
-app.use(express.json());
-app.use(authRouter);
-app.use(usersRouter);
-app.use(rolesRouter);
+app.use("/documentation", swaggerUIExpress.serve, swaggerUIExpress.setup(swaggerDocumentation));
+app.use("/v1", v1Router);

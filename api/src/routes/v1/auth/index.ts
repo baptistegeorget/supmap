@@ -1,17 +1,17 @@
 import express from "express";
-import { signInSchema } from "../lib/zod.js";
 import { ZodError } from "zod";
-import { User } from "../models/user.model.js";
-import { Role } from "../models/role.model.js";
-import { Account } from "../models/account.model.js";
-import { UserRole } from "../models/user-role.model.js";
 import jwt from "jsonwebtoken";
-import { oauth2Client as googleOAuth2Client } from "../lib/google-auth-library.js";
-import { verify, encrypt } from "../lib/crypto.js";
+import { signInSchema } from "@lib/zod.js";
+import { verify, encrypt } from "@lib/crypto.js";
+import { oauth2Client as googleOAuth2Client } from "@lib/google-auth-library.js";
+import { User } from "@models/user.js";
+import { Role } from "@models/role.js";
+import { Account } from "@models/account.js";
+import { UserRole } from "@models/user-role.js";
 
-export const router = express.Router();
+const router = express.Router();
 
-router.post("/auth/signin", async (req, res) => {
+router.post("/signin", async (req, res) => {
   try {
     if (!process.env.JWT_SECRET) {
       throw new Error("JWT_SECRET is not set");
@@ -42,7 +42,7 @@ router.post("/auth/signin", async (req, res) => {
   }
 });
 
-router.get("/auth/google", (_req, res) => {
+router.get("/google", (_req, res) => {
   try {
     const authorizeUrl = googleOAuth2Client.generateAuthUrl({
       access_type: "offline",
@@ -60,7 +60,7 @@ router.get("/auth/google", (_req, res) => {
   }
 });
 
-router.get("/auth/google/callback", async (req, res) => {
+router.get("/google/callback", async (req, res) => {
   try {
     if (!process.env.JWT_SECRET) {
       throw new Error("JWT_SECRET is not set");
@@ -146,3 +146,5 @@ router.get("/auth/google/callback", async (req, res) => {
     return;
   }
 });
+
+export default router;

@@ -1,0 +1,17 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "API",
+    "version": "1.0.0",
+    "description": "API of SUPMAP"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/v1",
+      "description": "Development server"
+    }
+  ],
+  "paths": {
+    
+  }
+}

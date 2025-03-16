@@ -1,12 +1,12 @@
 import express from "express";
-import { auth } from "../middlewares/auth.middleware.js";
-import { Role } from "../models/role.model.js";
-import { updateRoleSchema, createRoleSchema, idSchema, limitSchema, offsetSchema } from "../lib/zod.js";
 import { ZodError } from "zod";
+import { updateRoleSchema, createRoleSchema, idSchema, limitSchema, offsetSchema } from "@lib/zod.js";
+import { auth } from "@middlewares/auth.js";
+import { Role } from "@models/role.js";
 
-export const router = express.Router();
+const router = express.Router();
 
-router.get("/roles", auth, async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
     const limit = req.query.limit ? await limitSchema.parseAsync(req.query.limit) : undefined;
     const offset = req.query.offset ? await offsetSchema.parseAsync(req.query.offset) : undefined;
@@ -38,11 +38,11 @@ router.get("/roles", auth, async (req, res) => {
   }
 });
 
-router.get("/roles/:id", auth, async (req, res) => {
+router.get("/:roleId", auth, async (req, res) => {
   try {
-    const id = await idSchema.parseAsync(req.params.id);
+    const roleId = await idSchema.parseAsync(req.params.roleId);
 
-    const role = await Role.findById(id);
+    const role = await Role.findById(roleId);
 
     if (!role) {
       res.status(404).json({ error: "Role not found" });
@@ -72,7 +72,7 @@ router.get("/roles/:id", auth, async (req, res) => {
   }
 });
 
-router.post("/roles", auth, async (req, res) => {
+router.post("/", auth, async (req, res) => {
   try {
     const authUserRoles = res.locals.authUserRoles as Role.IRole[];
 
@@ -120,18 +120,18 @@ router.post("/roles", auth, async (req, res) => {
   }
 });
 
-router.patch("/roles/:id", auth, async (req, res) => {
+router.patch("/:roleId", auth, async (req, res) => {
   try {
     const authUserRoles = res.locals.authUserRoles as Role.IRole[];
 
-    const id = await idSchema.parseAsync(req.params.id);
+    const roleId = await idSchema.parseAsync(req.params.roleId);
 
     if (!authUserRoles.some(role => role.is_administrator || role.can_manage_roles)) {
       res.status(403).send({ error: "You do not have permission to update roles" });
       return;
     }
 
-    let role = await Role.findById(id);
+    let role = await Role.findById(roleId);
 
     if (!role) {
       res.status(404).json({ error: "Role not found" });
@@ -149,7 +149,7 @@ router.patch("/roles/:id", auth, async (req, res) => {
       }
     }
 
-    role = await Role.update(id, name || role.name, isAdministrator, canManageUsers, canManageRoles, canManageAlerts);
+    role = await Role.update(roleId, name || role.name, isAdministrator, canManageUsers, canManageRoles, canManageAlerts);
 
     const roleResponse = {
       id: role.id,
@@ -174,25 +174,25 @@ router.patch("/roles/:id", auth, async (req, res) => {
   }
 });
 
-router.delete("/roles/:id", auth, async (req, res) => {
+router.delete("/:roleId", auth, async (req, res) => {
   try {
     const authUserRoles = res.locals.authUserRoles as Role.IRole[];
 
-    const id = await idSchema.parseAsync(req.params.id);
+    const roleId = await idSchema.parseAsync(req.params.roleId);
 
     if (!authUserRoles.some(role => role.is_administrator || role.can_manage_roles)) {
       res.status(403).send({ error: "You do not have permission to delete roles" });
       return;
     }
 
-    const role = await Role.findById(id);
+    const role = await Role.findById(roleId);
 
     if (!role) {
       res.status(404).json({ error: "Role not found" });
       return;
     }
 
-    await Role.remove(id);
+    await Role.remove(roleId);
 
     res.status(200).json({ message: "Role deleted" });
     return;
@@ -207,3 +207,5 @@ router.delete("/roles/:id", auth, async (req, res) => {
     return;
   }
 });
+
+export default router;
