@@ -1,13 +1,14 @@
 import { Router, json } from "express";
-import authRouter from "@routes/v1/auth/index.js";
-import usersRouter from "@routes/v1/users/index.js";
-import rolesRouter from "@routes/v1/roles/index.js";
+import authRouter from "./auth/index.js";
+import usersRouter from "./users/index.js";
+import rolesRouter from "./roles/index.js";
+import { auth } from "../../middlewares/auth.js";
 
 const router = Router();
 
 router.use(json());
 router.use("/auth", authRouter);
+router.use("/roles", auth, rolesRouter);
 router.use("/users", usersRouter);
-router.use("/roles", rolesRouter);
 
 export default router;

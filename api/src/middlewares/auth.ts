@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction} from "express";
 import jwt from "jsonwebtoken";
-import { User } from "@models/user.js";
-import { Role } from "@models/role.js";
-import { UserRole } from "@models/user-role.js";
+import { User } from "../models/user.js";
+import { Role } from "../models/role.js";
+import { UserRole } from "../models/user-role.js";
 
 export async function auth(req: Request, res: Response, next: NextFunction) {
   try {
@@ -33,10 +33,10 @@ export async function auth(req: Request, res: Response, next: NextFunction) {
 
     res.locals.authUser = user;
 
-    const userRoles = await UserRole.findByUserId(user.id, 1000000);
+    const userRoles = await UserRole.findByUserId(user.id);
 
     const roles = await Promise.all(userRoles.map(async (userRole) => {
-      return await Role.findById(userRole.role_id) as Role.IRole;
+      return await Role.findById(userRole.roleId) as Role.IRole;
     }));
 
     res.locals.authUserRoles = roles;

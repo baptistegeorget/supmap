@@ -1,23 +1,21 @@
 import express from "express";
 import { ZodError } from "zod";
 import jwt from "jsonwebtoken";
-import { signInSchema } from "@lib/zod.js";
-import { verify, encrypt } from "@lib/crypto.js";
-import { oauth2Client as googleOAuth2Client } from "@lib/google-auth-library.js";
-import { User } from "@models/user.js";
-import { Role } from "@models/role.js";
-import { Account } from "@models/account.js";
-import { UserRole } from "@models/user-role.js";
+import { signInSchema } from "../../../lib/zod.js";
+import { verify, encrypt } from "../../../lib/crypto.js";
+import { oauth2Client as googleOAuth2Client } from "../../../lib/google-auth-library.js";
+import { User } from "../../../models/user.js";
+import { Role } from "../../../models/role.js";
+import { Account } from "../../../models/account.js";
+import { UserRole } from "../../../models/user-role.js";
 
 const router = express.Router();
 
 router.post("/signin", async (req, res) => {
   try {
-    if (!process.env.JWT_SECRET) {
-      throw new Error("JWT_SECRET is not set");
-    }
+    if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is not set");
 
-    const { email, password } = await signInSchema.parseAsync(req.body);
+    const { email, password } = signInSchema.parse(req.body);
 
     const user = await User.findByEmail(encrypt(email));
 
@@ -42,7 +40,7 @@ router.post("/signin", async (req, res) => {
   }
 });
 
-router.get("/google", (_req, res) => {
+router.get("/google", async (_req, res) => {
   try {
     const authorizeUrl = googleOAuth2Client.generateAuthUrl({
       access_type: "offline",
@@ -62,9 +60,8 @@ router.get("/google", (_req, res) => {
 
 router.get("/google/callback", async (req, res) => {
   try {
-    if (!process.env.JWT_SECRET) {
-      throw new Error("JWT_SECRET is not set");
-    }
+    if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is not set");
+    if (!process.env.DEFAULT_ROLE) throw new Error("DEFAULT_ROLE is not set");
 
     const code = req.query.code;
 
@@ -87,29 +84,29 @@ router.get("/google/callback", async (req, res) => {
 
     googleOAuth2Client.setCredentials(tokens);
 
-    const userInfoResponse = await googleOAuth2Client.request<{
-      email?: string,
-      name?: string,
-      picture?: string,
-      sub?: string
-    }>({
+    const userInfo = await googleOAuth2Client.request<GoogleUserInfoResponse>({
       url: "https://www.googleapis.com/oauth2/v3/userinfo"
     });
 
-    if (!userInfoResponse.data.email || !userInfoResponse.data.name || !userInfoResponse.data.picture || !userInfoResponse.data.sub) {
+    if (!userInfo.data.email || !userInfo.data.name || !userInfo.data.picture || !userInfo.data.sub) {
       res.status(400).json({ error: "Invalid user info" });
       return;
     }
 
-    let user = await User.findByEmail(encrypt(userInfoResponse.data.email));
+    let user = await User.findByEmail(encrypt(userInfo.data.email));
 
     if (!user) {
-      user = await User.create(encrypt(userInfoResponse.data.email), encrypt(userInfoResponse.data.name), undefined, encrypt(userInfoResponse.data.picture));
+      user = await User.create(
+        encrypt(userInfo.data.email),
+        encrypt(userInfo.data.name),
+        undefined,
+        encrypt(userInfo.data.picture)
+      );
 
-      let role = await Role.findByName("User");
+      let role = await Role.findByName(process.env.DEFAULT_ROLE);
 
       if (!role) {
-        role = await Role.create("User");
+        role = await Role.create(process.env.DEFAULT_ROLE);
       }
 
       await UserRole.create(user.id, role.id);
@@ -133,7 +130,15 @@ router.get("/google/callback", async (req, res) => {
         return;
       }
 
-      await Account.create(user.id, "google", encrypt(userInfoResponse.data.sub), encrypt(tokens.access_token), encrypt(tokens.refresh_token), new Date(tokens.expiry_date), tokens.scope);
+      await Account.create(
+        user.id,
+        "google",
+        encrypt(userInfo.data.sub),
+        encrypt(tokens.access_token),
+        encrypt(tokens.refresh_token),
+        new Date(tokens.expiry_date),
+        tokens.scope
+      );
     }
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "30 days" });

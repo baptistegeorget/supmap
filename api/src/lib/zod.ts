@@ -68,6 +68,17 @@ export const updateRoleSchema = zod.object({
     .optional()
 });
 
+export const createRouteSchema = zod.object({
+  start: zod.object({
+    latitude: zod.number({ required_error: "Latitude is required" }),
+    longitude: zod.number({ required_error: "Longitude is required" })
+  }),
+  end: zod.object({
+    latitude: zod.number({ required_error: "Latitude is required" }),
+    longitude: zod.number({ required_error: "Longitude is required" })
+  })
+});
+
 export const idSchema = zod.string({ required_error: "ID is required" })
   .regex(/^[1-9]\d{0,18}$/, { message: "Invalid ID" })
   .refine((val) => BigInt(val) <= BigInt("9223372036854775807"), { message: "Invalid ID" });
