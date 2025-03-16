@@ -6,10 +6,10 @@ import NavLinks from "./nav-links";
 import Image from "next/image";
 import clsx from "clsx";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import LoginModal from "./LoginModal";
 
-export default function SideNav() {
+function SideNavContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -102,5 +102,13 @@ export default function SideNav() {
       {/* Modale de connexion */}
       <LoginModal isOpen={isLoginModalOpen} onClose={handleCloseModal} />
     </div>
+  );
+}
+
+export default function SideNav() {
+  return (
+    <Suspense fallback={<div>Chargement...</div>}>
+      <SideNavContent />
+    </Suspense>
   );
 }
