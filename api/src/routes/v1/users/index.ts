@@ -33,11 +33,14 @@ router.get("/", auth, async (req, res) => {
     return;
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(400).json({ errors: error.errors });
+      res.status(400).json({ 
+        message: "Invalid request",
+        errors: error.errors 
+      });
       return;
     }
 
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
     console.error(error);
     return;
   }
@@ -50,7 +53,7 @@ router.get("/:userId", auth, async (req, res) => {
     let user = await User.findById(userId);
 
     if (!user) {
-      res.status(404).json({ error: "User not found" });
+      res.status(404).json({ message: "User not found" });
       return;
     }
 
@@ -63,11 +66,14 @@ router.get("/:userId", auth, async (req, res) => {
     return;
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(400).json({ errors: error.errors });
+      res.status(400).json({ 
+        message: "Invalid request",
+        errors: error.errors 
+      });
       return;
     }
 
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
     console.error(error);
     return;
   }
@@ -82,7 +88,7 @@ router.post("/", async (req, res) => {
     let user = await User.findByEmail(encrypt(email));
 
     if (user) {
-      res.status(409).json({ error: "Email already used" });
+      res.status(409).json({ message: "Email already used" });
       return;
     }
 
@@ -110,11 +116,14 @@ router.post("/", async (req, res) => {
     return;
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(400).json({ errors: error.errors });
+      res.status(400).json({ 
+        message: "Invalid request",
+        errors: error.errors 
+      });
       return;
     }
 
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
     console.error(error);
     return;
   }
@@ -129,14 +138,14 @@ router.patch("/:userId", auth, async (req, res) => {
     const { name, email, password, picture } = updateUserSchema.parse(req.body);
 
     if (authUser.id !== userId && !authUserRoles.some(role => role.isAdministrator || role.canManageUsers)) {
-      res.status(403).json({ error: "Access denied" });
+      res.status(403).json({ message: "Access denied" });
       return;
     }
     
     let user = await User.findById(userId);
 
     if (!user) {
-      res.status(404).json({ error: "User not found" });
+      res.status(404).json({ message: "User not found" });
       return;
     }
 
@@ -144,7 +153,7 @@ router.patch("/:userId", auth, async (req, res) => {
       const existingUser = await User.findByEmail(encrypt(email));
 
       if (existingUser) {
-        res.status(409).json({ error: "Email already used" });
+        res.status(409).json({ message: "Email already used" });
         return;
       }
     }
@@ -166,11 +175,14 @@ router.patch("/:userId", auth, async (req, res) => {
     return;
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(400).json({ errors: error.errors });
+      res.status(400).json({ 
+        message: "Invalid request",
+        errors: error.errors 
+      });
       return;
     }
 
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
     console.error(error);
     return;
   }
@@ -184,14 +196,14 @@ router.delete("/:userId", auth, async (req, res) => {
     const userId = idSchema.parse(req.params.userId);
 
     if (authUser.id !== userId && !authUserRoles.some(role => role.isAdministrator || role.canManageUsers)) {
-      res.status(403).json({ error: "Access denied" });
+      res.status(403).json({ message: "Access denied" });
       return;
     }
 
     const user = await User.findById(userId);
 
     if (!user) {
-      res.status(404).json({ error: "User not found" });
+      res.status(404).json({ message: "User not found" });
       return;
     }
 
@@ -201,11 +213,14 @@ router.delete("/:userId", auth, async (req, res) => {
     return;
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(400).json({ errors: error.errors });
+      res.status(400).json({ 
+        message: "Invalid request",
+        errors: error.errors 
+      });
       return;
     }
 
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
     console.error(error);
     return;
   }

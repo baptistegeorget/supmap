@@ -20,7 +20,7 @@ router.post("/signin", async (req, res) => {
     const user = await User.findByEmail(encrypt(email));
 
     if (!user || !user.password || !(await verify(password, user.password))) {
-      res.status(401).json({ error: "Invalid email or password" });
+      res.status(401).json({ message: "Invalid email or password" });
       return;
     }
 
@@ -30,11 +30,14 @@ router.post("/signin", async (req, res) => {
     return;
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(400).json({ error: error.errors });
+      res.status(400).json({
+        message: "Invalid request",
+        errors: error.errors
+      });
       return;
     }
 
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
     console.error(error);
     return;
   }
@@ -50,9 +53,10 @@ router.get("/google", async (_req, res) => {
       ]
     });
 
-    res.redirect(authorizeUrl);
+    res.status(200).json({ url: authorizeUrl });
+    return;
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
     console.error(error);
     return;
   }
@@ -66,19 +70,19 @@ router.get("/google/callback", async (req, res) => {
     const code = req.query.code;
 
     if (!code) {
-      res.status(400).json({ error: "Code is required" });
+      res.status(400).json({ message: "Code is required" });
       return;
     }
 
     if (typeof code !== "string") {
-      res.status(400).json({ error: "Invalid code" });
+      res.status(400).json({ message: "Invalid code" });
       return;
     }
 
     const { tokens } = await googleOAuth2Client.getToken(code);
 
     if (!tokens.access_token) {
-      res.status(400).json({ error: "Access token is required" });
+      res.status(400).json({ message: "Access token is required" });
       return;
     }
 
@@ -89,7 +93,7 @@ router.get("/google/callback", async (req, res) => {
     });
 
     if (!userInfo.data.email || !userInfo.data.name || !userInfo.data.picture || !userInfo.data.sub) {
-      res.status(400).json({ error: "Invalid user info" });
+      res.status(400).json({ message: "Invalid user info" });
       return;
     }
 
@@ -116,17 +120,17 @@ router.get("/google/callback", async (req, res) => {
 
     if (!accounts.find(account => account.provider === "google")) {
       if (!tokens.refresh_token) {
-        res.status(400).json({ error: "Refresh token is required" });
+        res.status(400).json({ message: "Refresh token is required" });
         return;
       }
 
       if (!tokens.expiry_date) {
-        res.status(400).json({ error: "Expiry date is required" });
+        res.status(400).json({ message: "Expiry date is required" });
         return;
       }
 
       if (!tokens.scope) {
-        res.status(400).json({ error: "Scope is required" });
+        res.status(400).json({ message: "Scope is required" });
         return;
       }
 
@@ -146,7 +150,7 @@ router.get("/google/callback", async (req, res) => {
     res.status(200).json({ token });
     return;
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
     console.error(error);
     return;
   }

@@ -14,7 +14,7 @@ router.get("/", async (req, res) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      res.status(404).json({ error: "User not found" });
+      res.status(404).json({ message: "User not found" });
       return;
     }
 
@@ -28,11 +28,14 @@ router.get("/", async (req, res) => {
     return;
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(400).json({ errors: error.errors });
+      res.status(400).json({ 
+        message: "Invalid request",
+        errors: error.errors 
+      });
       return;
     }
 
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
     console.error(error);
     return;
   }
@@ -46,14 +49,14 @@ router.get("/:roleId", async (req, res) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      res.status(404).json({ error: "User not found" });
+      res.status(404).json({ message: "User not found" });
       return;
     }
 
     const role = await Role.findById(roleId);
 
     if (!role) {
-      res.status(404).json({ error: "Role not found" });
+      res.status(404).json({ message: "Role not found" });
       return;
     }
 
@@ -61,11 +64,14 @@ router.get("/:roleId", async (req, res) => {
     return;
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(400).json({ errors: error.errors });
+      res.status(400).json({ 
+        message: "Invalid request",
+        errors: error.errors 
+      });
       return;
     }
 
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
     console.error(error);
     return;
   }
@@ -76,7 +82,7 @@ router.post("/", async (req, res) => {
     const authUserRoles = res.locals.authUserRoles as Role.IRole[];
 
     if (!authUserRoles.some(role => role.isAdministrator)) {
-      res.status(403).json({ error: "Access denied" });
+      res.status(403).json({ message: "Access denied" });
       return;
     }
 
@@ -86,14 +92,14 @@ router.post("/", async (req, res) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      res.status(404).json({ error: "User not found" });
+      res.status(404).json({ message: "User not found" });
       return;
     }
 
     const role = await Role.findById(roleId);
 
     if (!role) {
-      res.status(404).json({ error: "Role not found" });
+      res.status(404).json({ message: "Role not found" });
       return;
     }
 
@@ -104,7 +110,7 @@ router.post("/", async (req, res) => {
     }));
 
     if (roles.some(role => role.id === roleId)) {
-      res.status(409).json({ error: "Role already assigned" });
+      res.status(409).json({ message: "Role already assigned" });
       return;
     }
 
@@ -114,11 +120,14 @@ router.post("/", async (req, res) => {
     return;
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(400).json({ errors: error.errors });
+      res.status(400).json({ 
+        message: "Invalid request",
+        errors: error.errors 
+      });
       return;
     }
 
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
     console.error(error);
     return;
   }
@@ -129,7 +138,7 @@ router.delete("/:roleId", async (req, res) => {
     const authUserRoles = res.locals.authUserRoles as Role.IRole[];
 
     if (!authUserRoles.some(role => role.isAdministrator)) {
-      res.status(403).json({ error: "Access denied" });
+      res.status(403).json({ message: "Access denied" });
       return;
     }
 
@@ -139,14 +148,14 @@ router.delete("/:roleId", async (req, res) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      res.status(404).json({ error: "User not found" });
+      res.status(404).json({ message: "User not found" });
       return;
     }
 
     const role = await Role.findById(roleId);
 
     if (!role) {
-      res.status(404).json({ error: "Role not found" });
+      res.status(404).json({ message: "Role not found" });
       return;
     }
 
@@ -157,7 +166,7 @@ router.delete("/:roleId", async (req, res) => {
     }));
 
     if (!roles.some(role => role.id === roleId)) {
-      res.status(404).json({ error: "Role not assigned" });
+      res.status(404).json({ message: "Role not assigned" });
       return;
     }
 
@@ -167,11 +176,14 @@ router.delete("/:roleId", async (req, res) => {
     return;
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(400).json({ errors: error.errors });
+      res.status(400).json({ 
+        message: "Invalid request",
+        errors: error.errors 
+      });
       return;
     }
 
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
     console.error(error);
     return;
   }

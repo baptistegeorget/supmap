@@ -16,11 +16,14 @@ router.get("/", async (req, res) => {
     return;
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(400).json({ errors: error.errors });
+      res.status(400).json({ 
+        message: "Invalid request",
+        errors: error.errors 
+      });
       return;
     }
 
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
     console.error(error);
     return;
   }
@@ -33,7 +36,7 @@ router.get("/:roleId", async (req, res) => {
     const role = await Role.findById(roleId);
 
     if (!role) {
-      res.status(404).json({ error: "Role not found" });
+      res.status(404).json({ message: "Role not found" });
       return;
     }
 
@@ -41,11 +44,14 @@ router.get("/:roleId", async (req, res) => {
     return;
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(400).json({ errors: error.errors });
+      res.status(400).json({ 
+        message: "Invalid request",
+        errors: error.errors 
+      });
       return;
     }
 
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
     console.error(error);
     return;
   }
@@ -56,21 +62,21 @@ router.post("/", async (req, res) => {
     const authUserRoles = res.locals.authUserRoles as Role.IRole[];
 
     if (!authUserRoles.some(role => role.isAdministrator || role.canManageRoles)) {
-      res.status(403).send({ error: "You do not have permission to create roles" });
+      res.status(403).send({ message: "You do not have permission to create roles" });
       return;
     }
 
     const { name, isAdministrator, canManageRoles, canManageUsers, canManageAlerts } = createRoleSchema.parse(req.body);
 
     if (isAdministrator && !authUserRoles.some(role => role.isAdministrator)) {
-      res.status(403).send({ error: "You do not have permission to create an administrator role" });
+      res.status(403).send({ message: "You do not have permission to create an administrator role" });
       return;
     }
 
     let role = await Role.findByName(name);
 
     if (role) {
-      res.status(400).json({ error: "Role already exists" });
+      res.status(400).json({ message: "Role already exists" });
       return;
     }
 
@@ -80,11 +86,14 @@ router.post("/", async (req, res) => {
     return;
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(400).json({ errors: error.errors });
+      res.status(400).json({ 
+        message: "Invalid request",
+        errors: error.errors 
+      });
       return;
     }
 
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
     console.error(error);
     return;
   }
@@ -95,14 +104,14 @@ router.patch("/:roleId", async (req, res) => {
     const authUserRoles = res.locals.authUserRoles as Role.IRole[];
 
     if (!authUserRoles.some(role => role.isAdministrator || role.canManageRoles)) {
-      res.status(403).send({ error: "You do not have permission to update roles" });
+      res.status(403).send({ message: "You do not have permission to update roles" });
       return;
     }
 
     const { name, isAdministrator, canManageRoles, canManageUsers, canManageAlerts } = updateRoleSchema.parse(req.body);
 
     if (isAdministrator && !authUserRoles.some(role => role.isAdministrator)) {
-      res.status(403).send({ error: "You do not have permission to update role to an administrator role" });
+      res.status(403).send({ message: "You do not have permission to update role to an administrator role" });
       return;
     }
 
@@ -111,7 +120,7 @@ router.patch("/:roleId", async (req, res) => {
     let role = await Role.findById(roleId);
 
     if (!role) {
-      res.status(404).json({ error: "Role not found" });
+      res.status(404).json({ message: "Role not found" });
       return;
     }
 
@@ -119,7 +128,7 @@ router.patch("/:roleId", async (req, res) => {
       const existingRole = await Role.findByName(name);
 
       if (existingRole) {
-        res.status(400).json({ error: "Role already exists" });
+        res.status(400).json({ message: "Role already exists" });
         return;
       }
     }
@@ -137,11 +146,14 @@ router.patch("/:roleId", async (req, res) => {
     return;
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(400).json({ errors: error.errors });
+      res.status(400).json({ 
+        message: "Invalid request",
+        errors: error.errors 
+      });
       return;
     }
 
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
     console.error(error);
     return;
   }
@@ -152,7 +164,7 @@ router.delete("/:roleId", async (req, res) => {
     const authUserRoles = res.locals.authUserRoles as Role.IRole[];
 
     if (!authUserRoles.some(role => role.isAdministrator || role.canManageRoles)) {
-      res.status(403).send({ error: "You do not have permission to delete roles" });
+      res.status(403).send({ message: "You do not have permission to delete roles" });
       return;
     }
 
@@ -161,12 +173,12 @@ router.delete("/:roleId", async (req, res) => {
     const role = await Role.findById(roleId);
 
     if (!role) {
-      res.status(404).json({ error: "Role not found" });
+      res.status(404).json({ message: "Role not found" });
       return;
     }
 
     if (role.isAdministrator && !authUserRoles.some(role => role.isAdministrator)) {
-      res.status(403).send({ error: "You do not have permission to delete an administrator role" });
+      res.status(403).send({ message: "You do not have permission to delete an administrator role" });
       return;
     }
 
@@ -176,11 +188,14 @@ router.delete("/:roleId", async (req, res) => {
     return;
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(400).json({ errors: error.errors });
+      res.status(400).json({ 
+        message: "Invalid request",
+        errors: error.errors 
+      });
       return;
     }
 
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
     console.error(error);
     return;
   }

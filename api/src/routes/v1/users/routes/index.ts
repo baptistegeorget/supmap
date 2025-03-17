@@ -58,11 +58,14 @@ router.post("/", async (req, res) => {
     return;
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(400).json({ errors: error.errors });
+      res.status(400).json({ 
+        message: "Invalid request",
+        errors: error.errors 
+      });
       return;
     }
 
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
     console.error(error);
     return;
   }
