@@ -1,17 +1,536 @@
 {
-  "openapi": "3.0.4",
+  "openapi": "3.1.0",
   "info": {
-    "title": "API",
-    "version": "1.0.0",
-    "description": "API of SUPMAP"
+    "title": "SUPMAP API",
+    "summary": "The main API of SUPMAP.",
+    "description": "This API manage users, roles, authentication, routes, alerts, and more for SUPMAP.",
+    "contact": {
+      "name": "SUPMAP Support",
+      "email": "baptiste.georget@supinfo.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "http://localhost:3000/v1",
-      "description": "Development server"
+      "url": "http://localhost:8000/v1",
+      "description": "Development server version 1"
     }
   ],
   "paths": {
-    
-  }
+    "/auth/signin": {
+      "summary": "Sign in operations.",
+      "description": "Sign in operations.",
+      "post": {
+        "tags": [
+          "authentication"
+        ],
+        "summary": "Sign in the user.",
+        "description": "Sign in the user, with email and password and return a JWT token.",
+        "operationId": "signin",
+        "requestBody": {
+          "description": "The credentials of the user.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "description": "The email of the user."
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "The password of the user."
+                  }
+                }
+              },
+              "example": {
+                "email": "example@example.com",
+                "password": "password"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "description": "The token to authorize the user."
+                    }
+                  }
+                },
+                "example": {
+                  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEiLCJpYXQiOjE3NDIxNDQ1MDIsImV4cCI6MTc0NDczNjUwMn0.2shxoWMXcladmwG8KacSRdcFuExDCy4P5oefWuvJPUM"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ZodError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Account": {
+        "type": "object",
+        "required": [
+          "id",
+          "userId",
+          "provider",
+          "providerAccountId",
+          "accessToken",
+          "refreshToken",
+          "expiresAt",
+          "scope"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The ID of the account."
+          },
+          "userId": {
+            "type": "string",
+            "description": "The ID of the user."
+          },
+          "provider": {
+            "type": "string",
+            "description": "The provider of the account."
+          },
+          "providerAccountId": {
+            "type": "string",
+            "description": "The provider account ID."
+          },
+          "accessToken": {
+            "type": "string",
+            "description": "The access token."
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "The refresh token."
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "The expiration date of the token."
+          },
+          "scope": {
+            "type": "string",
+            "description": "The scope of the token."
+          }
+        }
+      },
+      "Role": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "isAdministrator",
+          "canManageUsers",
+          "canManageRoles",
+          "canManageAlerts"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The ID of the role."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the role."
+          },
+          "isAdministrator": {
+            "type": "boolean",
+            "description": "If the role is an administrator."
+          },
+          "canManageUsers": {
+            "type": "boolean",
+            "description": "If the role can manage users."
+          },
+          "canManageRoles": {
+            "type": "boolean",
+            "description": "If the role can manage roles."
+          },
+          "canManageAlerts": {
+            "type": "boolean",
+            "description": "If the role can manage alerts."
+          }
+        }
+      },
+      "Route": {
+        "type": "object",
+        "required": [
+          "id",
+          "userId",
+          "start",
+          "end",
+          "route",
+          "distance",
+          "duration",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The ID of the route."
+          },
+          "userId": {
+            "type": "string",
+            "description": "The ID of the user."
+          },
+          "start": {
+            "type": "object",
+            "required": [
+              "type",
+              "coordinates"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "Type of coordinates."
+              },
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "description": "The coordinates."
+              }
+            },
+            "description": "The start of the route."
+          },
+          "end": {
+            "type": "object",
+            "required": [
+              "type",
+              "coordinates"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "Type of coordinates."
+              },
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "description": "The coordinates."
+              }
+            },
+            "description": "The end of the route."
+          },
+          "route": {
+            "type": "object",
+            "required": [
+              "type",
+              "coordinates"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "Type of coordinates."
+              },
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "description": "The coordinates."
+              }
+            },
+            "description": "The route."
+          },
+          "distance": {
+            "type": "number",
+            "description": "The distance of the route."
+          },
+          "duration": {
+            "type": "number",
+            "description": "The duration of the route."
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "The creation date of the route."
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "required": [
+          "id",
+          "email",
+          "name",
+          "password",
+          "picture",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The ID of the user."
+          },
+          "email": {
+            "type": "string",
+            "description": "The email of the user."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the user."
+          },
+          "password": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The password of the user."
+          },
+          "picture": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The picture of the user."
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "The creation date of the user."
+          }
+        }
+      }
+    },
+    "responses": {
+      "ZodError": {
+        "description": "Bad request error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "The error message."
+                },
+                "errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string",
+                        "description": "The error code."
+                      },
+                      "expected": {
+                        "type": "string",
+                        "description": "The expected type."
+                      },
+                      "received": {
+                        "type": "string",
+                        "description": "The received type."
+                      },
+                      "path": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "The path of the error."
+                      },
+                      "message": {
+                        "type": "string",
+                        "description": "The error message."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "example": {
+              "message": "Invalid request",
+              "errors": [
+                {
+                  "code": "invalid_type",
+                  "expected": "string",
+                  "received": "undefined",
+                  "path": [
+                    "email"
+                  ],
+                  "message": "Email is required"
+                },
+                {
+                  "code": "invalid_type",
+                  "expected": "string",
+                  "received": "undefined",
+                  "path": [
+                    "password"
+                  ],
+                  "message": "Password is required"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "Internal server error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "The error message."
+                }
+              }
+            },
+            "example": {
+              "message": "Internal server error"
+            }
+          }
+        }
+      },
+      "UnauthorizedError": {
+        "description": "Unauthorized error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "The error message."
+                }
+              }
+            },
+            "example": {
+              "message": "Unauthorized"
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "limit": {
+        "name": "limit",
+        "in": "query",
+        "description": "The number of items to return.",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "default": 10
+        }
+      },
+      "offset": {
+        "name": "offset",
+        "in": "query",
+        "description": "The number of items to skip before starting to collect the result set.",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "default": 0
+        }
+      },
+      "userId": {
+        "name": "userId",
+        "in": "path",
+        "description": "The ID of the user.",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "roleId": {
+        "name": "roleId",
+        "in": "path",
+        "description": "The ID of the role.",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "securitySchemes": {
+      "authorizationToken": {
+        "type": "http",
+        "description": "The token to authorize the user.",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "googleOAuth2": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+            "tokenUrl": "https://www.googleapis.com/oauth2/v4/token",
+            "scopes": {
+              "https://www.googleapis.com/auth/userinfo.profile": "View your basic profile info",
+              "https://www.googleapis.com/auth/userinfo.email": "View your email address"
+            }
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "authorizationToken": []
+    },
+    {
+      "googleOAuth2": [
+        "https://www.googleapis.com/auth/userinfo.profile",
+        "https://www.googleapis.com/auth/userinfo.email"
+      ]
+    }
+  ],
+  "tags": [
+    {
+      "name": "user",
+      "description": "Operations about user"
+    },
+    {
+      "name": "role",
+      "description": "Operations about roles"
+    },
+    {
+      "name": "authentication",
+      "description": "Operations about authentication"
+    },
+    {
+      "name": "route",
+      "description": "Operations about routes"
+    },
+    {
+      "name": "alert",
+      "description": "Operations about alerts"
+    },
+    {
+      "name": "other",
+      "description": "Other operations"
+    }
+  ]
 }
