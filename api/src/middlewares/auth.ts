@@ -6,18 +6,16 @@ import { UserRole } from "../models/user-role.js";
 
 export async function auth(req: Request, res: Response, next: NextFunction) {
   try {
-    if (!process.env.JWT_SECRET) {
-      throw new Error("JWT_SECRET is not set");
-    }
+    if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is not set");
 
-    const token = req.header("Authorization");
-
-    if (!token) {
+    const authorization = req.header("Authorization");
+    
+    if (!authorization || !authorization.startsWith("Bearer ")) {
       res.status(401).send({ error: "Access Denied" });
       return;
     }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    const decoded = jwt.verify(authorization.slice(7), process.env.JWT_SECRET);
 
     if (typeof decoded === "string" || !decoded.id || typeof decoded.id !== "string") {
       res.status(400).send({ error: "Invalid Token" });
