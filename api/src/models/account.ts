@@ -3,7 +3,7 @@ import { pool } from "../lib/pg.js";
 export namespace Account {
   export interface IAccount {
     id: string;
-    userId: number;
+    userId: string;
     provider: string;
     providerAccountId: string;
     accessToken: string;

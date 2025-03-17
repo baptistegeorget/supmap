@@ -11,21 +11,21 @@ export async function auth(req: Request, res: Response, next: NextFunction) {
     const authorization = req.header("Authorization");
     
     if (!authorization || !authorization.startsWith("Bearer ")) {
-      res.status(401).send({ error: "Access Denied" });
+      res.status(401).send({ message: "Unauthorized" });
       return;
     }
     
     const decoded = jwt.verify(authorization.slice(7), process.env.JWT_SECRET);
 
     if (typeof decoded === "string" || !decoded.id || typeof decoded.id !== "string") {
-      res.status(400).send({ error: "Invalid Token" });
+      res.status(400).send({ message: "Invalid Token" });
       return;
     }
 
     const user = await User.findById(decoded.id);
 
     if (!user) {
-      res.status(400).send({ error: "User not found" });
+      res.status(400).send({ message: "User not found" });
       return;
     }
 
@@ -42,21 +42,21 @@ export async function auth(req: Request, res: Response, next: NextFunction) {
     next();
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
-      res.status(400).send({ error: "Invalid Token" });
+      res.status(400).send({ message: "Invalid Token" });
       return;
     }
 
     if (error instanceof jwt.TokenExpiredError) {
-      res.status(400).send({ error: "Token Expired" });
+      res.status(400).send({ message: "Token Expired" });
       return;
     }
 
     if (error instanceof jwt.NotBeforeError) {
-      res.status(400).send({ error: "Token not active" });
+      res.status(400).send({ message: "Token not active" });
       return;
     }
 
-    res.status(500).send({ error: "Internal Server Error" });
+    res.status(500).send({ message: "Internal server error" });
     console.error(error);
     return;
   }

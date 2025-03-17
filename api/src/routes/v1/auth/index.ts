@@ -20,7 +20,7 @@ router.post("/signin", async (req, res) => {
     const user = await User.findByEmail(encrypt(email));
 
     if (!user || !user.password || !(await verify(password, user.password))) {
-      res.status(401).json({ message: "Invalid email or password" });
+      res.status(401).json({ message: "Unauthorized" });
       return;
     }
 
