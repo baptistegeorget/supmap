@@ -30,13 +30,13 @@ Une fois la configuration terminée, vous pouvez déployer la solution avec les 
 #### Production
 
 ```bash
-docker-compose -f docker-compose.yaml up --build
+docker-compose -f docker-compose.yaml up
 ```
 
 #### Développement
 
 ```bash
-docker-compose up --build
+docker-compose up
 ```
 
 
