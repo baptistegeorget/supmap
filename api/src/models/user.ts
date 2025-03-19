@@ -188,7 +188,7 @@ export namespace User {
           "name", 
           "password",
           "picture", 
-          "created_at" AS "createdAt
+          "created_at" AS "createdAt"
         FROM "user" 
         WHERE "email" = $1 
         LIMIT 1
