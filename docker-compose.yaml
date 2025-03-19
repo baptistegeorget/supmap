@@ -10,11 +10,15 @@ services:
     volumes:
       - database_data:/var/lib/postgresql/data
       - ./database/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5432:5432"
   
   routing_engine:
     build: ./routing-engine
     volumes:
       - routing_engine_data:/data/valhalla
+    ports:
+      - "8002:8002"
 
   api:
     build: ./api
@@ -32,6 +36,8 @@ services:
       - GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback
       - DEFAULT_ROLE=user
       - ROUTING_ENGINE_URL=http://routing_engine:8002
+    ports:
+      - "8000:8000"
     depends_on:
       - database
       - routing_engine
