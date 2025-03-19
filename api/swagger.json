@@ -1176,6 +1176,211 @@
             "authorizationToken": []
           }
         ]
+      }
+    },
+    "/roles/{roleId}": {
+      "summary": "Get a role by ID.",
+      "description": "Retrieve a specific role by its ID.",
+      "get": {
+        "tags": [
+          "role"
+        ],
+        "summary": "Retrieve a role.",
+        "operationId": "getRoleById",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/roleId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Role"
+                },
+                "example": {
+                  "id": "1",
+                  "name": "Administrator",
+                  "isAdministrator": true,
+                  "canManageUsers": true,
+                  "canManageRoles": true,
+                  "canManageAlerts": true
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "Role not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The error message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Role not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "patch": {
+          "summary": "Update a role by ID.",
+          "description": "Update the details of a specific role by its ID.",
+          "tags": [
+            "role"
+          ],
+          "operationId": "updateRoleById",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/roleId"
+            }
+          ],
+          "requestBody": {
+            "description": "The details to update for the role.",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "The updated name of the role."
+                    },
+                    "isAdministrator": {
+                      "type": "boolean",
+                      "description": "If the role is an administrator."
+                    },
+                    "canManageUsers": {
+                      "type": "boolean",
+                      "description": "If the role can manage users."
+                    },
+                    "canManageRoles": {
+                      "type": "boolean",
+                      "description": "If the role can manage roles."
+                    },
+                    "canManageAlerts": {
+                      "type": "boolean",
+                      "description": "If the role can manage alerts."
+                    }
+                  }
+                },
+                "example": {
+                  "name": "Editor",
+                  "isAdministrator": false,
+                  "canManageUsers": true,
+                  "canManageRoles": true,
+                  "canManageAlerts": false
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Role updated successfully.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Role"
+                  },
+                  "example": {
+                    "id": "3",
+                    "name": "Editor",
+                    "isAdministrator": false,
+                    "canManageUsers": true,
+                    "canManageRoles": true,
+                    "canManageAlerts": false
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/ZodError"
+            },
+            "401": {
+              "$ref": "#/components/responses/UnauthorizedError"
+            },
+            "403": {
+              "description": "Access denied.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "description": "The error message."
+                      }
+                    }
+                  },
+                  "example": {
+                    "message": "Access denied"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Role not found.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "description": "The error message."
+                      }
+                    }
+                  },
+                  "example": {
+                    "message": "Role not found"
+                  }
+                }
+              }
+            },
+            "409": {
+              "description": "Conflict - Role name already exists.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "description": "The error message."
+                      }
+                    }
+                  },
+                  "example": {
+                    "message": "Role name already exists"
+                  }
+                }
+              }
+            },
+            "500": {
+              "$ref": "#/components/responses/InternalServerError"
+            }
+          },
+          "security": [
+            {
+              "authorizationToken": []
+            }
+          ]
+        }
       },
       "patch": {
         "summary": "Update a role by ID.",
