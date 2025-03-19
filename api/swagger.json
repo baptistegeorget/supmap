@@ -30,7 +30,7 @@
         ],
         "summary": "Sign in the user.",
         "description": "Sign in the user, with email and password and return a JWT token.",
-        "operationId": "signin",
+        "operationId": "getAuthenticationToken",
         "requestBody": {
           "description": "The credentials of the user.",
           "content": {
@@ -54,7 +54,7 @@
               },
               "example": {
                 "email": "example@example.com",
-                "password": "password"
+                "password": "password123"
               }
             }
           },
@@ -90,6 +90,1322 @@
             "$ref": "#/components/responses/InternalServerError"
           }
         }
+      }
+    },
+    "/auth/google": {
+      "summary": "Google OAuth2 authorization URL.",
+      "description": "Generates a Google OAuth2 authorization URL for the user to sign in.",
+      "get": {
+        "tags": [
+          "authentication"
+        ],
+        "summary": "Get Google OAuth2 authorization URL.",
+        "operationId": "getGoogleAuthUrl",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "description": "The Google OAuth2 authorization URL."
+                    }
+                  }
+                },
+                "example": {
+                  "url": "https://accounts.google.com/o/oauth2/v2/auth?client_id=..."
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/auth/google/callback": {
+      "summary": "Google OAuth2 callback.",
+      "description": "Handles the callback from Google OAuth2 after user authorization.",
+      "get": {
+        "tags": [
+          "authentication"
+        ],
+        "summary": "Handle Google OAuth2 callback.",
+        "operationId": "handleGoogleCallback",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "description": "The authorization code returned by Google.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "description": "The JWT token for the authenticated user."
+                    }
+                  }
+                },
+                "example": {
+                  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEiLCJpYXQiOjE3NDIxNDQ1MDIsImV4cCI6MTc0NDczNjUwMn0.2shxoWMXcladmwG8KacSRdcFuExDCy4P5oefWuvJPUM"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The error message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Code is required"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/users": {
+      "summary": "Get all users.",
+      "description": "Retrieve a list of all users with optional pagination.",
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Retrieve users.",
+        "operationId": "getUsers",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "1",
+                    "email": "example@example.com",
+                    "name": "John Doe",
+                    "password": null,
+                    "picture": "https://example.com/picture.jpg",
+                    "createdAt": "2023-01-01T00:00:00Z"
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ZodError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "authorizationToken": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create a new user.",
+        "description": "Create a new user with the provided details.",
+        "tags": [
+          "user"
+        ],
+        "operationId": "createUser",
+        "requestBody": {
+          "description": "The details of the user to create.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The name of the user."
+                  },
+                  "email": {
+                    "type": "string",
+                    "description": "The email of the user."
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "The password of the user."
+                  },
+                  "picture": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "The profile picture of the user."
+                  }
+                }
+              },
+              "example": {
+                "name": "John Doe",
+                "email": "example@example.com",
+                "password": "password123",
+                "picture": "https://example.com/picture.jpg"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created successfully.",
+            "headers": {
+              "Location": {
+                "description": "The URL of the created user.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                },
+                "example": {
+                  "id": "1",
+                  "email": "example@example.com",
+                  "name": "John Doe",
+                  "password": null,
+                  "picture": "https://example.com/picture.jpg",
+                  "createdAt": "2023-01-01T00:00:00Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ZodError"
+          },
+          "409": {
+            "description": "Conflict - Email already used.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The error message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Email already used"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/users/{userId}": {
+      "summary": "Get a user by ID.",
+      "description": "Retrieve a specific user by their ID.",
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Retrieve a user.",
+        "operationId": "getUserById",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/userId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                },
+                "example": {
+                  "id": "1",
+                  "email": "example@example.com",
+                  "name": "John Doe",
+                  "password": null,
+                  "picture": "https://example.com/picture.jpg",
+                  "createdAt": "2023-01-01T00:00:00Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ZodError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The error message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "User not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "authorizationToken": []
+          }
+        ]
+      },
+      "patch": {
+        "summary": "Update a user by ID.",
+        "description": "Update the details of a specific user by their ID.",
+        "tags": [
+          "user"
+        ],
+        "operationId": "updateUserById",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/userId"
+          }
+        ],
+        "requestBody": {
+          "description": "The details to update for the user.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The updated name of the user."
+                  },
+                  "email": {
+                    "type": "string",
+                    "description": "The updated email of the user."
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "The updated password of the user."
+                  },
+                  "picture": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "The updated profile picture of the user."
+                  }
+                }
+              },
+              "example": {
+                "name": "Jane Doe",
+                "email": "jane.doe@example.com",
+                "password": "newpassword123",
+                "picture": "https://example.com/new-picture.jpg"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                },
+                "example": {
+                  "id": "1",
+                  "email": "jane.doe@example.com",
+                  "name": "Jane Doe",
+                  "password": null,
+                  "picture": "https://example.com/new-picture.jpg",
+                  "createdAt": "2023-01-01T00:00:00Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ZodError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Access denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The error message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Access denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The error message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "User not found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - Email already used.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The error message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Email already used"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "authorizationToken": []
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Delete a user by ID.",
+        "description": "Delete a specific user by their ID.",
+        "tags": [
+          "user"
+        ],
+        "operationId": "deleteUserById",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/userId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User deleted successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The success message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "User deleted"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ZodError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Access denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The error message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Access denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The error message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "User not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "authorizationToken": []
+          }
+        ]
+      }
+    },
+    "/users/{userId}/roles": {
+      "summary": "Get roles of a user.",
+      "description": "Retrieve all roles assigned to a specific user by their ID.",
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Retrieve user roles.",
+        "operationId": "getUserRoles",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/userId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Role"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "1",
+                    "name": "Administrator",
+                    "isAdministrator": true,
+                    "canManageUsers": true,
+                    "canManageRoles": true,
+                    "canManageAlerts": true
+                  },
+                  {
+                    "id": "2",
+                    "name": "User",
+                    "isAdministrator": false,
+                    "canManageUsers": false,
+                    "canManageRoles": false,
+                    "canManageAlerts": false
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ZodError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "User not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The error message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "User not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "authorizationToken": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Assign a role to a user.",
+        "description": "Assign a specific role to a user by their user ID.",
+        "tags": [
+          "user"
+        ],
+        "operationId": "assignRoleToUser",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/userId"
+          }
+        ],
+        "requestBody": {
+          "description": "The role to assign to the user.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "roleId"
+                ],
+                "properties": {
+                  "roleId": {
+                    "type": "string",
+                    "description": "The ID of the role to assign."
+                  }
+                }
+              },
+              "example": {
+                "roleId": "2"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Role assigned successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The success message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Role assigned"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ZodError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Access denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The error message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Access denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User or role not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The error message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "User or role not found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - Role already assigned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The error message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Role already assigned"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "authorizationToken": []
+          }
+        ]
+      }
+    },
+    "/users/{userId}/roles/{roleId}": {
+      "summary": "Get a specific role of a user.",
+      "description": "Retrieve a specific role assigned to a user by their user ID and role ID.",
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Retrieve a user's specific role.",
+        "operationId": "getUserRoleById",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/userId"
+          },
+          {
+            "$ref": "#/components/parameters/roleId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Role"
+                },
+                "example": {
+                  "id": "1",
+                  "name": "Administrator",
+                  "isAdministrator": true,
+                  "canManageUsers": true,
+                  "canManageRoles": true,
+                  "canManageAlerts": true
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ZodError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "description": "User or role not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The error message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "User or role not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "authorizationToken": []
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Remove a role from a user.",
+        "description": "Remove a specific role assigned to a user by their user ID and role ID.",
+        "tags": [
+          "user"
+        ],
+        "operationId": "removeRoleFromUser",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/userId"
+          },
+          {
+            "$ref": "#/components/parameters/roleId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role removed successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The success message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Role removed"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ZodError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Access denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The error message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Access denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User or role not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The error message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "User or role not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "authorizationToken": []
+          }
+        ]
+      }
+    },
+    "/roles": {
+      "summary": "Get all roles.",
+      "description": "Retrieve a list of all roles.",
+      "get": {
+        "tags": [
+          "role"
+        ],
+        "summary": "Retrieve roles.",
+        "operationId": "getRoles",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Role"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "1",
+                    "name": "Administrator",
+                    "isAdministrator": true,
+                    "canManageUsers": true,
+                    "canManageRoles": true,
+                    "canManageAlerts": true
+                  },
+                  {
+                    "id": "2",
+                    "name": "User",
+                    "isAdministrator": false,
+                    "canManageUsers": false,
+                    "canManageRoles": false,
+                    "canManageAlerts": false
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "authorizationToken": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create a new role.",
+        "description": "Create a new role with the provided details.",
+        "tags": [
+          "role"
+        ],
+        "operationId": "createRole",
+        "requestBody": {
+          "description": "The details of the role to create.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "isAdministrator",
+                  "canManageUsers",
+                  "canManageRoles",
+                  "canManageAlerts"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The name of the role."
+                  },
+                  "isAdministrator": {
+                    "type": "boolean",
+                    "description": "If the role is an administrator."
+                  },
+                  "canManageUsers": {
+                    "type": "boolean",
+                    "description": "If the role can manage users."
+                  },
+                  "canManageRoles": {
+                    "type": "boolean",
+                    "description": "If the role can manage roles."
+                  },
+                  "canManageAlerts": {
+                    "type": "boolean",
+                    "description": "If the role can manage alerts."
+                  }
+                }
+              },
+              "example": {
+                "name": "Editor",
+                "isAdministrator": false,
+                "canManageUsers": false,
+                "canManageRoles": true,
+                "canManageAlerts": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Role created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Role"
+                },
+                "example": {
+                  "id": "3",
+                  "name": "Editor",
+                  "isAdministrator": false,
+                  "canManageUsers": false,
+                  "canManageRoles": true,
+                  "canManageAlerts": true
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ZodError"
+          },
+          "409": {
+            "description": "Conflict - Role name already exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The error message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Role name already exists"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "authorizationToken": []
+          }
+        ]
+      },
+      "patch": {
+        "summary": "Update a role by ID.",
+        "description": "Update the details of a specific role by its ID.",
+        "tags": [
+          "role"
+        ],
+        "operationId": "updateRoleById",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/roleId"
+          }
+        ],
+        "requestBody": {
+          "description": "The details to update for the role.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The updated name of the role."
+                  },
+                  "isAdministrator": {
+                    "type": "boolean",
+                    "description": "If the role is an administrator."
+                  },
+                  "canManageUsers": {
+                    "type": "boolean",
+                    "description": "If the role can manage users."
+                  },
+                  "canManageRoles": {
+                    "type": "boolean",
+                    "description": "If the role can manage roles."
+                  },
+                  "canManageAlerts": {
+                    "type": "boolean",
+                    "description": "If the role can manage alerts."
+                  }
+                }
+              },
+              "example": {
+                "name": "Editor",
+                "isAdministrator": false,
+                "canManageUsers": true,
+                "canManageRoles": true,
+                "canManageAlerts": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Role updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Role"
+                },
+                "example": {
+                  "id": "3",
+                  "name": "Editor",
+                  "isAdministrator": false,
+                  "canManageUsers": true,
+                  "canManageRoles": true,
+                  "canManageAlerts": false
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ZodError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Access denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The error message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Access denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Role not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The error message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Role not found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - Role name already exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The error message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Role name already exists"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "authorizationToken": []
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Delete a role by ID.",
+        "description": "Delete a specific role by its ID.",
+        "tags": [
+          "role"
+        ],
+        "operationId": "deleteRoleById",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/roleId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role deleted successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The success message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Role deleted"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ZodError"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "403": {
+            "description": "Access denied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The error message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Access denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Role not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "The error message."
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Role not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        },
+        "security": [
+          {
+            "authorizationToken": []
+          }
+        ]
       }
     }
   },
@@ -480,33 +1796,9 @@
         "description": "The token to authorize the user.",
         "scheme": "bearer",
         "bearerFormat": "JWT"
-      },
-      "googleOAuth2": {
-        "type": "oauth2",
-        "flows": {
-          "authorizationCode": {
-            "authorizationUrl": "https://accounts.google.com/o/oauth2/v2/auth",
-            "tokenUrl": "https://www.googleapis.com/oauth2/v4/token",
-            "scopes": {
-              "https://www.googleapis.com/auth/userinfo.profile": "View your basic profile info",
-              "https://www.googleapis.com/auth/userinfo.email": "View your email address"
-            }
-          }
-        }
       }
     }
   },
-  "security": [
-    {
-      "authorizationToken": []
-    },
-    {
-      "googleOAuth2": [
-        "https://www.googleapis.com/auth/userinfo.profile",
-        "https://www.googleapis.com/auth/userinfo.email"
-      ]
-    }
-  ],
   "tags": [
     {
       "name": "user",
