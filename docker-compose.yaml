@@ -9,44 +9,34 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - database_data:/var/lib/postgresql/data
-      - ./database/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+      - ./database/SUPMAP.sql:/docker-entrypoint-initdb.d/SUPMAP.sql
     ports:
       - "5432:5432"
   
-  routing_engine:
-    build: ./routing-engine
-    volumes:
-      - routing_engine_data:/data/valhalla
-    ports:
-      - "8002:8002"
-
   api:
     build: ./api
     environment:
+      - NODE_ENV=production
       - POSTGRES_HOST=database
       - POSTGRES_PORT=5432
       - POSTGRES_DB=supmap
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - NODE_ENV=production
       - JWT_SECRET=${JWT_SECRET}
       - CRYPTO_KEY=${CRYPTO_KEY}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      - GOOGLE_REDIRECT_URI=http://localhost:8000/v1/auth/google/callback
-      - DEFAULT_ROLE=user
-      - ROUTING_ENGINE_URL=http://routing_engine:8002
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
     ports:
       - "8000:8000"
     depends_on:
       - database
-      - routing_engine
 
   web:
     build: ./web
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/v1
+      - NEXT_PUBLIC_API_BASE_URL=http://api:8000/v1
     ports:
       - "80:3000"
     depends_on:
@@ -54,4 +44,3 @@ services:
 
 volumes:
   database_data:
-  routing_engine_data:
