@@ -21,7 +21,7 @@ export class RouteModel {
         VALUES (
           $1,
           $2,
-          $3
+          $2
         )
         RETURNING
           "id",
@@ -34,7 +34,6 @@ export class RouteModel {
 
       const values = [
         route.graphhopper_response,
-        route.created_by,
         route.created_by
       ];
 
