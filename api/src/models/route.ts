@@ -119,10 +119,7 @@ export class RouteModel {
       const client = await pool.connect();
       const result = await client.query<Route>(query, values);
       client.release();
-
-      if (!result.rowCount || result.rowCount === 0) return null;
-
-      return result.rows[0];
+      return result.rows[0] || null;
     } catch (error) {
       throw error;
     }
