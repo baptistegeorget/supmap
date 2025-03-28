@@ -1,13 +1,10 @@
 import express from "express";
 import { ZodError } from "zod";
 import jwt from "jsonwebtoken";
-import { signInSchema } from "../../../lib/zod.js";
+import { googleCallbackSchema, signInSchema } from "../../../lib/zod.js";
 import { verify, encrypt } from "../../../lib/crypto.js";
 import { oauth2Client as googleOAuth2Client } from "../../../lib/google-auth-library.js";
-import { User } from "../../../models/user.js";
-import { Role } from "../../../models/role.js";
-import { Account } from "../../../models/account.js";
-import { UserRole } from "../../../models/user-role.js";
+import { UserModel } from "../../../models/user.js";
 
 const router = express.Router();
 
@@ -17,27 +14,31 @@ router.post("/signin", async (req, res) => {
 
     const { email, password } = signInSchema.parse(req.body);
 
-    const user = await User.findByEmail(encrypt(email));
+    const userModel = new UserModel();
+    const user = await userModel.getByEmail(encrypt(email));
 
     if (!user || !user.password || !(await verify(password, user.password))) {
-      res.status(401).json({ message: "Unauthorized" });
+      res.status(401).json({ message: "Invalid email or password." });
       return;
     }
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "30 days" });
 
-    res.status(200).json({ token });
+    res.status(200).json({
+      message: "Signed in successfully.",
+      token
+    });
     return;
   } catch (error) {
     if (error instanceof ZodError) {
       res.status(400).json({
-        message: "Invalid request",
+        message: "Invalid request.",
         errors: error.errors
       });
       return;
     }
 
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Internal server error." });
     console.error(error);
     return;
   }
@@ -45,7 +46,7 @@ router.post("/signin", async (req, res) => {
 
 router.get("/google", async (_req, res) => {
   try {
-    const authorizeUrl = googleOAuth2Client.generateAuthUrl({
+    const url = googleOAuth2Client.generateAuthUrl({
       access_type: "offline",
       scope: [
         "https://www.googleapis.com/auth/userinfo.profile",
@@ -53,104 +54,48 @@ router.get("/google", async (_req, res) => {
       ]
     });
 
-    res.status(200).json({ url: authorizeUrl });
+    res.redirect(url);
     return;
   } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Internal server error." });
     console.error(error);
     return;
   }
 });
 
-router.get("/google/callback", async (req, res) => {
+router.post("/google/callback", async (req, res) => {
   try {
     if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET is not set");
-    if (!process.env.DEFAULT_ROLE) throw new Error("DEFAULT_ROLE is not set");
 
-    const code = req.query.code;
-
-    if (!code) {
-      res.status(400).json({ message: "Code is required" });
-      return;
-    }
-
-    if (typeof code !== "string") {
-      res.status(400).json({ message: "Invalid code" });
-      return;
-    }
+    const { code } = googleCallbackSchema.parse(req.body);
 
     const { tokens } = await googleOAuth2Client.getToken(code);
 
-    if (!tokens.access_token) {
-      res.status(400).json({ message: "Access token is required" });
-      return;
-    }
-
     googleOAuth2Client.setCredentials(tokens);
 
-    const userInfo = await googleOAuth2Client.request<GoogleUserInfoResponse>({
-      url: "https://www.googleapis.com/oauth2/v3/userinfo"
-    });
+    const userInfo = await googleOAuth2Client.request<GoogleUserInfoResponse>({ url: "https://www.googleapis.com/oauth2/v3/userinfo" });
 
-    if (!userInfo.data.email || !userInfo.data.name || !userInfo.data.picture || !userInfo.data.sub) {
-      res.status(400).json({ message: "Invalid user info" });
-      return;
-    }
-
-    let user = await User.findByEmail(encrypt(userInfo.data.email));
+    const userModel = new UserModel();
+    let user = await userModel.getByEmail(encrypt(userInfo.data.email));
 
     if (!user) {
-      user = await User.create(
-        encrypt(userInfo.data.email),
-        encrypt(userInfo.data.name),
-        undefined,
-        encrypt(userInfo.data.picture)
-      );
-
-      let role = await Role.findByName(process.env.DEFAULT_ROLE);
-
-      if (!role) {
-        role = await Role.create(process.env.DEFAULT_ROLE);
-      }
-
-      await UserRole.create(user.id, role.id);
-    }
-
-    const accounts = await Account.findByUserId(user.id);
-
-    if (!accounts.find(account => account.provider === "google")) {
-      if (!tokens.refresh_token) {
-        res.status(400).json({ message: "Refresh token is required" });
-        return;
-      }
-
-      if (!tokens.expiry_date) {
-        res.status(400).json({ message: "Expiry date is required" });
-        return;
-      }
-
-      if (!tokens.scope) {
-        res.status(400).json({ message: "Scope is required" });
-        return;
-      }
-
-      await Account.create(
-        user.id,
-        "google",
-        encrypt(userInfo.data.sub),
-        encrypt(tokens.access_token),
-        encrypt(tokens.refresh_token),
-        new Date(tokens.expiry_date),
-        tokens.scope
-      );
+      user = await userModel.create({
+        email: encrypt(userInfo.data.email),
+        name: userInfo.data.name ? encrypt(userInfo.data.name) : encrypt(userInfo.data.email),
+        password: null,
+        picture: userInfo.data.picture ? encrypt(userInfo.data.picture) : null
+      });
     }
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "30 days" });
 
-    res.status(200).json({ token });
+    res.status(200).json({ 
+      message: "Signed in successfully.",
+      token 
+    });
     return;
   } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Internal server error." });
     console.error(error);
     return;
   }
