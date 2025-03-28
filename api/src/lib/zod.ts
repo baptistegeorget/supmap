@@ -29,3 +29,7 @@ export const signInSchema = zod.object({
 export const googleCallbackSchema = zod.object({
   code: zod.string({ required_error: "Code is required" })
 });
+
+export const createRouteSchema = zod.object({
+  grahhopperResponse: zod.object({}).passthrough()
+});

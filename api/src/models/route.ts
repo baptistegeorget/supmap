@@ -73,6 +73,33 @@ export class RouteModel {
     }
   }
 
+  async getByUserId(userId: string, limit: number = 10, offset: number = 0): Promise<Route[]> {
+    try {
+      const query = `
+        SELECT
+          "id",
+          "graphhopper_response",
+          "created_on",
+          "created_by",
+          "modified_on",
+          "modified_by"
+        FROM "route"
+        WHERE "created_by" = $1
+        LIMIT $2 
+        OFFSET $3
+      `;
+
+      const values = [userId, limit, offset];
+
+      const client = await pool.connect();
+      const result = await client.query<Route>(query, values);
+      client.release();
+      return result.rows;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async getById(id: string): Promise<Route | null> {
     try {
       const query = `
@@ -129,7 +156,7 @@ export class RouteModel {
       return result.rows[0];
     } catch (error) {
       throw error;
-    } 
+    }
   }
 
   async delete(id: string): Promise<void> {
