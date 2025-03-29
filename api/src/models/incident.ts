@@ -109,6 +109,43 @@ export class IncidentModel {
     }
   }
 
+  async getByLocation(location: { type: "Point"; coordinates: [number, number] }, radius: number = 1000, limit: number = 10, offset: number = 0): Promise<Incident[]> {
+    try {
+      const query = `
+        SELECT
+          "id",
+          "type",
+          ST_AsGeoJSON("location") AS "location",
+          "created_on",
+          "created_by",
+          "modified_on",
+          "modified_by"
+        FROM "incident"
+        WHERE ST_DWithin(
+          "location",
+          ST_GeomFromGeoJSON($1),
+          $2
+        )
+        LIMIT $3 
+        OFFSET $4
+      `;
+
+      const values = [
+        location,
+        radius,
+        limit,
+        offset
+      ];
+
+      const client = await pool.connect();
+      const result = await client.query<Incident>(query, values);
+      client.release();
+      return result.rows;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async getById(id: string): Promise<Incident | null> {
     try {
       const query = `
