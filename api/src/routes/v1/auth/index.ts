@@ -2,9 +2,10 @@ import express from "express";
 import { ZodError } from "zod";
 import jwt from "jsonwebtoken";
 import { googleCallbackSchema, signInSchema } from "../../../lib/zod.js";
-import { verify, encrypt } from "../../../lib/crypto.js";
+import { verify, encrypt, decrypt } from "../../../lib/crypto.js";
 import { oauth2Client as googleOAuth2Client } from "../../../lib/google-auth-library.js";
-import { UserModel } from "../../../models/user.js";
+import { User, UserModel } from "../../../models/user.js";
+import { auth } from "../../../middlewares/auth.js";
 
 const router = express.Router();
 
@@ -93,6 +94,24 @@ router.post("/google/callback", async (req, res) => {
       message: "Signed in successfully.",
       token 
     });
+    return;
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error." });
+    console.error(error);
+    return;
+  }
+});
+
+router.get("/me", auth, async (req, res) => {
+  try {
+    const authUser = res.locals.auth.user as User;
+
+    authUser.email = decrypt(authUser.email);
+    authUser.name = decrypt(authUser.name);
+    authUser.password = null;
+    authUser.picture = authUser.picture ? decrypt(authUser.picture) : null;
+
+    res.status(200).json(authUser);
     return;
   } catch (error) {
     res.status(500).json({ message: "Internal server error." });
