@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Cookie from 'js-cookie';
+
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -39,6 +41,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -48,6 +51,10 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
 
       const data = await response.json();
       console.log(`${isSignUp ? "Inscription" : "Connexion"} réussie:`, data.token);
+
+          // Stocker le token dans un cookie
+      Cookie.set('auth_token', data.token, { expires: 7, secure: true, sameSite: 'Strict' });
+
       onClose();
     } catch (error) {
       setError(error instanceof Error ? error.message : "Une erreur s'est produite");
