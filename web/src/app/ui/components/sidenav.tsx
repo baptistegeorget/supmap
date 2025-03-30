@@ -8,13 +8,39 @@ import clsx from "clsx";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 import LoginModal from "./LoginModal";
+import Cookie from "js-cookie";
 
 function SideNavContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null);
 
-  // Gérer le retour de l'authentification Google
+  useEffect(() => {
+    const token = Cookie.get("auth_token");
+    console.log("Token récupéré:", token);
+    if (token) {
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/me`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.name) {
+            setUserName(data.name);
+          }
+        })
+        .catch(() => {
+          Cookie.remove("auth_token"); // Supprimer le token si invalide
+          setUserName(null);
+        });
+    }
+  }, []);
+
   useEffect(() => {
     const code = searchParams.get("code");
     if (code) {
@@ -22,49 +48,49 @@ function SideNavContent() {
     }
   }, [searchParams]);
 
-  // Ouvrir la modale de connexion
   const handleLoginClick = () => {
     setIsLoginModalOpen(true);
   };
 
-  // Fermer la modale de connexion
   const handleCloseModal = () => {
     setIsLoginModalOpen(false);
   };
 
-  // Gérer le callback Google
   const handleGoogleCallback = async (code: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/google/callback?code=${code}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/google/callback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+        credentials: "include",
+      });
       if (!response.ok) {
         throw new Error("Échec de la connexion Google");
       }
 
       const data = await response.json();
-      console.log("Connexion Google réussie:", data.token);
-      // Vous pouvez stocker le token dans le localStorage ou un état global
+      Cookie.set("auth_token", data.token, { expires: 7, secure: true, sameSite: "Strict" });
       localStorage.setItem("token", data.token);
-      setIsLoginModalOpen(false); // Fermer la modale après la connexion
+      setUserName(data.name);
+      setIsLoginModalOpen(false);
+      window.location.href = "/";
     } catch (error) {
       console.error("Erreur lors de la connexion Google:", error);
     }
   };
 
+  const handleLogout = () => {
+    Cookie.remove("auth_token");
+    setUserName(null);
+    window.location.reload(); // Recharge la page pour appliquer les changements
+  };
+
   return (
     <div className="flex h-full flex-col px-3 py-4 md:px-2">
       {/* Logo */}
-      <Link
-        className="mb-2 flex h-20 items-center justify-center rounded-md bg-gray-50 p-4 md:h-40"
-        href="/"
-      >
+      <Link className="mb-2 flex h-20 items-center justify-center rounded-md bg-gray-50 p-4 md:h-40" href="/">
         <div className="flex items-center justify-center w-32 h-full md:w-40">
-          <Image
-            src="/logo_SupMap.svg"
-            alt="Logo de l'application"
-            width={100}
-            height={116}
-            priority
-          />
+          <Image src="/logo_SupMap.svg" alt="Logo de l'application" width={100} height={116} priority />
         </div>
       </Link>
 
@@ -79,8 +105,7 @@ function SideNavContent() {
           className={clsx(
             "flex h-[48px] grow items-center justify-center gap-2 rounded-md p-3 text-sm font-medium hover:bg-customPurple hover:bg-opacity-15 hover:text-customOrange md:flex-none md:justify-start md:p-2 md:px-3",
             {
-              "bg-customPurple bg-opacity-15 text-customOrange":
-                pathname === "/settings",
+              "bg-customPurple bg-opacity-15 text-customOrange": pathname === "/settings",
               "bg-gray-50 text-customPurple": pathname !== "/settings",
             }
           )}
@@ -89,14 +114,26 @@ function SideNavContent() {
           <div className="hidden md:block">Paramètres</div>
         </Link>
 
-        {/* Bouton de connexion */}
-        <button
-          onClick={handleLoginClick}
-          className="flex h-[48px] w-full grow items-center text-customPurple justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-customPurple hover:bg-opacity-15 hover:text-customOrange md:flex-none md:justify-start md:p-2 md:px-3"
-        >
-          <UserIcon className="w-6" />
-          <div className="hidden md:block">Connexion</div>
-        </button>
+        {/* Bouton connexion/déconnexion */}
+        {userName ? (
+          <div className="flex flex-col items-center md:items-start">
+            <span className="text-customPurple font-medium">{userName}</span>
+            <button
+              onClick={handleLogout}
+              className="text-sm text-gray-500 hover:text-red-500"
+            >
+              Déconnexion
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={handleLoginClick}
+            className="flex h-[48px] w-full grow items-center text-customPurple justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-customPurple hover:bg-opacity-15 hover:text-customOrange md:flex-none md:justify-start md:p-2 md:px-3"
+          >
+            <UserIcon className="w-6" />
+            <div className="hidden md:block">Connexion</div>
+          </button>
+        )}
       </div>
 
       {/* Modale de connexion */}
