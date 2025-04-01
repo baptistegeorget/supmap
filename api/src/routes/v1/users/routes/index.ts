@@ -36,9 +36,11 @@ router.get("/:routeId", async (req, res) => { });
 
 router.post("/", async (req, res) => {
   try {
+    if (!process.env.GRAPHHOPPER_API_KEY) throw new Error("GraphHopper API key is not set");
+
     const authUser = res.locals.authUser as User;
     const userId = idSchema.parse((req.params as { userId: string }).userId);
-    const { grahhopperResponse } = createRouteSchema.parse(req.body);
+    const { profile, points } = createRouteSchema.parse(req.body);
 
     if (authUser.id !== userId && authUser.role !== "admin") {
       res.status(403).json({ message: "Access denied." });
@@ -53,10 +55,28 @@ router.post("/", async (req, res) => {
       return;
     }
 
+    const response = await fetch(`https://graphhopper.com/api/1/route?key=${process.env.GRAPHHOPPER_API_KEY}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        profile,
+        points,
+        locale: "fr",
+        instructions: true,
+        algorithm: "alternative_route",
+        max_paths: 3
+      })
+    });
+
+    const data = await response.json();
+
     const routeModel = new RouteModel();
+    
     const route = await routeModel.create({
-      graphhopper_response: grahhopperResponse,
-      created_by: authUser.id
+      graphhopper_response: data,
+      created_by: userId
     });
 
     res.status(201).json(route);

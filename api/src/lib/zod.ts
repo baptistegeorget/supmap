@@ -31,5 +31,20 @@ export const googleCallbackSchema = zod.object({
 });
 
 export const createRouteSchema = zod.object({
-  grahhopperResponse: zod.object({}).passthrough()
+  profile: zod.enum([
+    "car", 
+    "car_avoid_motorway",
+    "car_avoid_ferry",
+    "car_avoid_toll",
+    "small_truck",
+    "truck",
+    "scooter",
+    "foot",
+    "hike",
+    "bike", 
+    "mtb",
+    "racingbike",
+    "ecargobike"
+  ], { required_error: "Profile is required" }),
+  points: zod.array(zod.tuple([zod.number(), zod.number()]), { required_error: "Points are required" }).min(2, { message: "At least 2 points are required" })
 });
