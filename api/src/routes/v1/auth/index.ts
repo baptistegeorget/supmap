@@ -104,7 +104,7 @@ router.post("/google/callback", async (req, res) => {
 
 router.get("/me", auth, async (req, res) => {
   try {
-    const authUser = res.locals.auth.user as User;
+    const authUser = res.locals.authUser as User;
 
     authUser.email = decrypt(authUser.email);
     authUser.name = decrypt(authUser.name);

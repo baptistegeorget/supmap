@@ -36,7 +36,7 @@ router.get("/:routeId", async (req, res) => { });
 
 router.post("/", async (req, res) => {
   try {
-    const authUser = res.locals.auth.user as User;
+    const authUser = res.locals.authUser as User;
     const userId = idSchema.parse((req.params as { userId: string }).userId);
     const { grahhopperResponse } = createRouteSchema.parse(req.body);
 

@@ -118,7 +118,7 @@ router.post("/", async (req, res) => {
 
 router.patch("/:userId", auth, async (req, res) => {
   try {
-    const authUser = res.locals.auth.user as User;
+    const authUser = res.locals.authUser as User;
     const userId = idSchema.parse(req.params.userId);
     const { email, name, password, picture } = updateUserSchema.parse(req.body);
 
@@ -175,7 +175,7 @@ router.patch("/:userId", auth, async (req, res) => {
 
 router.delete("/:userId", auth, async (req, res) => {
   try {
-    const authUser = res.locals.auth.user as User;
+    const authUser = res.locals.authUser as User;
     const userId = idSchema.parse(req.params.userId);
 
     if (authUser.id !== userId && authUser.role !== "admin") {
