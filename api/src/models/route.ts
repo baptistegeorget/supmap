@@ -2,7 +2,7 @@ import { pool } from "../lib/pg.js";
 
 export interface Route {
   id: string;
-  graphhopper_response: object;
+  graphhopper_response: any;
   created_on: string;
   created_by: string;
   modified_on: string;
