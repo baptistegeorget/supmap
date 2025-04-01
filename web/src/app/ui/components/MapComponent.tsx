@@ -1,111 +1,79 @@
-import { useEffect, useRef } from "react";
-import { Map as OLMap, View } from "ol";
-import TileLayer from "ol/layer/Tile";
-import VectorLayer from "ol/layer/Vector";
-import VectorSource from "ol/source/Vector";
-import OSM from "ol/source/OSM";
-import { fromLonLat } from "ol/proj";
-import Feature from "ol/Feature";
-import Point from "ol/geom/Point";
-import LineString from "ol/geom/LineString";
-import { Icon, Style, Stroke } from "ol/style";
+import { useEffect, useRef, useState } from "react";
 
 interface MapComponentProps {
   position: [number, number] | null;
   route: [number, number][] | null;
-  mapRef: React.RefObject<OLMap | null>; // Ajouter mapRef aux props
+  mapRef: React.RefObject<google.maps.Map | null>;
 }
 
+const loadGoogleMaps = (callback: () => void) => {
+  if (window.google) {
+    callback(); // Si Google Maps est déjà chargé, on l’utilise directement
+    return;
+  }
+  const script = document.createElement("script");
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`;
+  console.log("Google Maps script loaded:", script.src);
+  script.async = true;
+  script.defer = true;
+  script.onload = callback;
+  document.head.appendChild(script);
+};
+
 const MapComponent = ({ position, route, mapRef }: MapComponentProps) => {
-  const markerLayerRef = useRef<VectorLayer | null>(null);
-  const routeLayerRef = useRef<VectorLayer | null>(null);
+  const mapDivRef = useRef<HTMLDivElement | null>(null);
+  const markerRef = useRef<google.maps.Marker | null>(null);
+  const routePathRef = useRef<google.maps.Polyline | null>(null);
+  const [isGoogleMapsLoaded, setGoogleMapsLoaded] = useState(false);
 
-  // Initialiser la carte
   useEffect(() => {
-    if (position) {
-      const map = new OLMap({
-        target: "map",
-        layers: [
-          new TileLayer({
-            source: new OSM(),
-          }),
-        ],
-        view: new View({
-          center: fromLonLat(position),
-          zoom: 13,
-        }),
-        controls: [], // Supprimer les contrôles par défaut
-      });
-      mapRef.current = map; // Assigner la carte à mapRef
+    loadGoogleMaps(() => setGoogleMapsLoaded(true));
+  }, []);
 
-      // Couche pour les marqueurs
-      const markerSource = new VectorSource();
-      const markerLayer = new VectorLayer({
-        source: markerSource,
+  useEffect(() => {
+    if (isGoogleMapsLoaded && position && mapDivRef.current) {
+      const map = new google.maps.Map(mapDivRef.current, {
+        center: { lat: position[1], lng: position[0] },
+        zoom: 13,
+        disableDefaultUI: true,
       });
-      map.addLayer(markerLayer);
-      markerLayerRef.current = markerLayer;
-
-      // Couche pour l'itinéraire
-      const routeSource = new VectorSource();
-      const routeLayer = new VectorLayer({
-        source: routeSource,
-        style: new Style({
-          stroke: new Stroke({
-            color: "#FF0000",
-            width: 3,
-          }),
-        }),
-      });
-      map.addLayer(routeLayer);
-      routeLayerRef.current = routeLayer;
-
-      return () => {
-        if (map.getTargetElement()) {
-          map.setTarget(undefined);
-        }
-      };
+      mapRef.current = map;
     }
-  }, [position, mapRef]);
+  }, [isGoogleMapsLoaded, position, mapRef]);
 
-  // Mettre à jour le marqueur
   useEffect(() => {
-    if (position && markerLayerRef.current) {
-      const markerSource = markerLayerRef.current.getSource();
-      if (markerSource) {
-        markerSource.clear();
-        const marker = new Feature({
-          geometry: new Point(fromLonLat(position)),
-        });
-        marker.setStyle(
-          new Style({
-            image: new Icon({
-              src: "/pins_supmap.png",
-              anchor: [0.5, 1],
-              scale: 0.025,
-            }),
-          })
-        );
-        markerSource.addFeature(marker);
+    if (isGoogleMapsLoaded && position && mapRef.current) {
+      if (markerRef.current) {
+        markerRef.current.setMap(null);
       }
+      markerRef.current = new google.maps.Marker({
+        position: { lat: position[1], lng: position[0] },
+        map: mapRef.current,
+        icon: {
+          url: "/pins_supmap.png",
+          scaledSize: new google.maps.Size(27, 32),
+        },
+      });
     }
-  }, [position]);
+  }, [isGoogleMapsLoaded, position]);
 
-  // Mettre à jour l'itinéraire
   useEffect(() => {
-    if (route && routeLayerRef.current) {
-      const routeSource = routeLayerRef.current.getSource();
-      if (routeSource) {
-        routeSource.clear();
-        const routeFeature = new Feature({
-          geometry: new LineString(route),
-        });
-        routeSource.addFeature(routeFeature);
+    if (isGoogleMapsLoaded && route && mapRef.current) {
+      if (routePathRef.current) {
+        routePathRef.current.setMap(null);
       }
+      routePathRef.current = new google.maps.Polyline({
+        path: route.map(([lng, lat]) => ({ lat, lng })),
+        geodesic: true,
+        strokeColor: "#FF0000",
+        strokeOpacity: 1.0,
+        strokeWeight: 3,
+        map: mapRef.current,
+      });
     }
-  }, [route]);
+  }, [isGoogleMapsLoaded, route]);
 
-  return <div id="map" className="h-full w-full z-0"></div>;
+  return <div ref={mapDivRef} className="h-full w-full z-0"></div>;
 };
 
 export default MapComponent;

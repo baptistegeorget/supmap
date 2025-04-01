@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from "react";
-import { Map as OLMap } from "ol";
 import MapComponent from "./components/MapComponent";
 import CustomZoomControl from "./components/CustomZoomControl";
 import LocateButton from "./components/LocateButton";
@@ -17,7 +16,8 @@ const MapPage = () => {
   const [isPreviewed, setIsPreviewed] = useState(false);
 
   // Référence à la carte
-  const mapRef = useRef<OLMap | null>(null);
+  const mapRef = useRef<google.maps.Map | null>(null);
+
 
   // Récupérer la position actuelle de l'utilisateur
   useEffect(() => {
