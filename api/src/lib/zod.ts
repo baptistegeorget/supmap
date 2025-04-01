@@ -18,6 +18,7 @@ export const updateUserSchema = zod.object({
   email: emailSchema.optional(),
   name: nameSchema.optional(),
   password: passwordSchema.optional(),
+  currentPassword: passwordSchema.optional(),
   picture: pictureSchema.optional()
 });
 
@@ -32,7 +33,7 @@ export const googleCallbackSchema = zod.object({
 
 export const createRouteSchema = zod.object({
   profile: zod.enum([
-    "car", 
+    "car",
     "car_avoid_motorway",
     "car_avoid_ferry",
     "car_avoid_toll",
@@ -41,7 +42,7 @@ export const createRouteSchema = zod.object({
     "scooter",
     "foot",
     "hike",
-    "bike", 
+    "bike",
     "mtb",
     "racingbike",
     "ecargobike"

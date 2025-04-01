@@ -1,7 +1,7 @@
 import express from "express";
 import { ZodError } from "zod";
 import { createUserSchema, idSchema, positiveIntegerSchema, updateUserSchema } from "../../../lib/zod.js";
-import { decrypt, encrypt, hash } from "../../../lib/crypto.js";
+import { decrypt, encrypt, hash, verify } from "../../../lib/crypto.js";
 import { auth } from "../../../middlewares/auth.js";
 import { UserModel, User } from "../../../models/user.js";
 import routesRouter from "./routes/index.js";
@@ -120,7 +120,7 @@ router.patch("/:userId", auth, async (req, res) => {
   try {
     const authUser = res.locals.authUser as User;
     const userId = idSchema.parse(req.params.userId);
-    const { email, name, password, picture } = updateUserSchema.parse(req.body);
+    const { email, name, password, currentPassword, picture } = updateUserSchema.parse(req.body);
 
     if (authUser.id !== userId && authUser.role !== "admin") {
       res.status(403).json({ message: "Access denied." });
@@ -140,6 +140,23 @@ router.patch("/:userId", auth, async (req, res) => {
 
       if (existingUser) {
         res.status(409).json({ message: "Email already used." });
+        return;
+      }
+    }
+
+    if (password) {
+      if (!user.password) {
+        res.status(400).json({ message: "You don't have a password to modify. Please reset your password to set a new one." });
+        return;
+      }
+
+      if (!currentPassword) {
+        res.status(400).json({ message: "Current password is required to modified password." });
+        return;
+      }
+
+      if (!(await verify(currentPassword, user.password))) {
+        res.status(401).json({ message: "Invalid current password." });
         return;
       }
     }
