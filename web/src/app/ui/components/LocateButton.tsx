@@ -1,10 +1,8 @@
 import React from "react";
-import { Map as OLMap } from "ol";
-import { fromLonLat } from "ol/proj";
 
 interface LocateButtonProps {
   setPosition: React.Dispatch<React.SetStateAction<[number, number] | null>>;
-  mapRef: React.RefObject<OLMap | null>;
+  mapRef: React.RefObject<google.maps.Map | null>;
 }
 
 const LocateButton = ({ setPosition, mapRef }: LocateButtonProps) => {
@@ -17,12 +15,9 @@ const LocateButton = ({ setPosition, mapRef }: LocateButtonProps) => {
 
           // Recentrer la carte sur la position de l'utilisateur
           if (mapRef.current) {
-            const view = mapRef.current.getView();
-            view.animate({
-              center: fromLonLat([longitude, latitude]),
-              zoom: 13,
-              duration: 1000, // Animation fluide sur 1 seconde
-            });
+            const newCenter = new google.maps.LatLng(latitude, longitude);
+            mapRef.current.setCenter(newCenter);
+            mapRef.current.setZoom(13);
           }
         },
         (error) => {
