@@ -1,31 +1,24 @@
 import React from "react";
-import { Map as OLMap } from "ol";
 
 interface CustomZoomControlProps {
-  mapRef: React.RefObject<OLMap | null>;
+  mapRef: React.RefObject<google.maps.Map | null>;
 }
 
 const CustomZoomControl = ({ mapRef }: CustomZoomControlProps) => {
   const handleZoomIn = () => {
     if (mapRef.current) {
-      const view = mapRef.current.getView();
-      if (view) {
-        const currentZoom = view.getZoom();
-        if (typeof currentZoom === "number") {
-          view.setZoom(currentZoom + 1);
-        }
+      const currentZoom = mapRef.current.getZoom();
+      if (typeof currentZoom === "number") {
+        mapRef.current.setZoom(currentZoom + 1);
       }
     }
   };
 
   const handleZoomOut = () => {
     if (mapRef.current) {
-      const view = mapRef.current.getView();
-      if (view) {
-        const currentZoom = view.getZoom();
-        if (typeof currentZoom === "number") {
-          view.setZoom(currentZoom - 1);
-        }
+      const currentZoom = mapRef.current.getZoom();
+      if (typeof currentZoom === "number") {
+        mapRef.current.setZoom(currentZoom - 1);
       }
     }
   };

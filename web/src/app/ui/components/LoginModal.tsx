@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import Cookie from 'js-cookie';
+import Cookie from "js-cookie";
 
 
 interface LoginModalProps {
@@ -54,6 +53,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
 
           // Stocker le token dans un cookie
       Cookie.set('auth_token', data.token, { expires: 7, secure: true, sameSite: 'Strict' });
+      window.location.href = "/";
 
       onClose();
     } catch (error) {
