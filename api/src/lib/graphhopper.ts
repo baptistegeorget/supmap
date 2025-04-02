@@ -350,9 +350,7 @@ export async function getRoute(routeOptions: RouteOptions): Promise<RouteRespons
       throw new Error(`GraphHopper API error: ${response.status} ${response.statusText}`);
     }
 
-    const body: RouteResponseBody = await response.json();
-
-    return body;
+    return await response.json();
   } catch (error) {
     throw error;
   }
