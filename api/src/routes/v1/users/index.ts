@@ -5,6 +5,7 @@ import { decrypt, encrypt, hash, verify } from "../../../lib/crypto.js";
 import { auth } from "../../../middlewares/auth.js";
 import { UserModel, User } from "../../../models/user.js";
 import routesRouter from "./routes/index.js";
+import incidentsRouter from "./incidents/index.js";
 
 const router = express.Router();
 
@@ -228,5 +229,6 @@ router.delete("/:userId", auth, async (req, res) => {
 });
 
 router.use("/:userId/routes", auth, routesRouter);
+router.use("/:userId/incidents", auth, incidentsRouter)
 
 export default router;

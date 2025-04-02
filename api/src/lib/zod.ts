@@ -49,3 +49,27 @@ export const createRouteSchema = zod.object({
   ], { required_error: "Profile is required" }),
   points: zod.array(zod.tuple([zod.number(), zod.number()]), { required_error: "Points are required" }).min(2, { message: "At least 2 points are required" })
 });
+
+export const createIncidentSchema = zod.object({
+  type: zod.enum([
+    "accident",
+    "traffic_jam",
+    "road_closed"
+  ], { required_error: "Type is required" }),
+  location: zod.object({
+    type: zod.literal("Point"),
+    coordinates: zod.tuple([zod.number(), zod.number()])
+  }, { required_error: "Location is required" })
+});
+
+export const updateIncidentSchema = zod.object({
+  type: zod.enum([
+    "accident",
+    "traffic_jam",
+    "road_closed"
+  ], { required_error: "Type is required" }).optional(),
+  location: zod.object({
+    type: zod.literal("Point"),
+    coordinates: zod.tuple([zod.number(), zod.number()])
+  }, { required_error: "Location is required" }).optional()
+});

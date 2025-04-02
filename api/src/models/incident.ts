@@ -2,7 +2,7 @@ import { pool } from "../lib/pg.js";
 
 export interface Incident {
   id: string;
-  type: "accident" | "traffic_jam" | "road_work" | "road_closure" | "roadside_inspection" | "deviation" | "stationary_vehicle" | "other";
+  type: "accident" | "traffic_jam" | "road_closed";
   location: {
     type: "Point";
     coordinates: [number, number];
