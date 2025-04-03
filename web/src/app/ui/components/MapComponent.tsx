@@ -39,6 +39,8 @@ const MapComponent = ({ position, route, mapRef }: MapComponentProps) => {
   const [isGoogleMapsLoaded, setGoogleMapsLoaded] = useState(false);
   const [selectedRouteIndex, setSelectedRouteIndex] = useState<number | null>(null);
   const allMarkersRef = useRef<google.maps.Marker[]>([]); // Stocke tous les marqueurs (départ, arrivée, temps)
+  const allPopupsRef = useRef<google.maps.OverlayView[]>([]);
+
 
   useEffect(() => {
     loadGoogleMaps(() => setGoogleMapsLoaded(true));
@@ -57,6 +59,61 @@ const MapComponent = ({ position, route, mapRef }: MapComponentProps) => {
 
   useEffect(() => {
     if (isGoogleMapsLoaded && route && mapRef.current) {
+      class CustomPopup extends google.maps.OverlayView {
+        position: google.maps.LatLng;
+        content: string;
+        div: HTMLDivElement | null;
+    
+        constructor(position: google.maps.LatLng, content: string, map: google.maps.Map) {
+          super();
+          this.position = position;
+          this.content = content;
+          this.div = null;
+          this.setMap(map);
+        }
+    
+        onAdd() {
+          this.div = document.createElement("div");
+          this.div.innerHTML = this.content;
+          this.div.style.position = "absolute";
+          this.div.style.transform = "translate(-50%, -100%)";
+          this.div.style.zIndex = "1"; // Définir un zIndex de base
+    
+          // Gestion du clic pour mettre le popup au premier plan
+          this.div.addEventListener("click", () => {
+            allPopupsRef.current.forEach((popup) => {
+              const customPopup = popup as CustomPopup; // ✅ Cast explicite
+              if (customPopup.div) customPopup.div.style.zIndex = "1";// Réinitialiser les autres popups
+            });
+            this.div!.style.zIndex = "100"; // Amener le popup cliqué au premier plan
+          });
+    
+          const panes = this.getPanes();
+          if (panes) {
+            panes.floatPane.appendChild(this.div);
+          }
+        }
+    
+    
+        draw() {
+          const projection = this.getProjection();
+          if (!projection || !this.div) return;
+    
+          const position = projection.fromLatLngToDivPixel(this.position);
+          if (position) {
+            this.div.style.left = `${position.x}px`;
+            this.div.style.top = `${position.y}px`;
+          }
+        }
+    
+        onRemove() {
+          if (this.div && this.div.parentNode) {
+            this.div.parentNode.removeChild(this.div);
+            this.div = null;
+          }
+        }
+      }
+
       const decodePolyline = (encoded: string) => {
         if (google.maps.geometry && google.maps.geometry.encoding) {
           const path = google.maps.geometry.encoding.decodePath(encoded);
@@ -73,9 +130,11 @@ const MapComponent = ({ position, route, mapRef }: MapComponentProps) => {
       // 🧹 Nettoyage des anciennes polylines et marqueurs
       routePathRefs.current.forEach((polyline) => polyline.setMap(null));
       allMarkersRef.current.forEach((marker) => marker.setMap(null));
+      allPopupsRef.current.forEach((marker) => marker.setMap(null));
   
       routePathRefs.current = [];
       allMarkersRef.current = [];
+      allPopupsRef.current = [];
   
       const bounds = new google.maps.LatLngBounds();
   
@@ -92,13 +151,14 @@ const MapComponent = ({ position, route, mapRef }: MapComponentProps) => {
             clickable: true,
             zIndex: index === selectedRouteIndex ? 100 : 0,
           });
-  
+      
           routePathRefs.current.push(polyline);
           decodedRoute.forEach((point) => bounds.extend(new google.maps.LatLng(point.lat, point.lng)));
-  
+      
           const startPoint = decodedRoute[0];
           const endPoint = decodedRoute[decodedRoute.length - 1];
-  
+      
+          // ✅ Marqueur pour le point de départ
           const startMarker = new google.maps.Marker({
             position: { lat: startPoint.lat, lng: startPoint.lng },
             map: mapRef.current,
@@ -108,7 +168,8 @@ const MapComponent = ({ position, route, mapRef }: MapComponentProps) => {
             },
             title: "Point de départ",
           });
-  
+      
+          // ✅ Marqueur pour le point d'arrivée
           const endMarker = new google.maps.Marker({
             position: { lat: endPoint.lat, lng: endPoint.lng },
             map: mapRef.current,
@@ -118,48 +179,55 @@ const MapComponent = ({ position, route, mapRef }: MapComponentProps) => {
             },
             title: "Point d'arrivée",
           });
-  
-          // ✅ Ajouter les marqueurs à la liste pour une suppression propre
+      
+          // Ajout des marqueurs à la liste pour suppression propre
           allMarkersRef.current.push(startMarker, endMarker);
-  
-          // 🔹 Ajout du label pour la durée du trajet
+      
+          // 🔹 Ajout du CustomPopup pour la durée/distance
           if (singleRoute.time && singleRoute.distance) {
             const middleIndex = Math.floor(decodedRoute.length / 2);
             const middlePoint = decodedRoute[middleIndex];
-  
+      
             const durationLabel = formatDuration(singleRoute.time);
+            const distanceInKm = (singleRoute.distance / 1000).toFixed(2);
+            
+            if (mapRef.current) {
+                const infoPopup = new CustomPopup(
+                new google.maps.LatLng(middlePoint.lat, middlePoint.lng),
+                `<div style="
+                  background: white;
+                  padding: 8px;
+                  border-radius: 8px;
+                  box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
+                  text-align: center;
+                  font-size: 14px;
+                  font-weight: bold;
+                ">
+                  <span style="color: #3D2683;">${durationLabel}</span> <br>
+                  <span style="color: #555;">${distanceInKm} km</span>
+                </div>`,
+                mapRef.current
+              );
 
-            // const distanceInKm = (singleRoute.distance / 1000).toFixed(2); // Arrondi à 2 décimales
-
-            // const infoLabel = `${durationLabel}
-            // ${distanceInKm} km`; 
-  
-            const timeMarker = new google.maps.Marker({
-              position: { lat: middlePoint.lat, lng: middlePoint.lng },
-              map: mapRef.current,
-              label: {
-                text: durationLabel,
-                color: "#3D2683",
-                fontSize: "12px",
-                fontWeight: "bold",
-              },
-              icon: {
-                path: google.maps.SymbolPath.CIRCLE,
-                fillColor: "#FFFFFF",
-                fillOpacity: 0.8,
-                strokeWeight: 0,
-                scale: 20,
-              },
-            });
-  
-            allMarkersRef.current.push(timeMarker);
+              allPopupsRef.current.push(infoPopup);
+            }
+            // Création du CustomPopup pour afficher les infos
+            
+      
+            // Ajouter le CustomPopup à la liste pour suppression propre
+            
           }
-  
+      
           google.maps.event.addListener(polyline, "click", () => {
             setSelectedRouteIndex(index);
           });
         }
       });
+      
+      if (routePathRefs.current.length > 0) {
+        mapRef.current.fitBounds(bounds);
+      }
+      
   
       if (routePathRefs.current.length > 0) {
         mapRef.current.fitBounds(bounds);
