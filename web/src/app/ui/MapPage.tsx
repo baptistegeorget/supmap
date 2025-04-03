@@ -4,13 +4,26 @@ import CustomZoomControl from "./components/CustomZoomControl";
 import LocateButton from "./components/LocateButton";
 import RouteForm from "./components/RouteForm";
 import QRCodePopup from "./components/QRCodePopup";
-import { fromLonLat } from "ol/proj";
+import Cookie from "js-cookie";
+
+
+interface GraphhopperResponse {
+  paths: {
+    points: string; // Chaîne encodée pour chaque chemin
+    time?: number;  // Temps du trajet pour ce chemin (optionnel)
+    distance?: number;  // La distance du trajet en metre (optionnelle)
+  }[];
+}
+
+
 
 const MapPage = () => {
   const [position, setPosition] = useState<[number, number] | null>(null);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-  const [route, setRoute] = useState<[number, number][] | null>(null);
+  const [fromCoords, setFromCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [toCoords, setToCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [route, setRoute] = useState<GraphhopperResponse | null>(null); // Type `route` avec `GraphhopperResponse | null`
   const [showQRPopup, setShowQRPopup] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isPreviewed, setIsPreviewed] = useState(false);
@@ -18,6 +31,7 @@ const MapPage = () => {
   // Référence à la carte
   const mapRef = useRef<google.maps.Map | null>(null);
 
+  const $token = Cookie.get("auth_token") || "";
 
   // Récupérer la position actuelle de l'utilisateur
   useEffect(() => {
@@ -35,31 +49,60 @@ const MapPage = () => {
   }, []);
 
   // Récupérer l'itinéraire depuis l'API
-  const fetchRoute = async (from: string, to: string) => {
+  const fetchRoute = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/getRoute`, {
+      if (!fromCoords || !toCoords) {
+        setErrorMessage("Veuillez sélectionner des adresses valides.");
+        return;
+      }
+
+      // Étape 1: Appeler la route /auth/me pour récupérer l'ID utilisateur
+      const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/me`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${$token}`,
+        },
+      });
+
+      if (!userResponse.ok) {
+        throw new Error("Impossible de récupérer l'utilisateur.");
+      }
+
+      const userData = await userResponse.json();
+      const userId = userData.id;
+
+      // Étape 2: Récupérer l'itinéraire avec l'ID utilisateur
+      const routeResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/${userId}/routes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${$token}`,
         },
-        body: JSON.stringify({ from, to }),
+        body: JSON.stringify({ 
+          profile: "car",
+          points: [
+            [fromCoords.lng, fromCoords.lat],
+            [toCoords.lng, toCoords.lat],
+          ],
+        }),
       });
-      const data = await response.json();
-      if (data.success && data.route) {
-        const routeCoordinates = data.route.map((coord: [number, number]) =>
-          fromLonLat(coord)
-        );
-        setRoute(routeCoordinates);
-      } else {
-        setErrorMessage("Impossible de récupérer l'itinéraire.");
+
+      if (!routeResponse.ok) {
+        throw new Error("Erreur lors de la création de l'itinéraire.");
       }
+
+      const data = await routeResponse.json();
+      console.log("Réponse de l'itinéraire:", data);
+
+      // Mise à jour de l'état avec l'itinéraire
+      setRoute(data.graphhopper_response); // Met à jour avec la réponse complète
+
     } catch (error) {
       console.error("Erreur lors de la récupération de l'itinéraire:", error);
       setErrorMessage("Erreur lors de la récupération de l'itinéraire.");
     }
   };
 
-  // Envoyer l'itinéraire vers le mobile
   const sendToMobile = async () => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/sendToMobile`, {
@@ -81,15 +124,14 @@ const MapPage = () => {
     }
   };
 
-  // Gestion des événements
   const handlePreview = () => {
-    if (from.trim() && to.trim()) {
+    if (from.trim() && to.trim() && fromCoords && toCoords) {
       setIsPreviewed(true);
       setErrorMessage("");
-      fetchRoute(from, to);
+      fetchRoute();
     } else {
       setIsPreviewed(false);
-      setErrorMessage("Veuillez remplir les champs 'Départ' et 'Destination'.");
+      setErrorMessage("Veuillez sélectionner des adresses valides.");
     }
   };
 
@@ -98,14 +140,13 @@ const MapPage = () => {
     sendToMobile();
   };
 
-  const swapFields = () => {
-    setFrom((prev) => {
-      setTo(prev);
-      return to;
-    });
+  const swapFieldsWithCoords = () => {
+    setFrom(to);
+    setTo(from);
+    setFromCoords(toCoords);
+    setToCoords(fromCoords);
   };
 
-  // Affichage conditionnel du chargement
   if (!position) {
     return (
       <div className="h-screen w-full flex items-center justify-center">
@@ -116,33 +157,29 @@ const MapPage = () => {
 
   return (
     <div className="h-screen w-full relative">
-      {/* Formulaire de saisie de l'itinéraire */}
       <RouteForm
         from={from}
         to={to}
         setFrom={setFrom}
         setTo={setTo}
+        fromCoords={fromCoords}
+        toCoords={toCoords}
+        setFromCoords={setFromCoords}
+        setToCoords={setToCoords}
         handlePreview={handlePreview}
         handleSendToMobile={handleSendToMobile}
         isPreviewed={isPreviewed}
         errorMessage={errorMessage}
-        swapFields={swapFields}
+        swapFields={swapFieldsWithCoords}
       />
 
-      {/* Carte */}
-      <MapComponent position={position} route={route} mapRef={mapRef} />
+      <MapComponent position={position} route={route?.paths || []} mapRef={mapRef} /> {/* Passage des chemins via `route?.paths` */}
 
-      {/* Boutons de contrôle */}
       <LocateButton setPosition={setPosition} mapRef={mapRef} />
       <CustomZoomControl mapRef={mapRef} />
 
-      {/* Pop-up QR Code */}
       {showQRPopup && (
-        <QRCodePopup
-          from={from}
-          to={to}
-          onClose={() => setShowQRPopup(false)}
-        />
+        <QRCodePopup from={from} to={to} onClose={() => setShowQRPopup(false)} />
       )}
     </div>
   );

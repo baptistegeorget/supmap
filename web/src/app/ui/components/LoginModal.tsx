@@ -32,9 +32,6 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     
     const body = isSignUp ? { email, name, password } : { email, password };
 
-    console.log("URL utilisée:", url);
-    console.log("Corps de la requête:", body);
-
     try {
       const response = await fetch(url, {
         method: "POST",
@@ -53,7 +50,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
 
           // Stocker le token dans un cookie
       Cookie.set('auth_token', data.token, { expires: 7, secure: true, sameSite: 'Strict' });
-      window.location.href = "/";
+      window.location.reload(); // Recharger la page pour mettre à jour l'état de l'application
 
       onClose();
     } catch (error) {
