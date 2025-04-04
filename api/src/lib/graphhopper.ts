@@ -109,7 +109,7 @@ export interface RouteOptions {
    */
   points_encoded?: boolean,
   /**
-   * Use this parameter in combination with one or more parameters from below.
+   * Use this parameter in combination with one or more parameters from below.  
    * Default `false`
    */
   "ch.disable"?: boolean,

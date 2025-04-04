@@ -3,6 +3,7 @@ import { ZodError } from "zod";
 import { User, UserModel } from "../../../../models/user.js";
 import { createRouteSchema, idSchema, positiveIntegerSchema } from "../../../../lib/zod.js";
 import { RouteModel } from "../../../../models/route.js";
+import { getRoute } from "../../../../lib/graphhopper.js";
 
 const router = Router({ mergeParams: true });
 
@@ -92,8 +93,6 @@ router.get("/:routeId", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    if (!process.env.GRAPHHOPPER_API_KEY) throw new Error("GraphHopper API key is not set");
-
     const authUser = res.locals.authUser as User;
     const userId = idSchema.parse((req.params as { userId: string }).userId);
     const { profile, points } = createRouteSchema.parse(req.body);
@@ -111,27 +110,19 @@ router.post("/", async (req, res) => {
       return;
     }
 
-    const response = await fetch(`https://graphhopper.com/api/1/route?key=${process.env.GRAPHHOPPER_API_KEY}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        profile,
-        points,
-        locale: "fr",
-        instructions: true,
-        algorithm: "alternative_route",
-        max_paths: 3
-      })
+    const routeResponseBody = await getRoute({
+      profile,
+      points,
+      locale: "fr",
+      instructions: true,
+      algorithm: "alternative_route",
+      "alternative_route.max_paths": 3
     });
-
-    const data = await response.json();
 
     const routeModel = new RouteModel();
     
     const route = await routeModel.create({
-      graphhopper_response: data,
+      graphhopper_response: routeResponseBody,
       created_by: userId
     });
 
@@ -180,25 +171,17 @@ router.patch("/:routeId", async (req, res) => {
       return;
     }
 
-    const response = await fetch(`https://graphhopper.com/api/1/route?key=${process.env.GRAPHHOPPER_API_KEY}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        profile,
-        points,
-        locale: "fr",
-        instructions: true,
-        algorithm: "alternative_route",
-        max_paths: 3
-      })
+    const routeResponseBody = await getRoute({
+      profile,
+      points,
+      locale: "fr",
+      instructions: true,
+      algorithm: "alternative_route",
+      "alternative_route.max_paths": 3
     });
 
-    const data = await response.json();
-
     route = await routeModel.update(route.id, {
-      graphhopper_response: data,
+      graphhopper_response: routeResponseBody,
       modified_by: userId
     });
 
