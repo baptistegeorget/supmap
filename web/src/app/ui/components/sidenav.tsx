@@ -18,7 +18,6 @@ function SideNavContent() {
 
   useEffect(() => {
     const token = Cookie.get("auth_token");
-    console.log("Token récupéré:", token);
     if (token) {
       fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/me`, {
         method: "GET",
