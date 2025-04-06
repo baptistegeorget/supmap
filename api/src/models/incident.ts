@@ -32,7 +32,10 @@ export class IncidentModel {
         RETURNING
           "id",
           "type",
-          ST_AsGeoJSON("location") AS "location",
+          json_build_object(
+            'type', 'Point',
+            'coordinates', ST_AsGeoJSON("location")::json->'coordinates'
+          ) AS "location",
           "created_on",
           "created_by",
           "modified_on",
@@ -60,7 +63,10 @@ export class IncidentModel {
         SELECT
           "id",
           "type",
-          ST_AsGeoJSON("location") AS "location",
+          json_build_object(
+            'type', 'Point',
+            'coordinates', ST_AsGeoJSON("location")::json->'coordinates'
+          ) AS "location",
           "created_on",
           "created_by",
           "modified_on",
@@ -87,7 +93,10 @@ export class IncidentModel {
         SELECT
           "id",
           "type",
-          ST_AsGeoJSON("location") AS "location",
+          json_build_object(
+            'type', 'Point',
+            'coordinates', ST_AsGeoJSON("location")::json->'coordinates'
+          ) AS "location",
           "created_on",
           "created_by",
           "modified_on",
@@ -115,7 +124,10 @@ export class IncidentModel {
         SELECT
           "id",
           "type",
-          ST_AsGeoJSON("location") AS "location",
+          json_build_object(
+            'type', 'Point',
+            'coordinates', ST_AsGeoJSON("location")::json->'coordinates'
+          ) AS "location",
           "created_on",
           "created_by",
           "modified_on",
@@ -152,7 +164,10 @@ export class IncidentModel {
         SELECT
           "id",
           "type",
-          ST_AsGeoJSON("location") AS "location",
+          json_build_object(
+            'type', 'Point',
+            'coordinates', ST_AsGeoJSON("location")::json->'coordinates'
+          ) AS "location",
           "created_on",
           "created_by",
           "modified_on",
@@ -184,7 +199,10 @@ export class IncidentModel {
         RETURNING
           "id",
           "type",
-          ST_AsGeoJSON("location") AS "location",
+          json_build_object(
+            'type', 'Point',
+            'coordinates', ST_AsGeoJSON("location")::json->'coordinates'
+          ) AS "location",
           "created_on",
           "created_by",
           "modified_on",

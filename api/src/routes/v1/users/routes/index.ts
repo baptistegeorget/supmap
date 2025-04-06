@@ -4,6 +4,7 @@ import { User, UserModel } from "../../../../models/user.js";
 import { createRouteSchema, idSchema, positiveIntegerSchema } from "../../../../lib/zod.js";
 import { RouteModel } from "../../../../models/route.js";
 import { getRoute } from "../../../../lib/graphhopper.js";
+import { IncidentModel } from "../../../../models/incident.js";
 
 const router = Router({ mergeParams: true });
 
@@ -110,17 +111,80 @@ router.post("/", async (req, res) => {
       return;
     }
 
+    const incidentModel = new IncidentModel();
+    const incidents = await incidentModel.getAll(1000000000, 0);
+
     const routeResponseBody = await getRoute({
       profile,
       points,
       locale: "fr",
       instructions: true,
       algorithm: "alternative_route",
-      "alternative_route.max_paths": 3
+      "alternative_route.max_paths": 3,
+      "ch.disable": true,
+      custom_model: {
+        speed: incidents.map(incident => {
+          switch (incident.type) {
+            case "accident":
+              return {
+                if: "in_" + incident.id,
+                multiply_by: "0.8"
+              }
+            case "traffic_jam":
+              return {
+                if: "in_" + incident.id,
+                multiply_by: "0.5"
+              }
+            case "road_closed":
+              return {
+                if: "in_" + incident.id,
+                multiply_by: "0"
+              }
+            default:
+              return {
+                if: "in_" + incident.id,
+                multiply_by: "1"
+              }
+          }
+        }),
+        areas: {
+          type: "FeatureCollection",
+          features: incidents.map(incident => ({
+            type: "Feature",
+            id: incident.id,
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [
+                    incident.location.coordinates[0] + 0.000135 / Math.cos(incident.location.coordinates[1] * Math.PI / 180),
+                    incident.location.coordinates[1] + 0.000135
+                  ],
+                  [
+                    incident.location.coordinates[0] + 0.000135 / Math.cos(incident.location.coordinates[1] * Math.PI / 180),
+                    incident.location.coordinates[1] - 0.000135
+                  ],
+                  [
+                    incident.location.coordinates[0] - 0.000135 / Math.cos(incident.location.coordinates[1] * Math.PI / 180),
+                    incident.location.coordinates[1] - 0.000135
+                  ],
+                  [
+                    incident.location.coordinates[0] - 0.000135 / Math.cos(incident.location.coordinates[1] * Math.PI / 180),
+                    incident.location.coordinates[1] + 0.000135
+                  ],
+                  [
+                    incident.location.coordinates[0] + 0.000135 / Math.cos(incident.location.coordinates[1] * Math.PI / 180),
+                    incident.location.coordinates[1] + 0.000135
+                  ]
+                ]
+              ]
+            }
+          }))
+        }
+      }
     });
 
     const routeModel = new RouteModel();
-    
     const route = await routeModel.create({
       graphhopper_response: routeResponseBody,
       created_by: userId
@@ -171,13 +235,77 @@ router.patch("/:routeId", async (req, res) => {
       return;
     }
 
+    const incidentModel = new IncidentModel();
+    const incidents = await incidentModel.getAll(1000000000, 0);
+
     const routeResponseBody = await getRoute({
       profile,
       points,
       locale: "fr",
       instructions: true,
       algorithm: "alternative_route",
-      "alternative_route.max_paths": 3
+      "alternative_route.max_paths": 3,
+      "ch.disable": true,
+      custom_model: {
+        speed: incidents.map(incident => {
+          switch (incident.type) {
+            case "accident":
+              return {
+                if: "in_" + incident.id,
+                multiply_by: "0.8"
+              }
+            case "traffic_jam":
+              return {
+                if: "in_" + incident.id,
+                multiply_by: "0.5"
+              }
+            case "road_closed":
+              return {
+                if: "in_" + incident.id,
+                multiply_by: "0"
+              }
+            default:
+              return {
+                if: "in_" + incident.id,
+                multiply_by: "1"
+              }
+          }
+        }),
+        areas: {
+          type: "FeatureCollection",
+          features: incidents.map(incident => ({
+            type: "Feature",
+            id: incident.id,
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [
+                    incident.location.coordinates[0] + 0.000135 / Math.cos(incident.location.coordinates[1] * Math.PI / 180),
+                    incident.location.coordinates[1] + 0.000135
+                  ],
+                  [
+                    incident.location.coordinates[0] + 0.000135 / Math.cos(incident.location.coordinates[1] * Math.PI / 180),
+                    incident.location.coordinates[1] - 0.000135
+                  ],
+                  [
+                    incident.location.coordinates[0] - 0.000135 / Math.cos(incident.location.coordinates[1] * Math.PI / 180),
+                    incident.location.coordinates[1] - 0.000135
+                  ],
+                  [
+                    incident.location.coordinates[0] - 0.000135 / Math.cos(incident.location.coordinates[1] * Math.PI / 180),
+                    incident.location.coordinates[1] + 0.000135
+                  ],
+                  [
+                    incident.location.coordinates[0] + 0.000135 / Math.cos(incident.location.coordinates[1] * Math.PI / 180),
+                    incident.location.coordinates[1] + 0.000135
+                  ]
+                ]
+              ]
+            }
+          }))
+        }
+      }
     });
 
     route = await routeModel.update(route.id, {

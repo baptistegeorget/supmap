@@ -332,7 +332,9 @@ export interface RouteResponseBody {
 
 /**
  * Calculate a route
- * @param routeOptions options to calculate the route
+ * @param routeOptions Options to calculate the route
+ * @returns The route response body
+ * @throws Error if the GraphHopper API key is not set or if the request fails
  */
 export async function getRoute(routeOptions: RouteOptions): Promise<RouteResponseBody> {
   try {
