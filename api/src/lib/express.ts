@@ -1,7 +1,7 @@
 import express from "express";
+import cors from "cors";
+import { corsOptions } from "./cors.js";
 import v1Router from "../routes/v1/index.js";
-import cors from "cors"
-import { options as corsOptions } from "./cors.js";
 
 export const app = express();
 

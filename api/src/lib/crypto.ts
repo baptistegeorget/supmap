@@ -1,7 +1,7 @@
 import { createHash, createCipheriv, createDecipheriv, randomBytes, scrypt } from "crypto";
 
-if (!process.env.CRYPTO_KEY) throw new Error("CRYPTO_KEY is not set");
-if (process.env.CRYPTO_KEY.length !== 32) throw new Error("CRYPTO_KEY must be 32 characters long");
+if (!process.env.CRYPTO_KEY) throw new Error("Missing environment variable: CRYPTO_KEY");
+if (process.env.CRYPTO_KEY.length !== 32) throw new Error("Invalid environment variable: CRYPTO_KEY must be 32 characters long.");
 
 const KEY = Buffer.from(process.env.CRYPTO_KEY);
 

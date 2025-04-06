@@ -1,38 +1,121 @@
-import zod from "zod";
+import {
+  string as zodString,
+  object as zodObject,
+  number as zodNumber,
+  enum as zodEnum,
+  array as zodArray,
+  tuple as zodTuple
+} from "zod";
 
-export const emailSchema = zod.string({ required_error: "Email is required" }).email({ message: "Invalid email" });
-export const nameSchema = zod.string({ required_error: "Name is required" }).min(1, { message: "Name must be at least 1 character long" }).max(32, { message: "Name must be at most 32 characters long" });
-export const passwordSchema = zod.string({ required_error: "Password is required" }).min(12, { message: "Password must be at least 12 characters long" }).max(32, { message: "Password must be at most 32 characters long" });
-export const pictureSchema = zod.string({ required_error: "Picture is required" }).url({ message: "Invalid URL" });
-export const idSchema = zod.string({ required_error: "ID is required" }).regex(/^[1-9]\d{0,18}$/, { message: "Invalid ID" }).refine((val) => BigInt(val) <= BigInt("9223372036854775807"), { message: "Invalid ID" });
-export const positiveIntegerSchema = zod.number({ required_error: "Number is required" }).int({ message: "Number must be an integer" }).positive({ message: "Number must be positive" });
+export const emailSchema = zodString(
+  {
+    required_error: "Email is required."
+  }
+).email(
+  {
+    message: "Invalid email."
+  }
+).max(
+  50,
+  {
+    message: "Email must be at most 50 characters long."
+  }
+);
 
-export const createUserSchema = zod.object({
-  email: emailSchema,
-  name: nameSchema,
-  password: passwordSchema,
-  picture: pictureSchema.optional()
-});
+export const userNameSchema = zodString(
+  {
+    required_error: "Name is required."
+  }
+).min(
+  1,
+  {
+    message: "Name must be at least 1 character long."
+  }
+).max(
+  32,
+  {
+    message: "Name must be at most 32 characters long."
+  }
+);
 
-export const updateUserSchema = zod.object({
-  email: emailSchema.optional(),
-  name: nameSchema.optional(),
-  password: passwordSchema.optional(),
-  currentPassword: passwordSchema.optional(),
-  picture: pictureSchema.optional()
-});
+export const passwordSchema = zodString(
+  {
+    required_error: "Password is required."
 
-export const signInSchema = zod.object({
-  email: emailSchema,
-  password: passwordSchema
-});
+  }
+).min(
+  12,
+  {
+    message: "Password must be at least 12 characters long."
+  }
+).max(
+  32,
+  {
+    message: "Password must be at most 32 characters long."
+  }
+);
 
-export const googleCallbackSchema = zod.object({
-  code: zod.string({ required_error: "Code is required" })
-});
+export const pictureSchema = zodString(
+  {
+    required_error: "Picture is required."
+  }
+).url(
+  {
+    message: "Invalid URL."
+  }
+);
 
-export const createRouteSchema = zod.object({
-  profile: zod.enum([
+export const idSchema = zodString(
+  {
+    required_error: "ID is required."
+  }
+).regex(
+  /^[1-9]\d{0,18}$/,
+  {
+    message: "Invalid ID."
+  }
+).refine(
+  value => BigInt(value) <= 9223372036854775807n,
+  {
+    message: "Invalid ID."
+  }
+);
+
+export const limitSchema = zodNumber(
+  {
+    required_error: "Limit is required."
+  }
+).int(
+  {
+    message: "Limit must be an integer."
+  }
+).positive(
+  {
+    message: "Limit must be positive."
+  }
+).max(
+  100,
+  {
+    message: "Limit must be at most 100."
+  }
+);
+
+export const offsetSchema = zodNumber(
+  {
+    required_error: "Offset is required."
+  }
+).int(
+  {
+    message: "Offset must be an integer."
+  }
+).nonnegative(
+  {
+    message: "Offset must be non-negative."
+  }
+);
+
+export const routingProfileSchema = zodEnum(
+  [
     "car",
     "car_avoid_motorway",
     "car_avoid_ferry",
@@ -45,31 +128,156 @@ export const createRouteSchema = zod.object({
     "bike",
     "mtb",
     "racingbike",
-    "ecargobike"
-  ], { required_error: "Profile is required" }),
-  points: zod.array(zod.tuple([zod.number(), zod.number()]), { required_error: "Points are required" }).min(2, { message: "At least 2 points are required" })
-});
+    "ecargobike",
+    "as_the_crow_flies"
+  ],
+  {
+    required_error: "Routing profile is required."
+  }
+);
 
-export const createIncidentSchema = zod.object({
-  type: zod.enum([
+export const incidentTypeSchema = zodEnum(
+  [
     "accident",
     "traffic_jam",
     "road_closed"
-  ], { required_error: "Type is required" }),
-  location: zod.object({
-    type: zod.literal("Point"),
-    coordinates: zod.tuple([zod.number(), zod.number()])
-  }, { required_error: "Location is required" })
-});
+  ],
+  {
+    required_error: "Incident type is required."
+  }
+);
 
-export const updateIncidentSchema = zod.object({
-  type: zod.enum([
-    "accident",
-    "traffic_jam",
-    "road_closed"
-  ], { required_error: "Type is required" }).optional(),
-  location: zod.object({
-    type: zod.literal("Point"),
-    coordinates: zod.tuple([zod.number(), zod.number()])
-  }, { required_error: "Location is required" }).optional()
-});
+export const geometryPointSchema = zodTuple(
+  [
+    zodNumber(
+      {
+        required_error: "Longitude is required."
+      }
+    ).min(
+      -180,
+      {
+        message: "Longitude must be at least -180."
+      }
+    ).max(
+      180,
+      {
+        message: "Longitude must be at most 180."
+      }
+    ),
+    zodNumber(
+      {
+        required_error: "Latitude is required."
+      }
+    ).min(
+      -90,
+      {
+        message: "Latitude must be at least -90."
+      }
+    ).max(
+      90,
+      {
+        message: "Latitude must be at most 90."
+      }
+    )
+  ]
+)
+
+export const postUserSchema = zodObject(
+  {
+    name: userNameSchema,
+    email: emailSchema,
+    password: passwordSchema,
+    picture: pictureSchema.optional()
+  }
+);
+
+export const patchUserSchema = zodObject(
+  {
+    name: userNameSchema.optional(),
+    email: emailSchema.optional(),
+    password: passwordSchema.optional(),
+    picture: pictureSchema.optional(),
+    currentPassword: passwordSchema.optional()
+  }
+).refine(
+  data => {
+    const { name, email, password, picture } = data;
+    return name || email || password || picture;
+  },
+  {
+    message: "At least one field must be provided."
+  }
+).refine(
+  data => {
+    const { password, currentPassword } = data;
+    return password ? currentPassword : true;
+  },
+  {
+    message: "Current password is required when changing password."
+  }
+);
+
+export const signInSchema = zodObject(
+  {
+    email: emailSchema,
+    password: passwordSchema
+  }
+);
+
+export const googleCallbackSchema = zodObject(
+  {
+    code: zodString(
+      {
+        required_error: "Code is required."
+      }
+    )
+  }
+);
+
+export const postRouteSchema = zodObject(
+  {
+    profile: routingProfileSchema,
+    points: zodArray(
+      geometryPointSchema,
+      {
+        required_error: "Points are required."
+      }
+    ).min(
+      2,
+      {
+        message: "At least 2 points are required."
+      }
+    )
+  }
+);
+
+export const patchRouteSchema = zodObject(
+  {
+    profile: routingProfileSchema,
+    points: zodArray(
+      geometryPointSchema,
+      {
+        required_error: "Points are required."
+      }
+    ).min(
+      2,
+      {
+        message: "At least 2 points are required."
+      }
+    )
+  }
+);
+
+export const postIncidentSchema = zodObject(
+  {
+    type: incidentTypeSchema,
+    location: geometryPointSchema
+  }
+);
+
+export const patchIncidentSchema = zodObject(
+  {
+    type: incidentTypeSchema.optional(),
+    location: geometryPointSchema.optional()
+  }
+);
