@@ -55,7 +55,10 @@ router.get("/google", async (_req, res) => {
       ]
     });
 
-    res.redirect(url);
+    res.status(200).json({
+      message: "Redirecting to Google OAuth2.",
+      url
+    });
     return;
   } catch (error) {
     res.status(500).json({ message: "Internal server error." });
