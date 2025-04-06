@@ -56,7 +56,7 @@ router.post("/signin", async (req, res) => {
     if (error instanceof ZodError) {
       res.status(400).json(
         {
-          message: error.errors.map(error => error.message).join(" ")
+          message: error.errors.map((error) => error.message).join(" ")
         }
       );
 

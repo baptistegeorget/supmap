@@ -98,7 +98,7 @@ export const limitSchema = zodNumber(
   {
     message: "Limit must be at most 100."
   }
-);
+).optional();
 
 export const offsetSchema = zodNumber(
   {
@@ -112,7 +112,7 @@ export const offsetSchema = zodNumber(
   {
     message: "Offset must be non-negative."
   }
-);
+).optional();
 
 export const routingProfileSchema = zodEnum(
   [
@@ -198,22 +198,6 @@ export const patchUserSchema = zodObject(
     password: passwordSchema.optional(),
     picture: pictureSchema.optional(),
     currentPassword: passwordSchema.optional()
-  }
-).refine(
-  data => {
-    const { name, email, password, picture } = data;
-    return name || email || password || picture;
-  },
-  {
-    message: "At least one field must be provided."
-  }
-).refine(
-  data => {
-    const { password, currentPassword } = data;
-    return password ? currentPassword : true;
-  },
-  {
-    message: "Current password is required when changing password."
   }
 );
 
