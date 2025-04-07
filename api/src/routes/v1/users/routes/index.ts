@@ -1,120 +1,188 @@
 import { Router } from "express";
 import { ZodError } from "zod";
 import { User, UserModel } from "../../../../models/user.js";
-import { createRouteSchema, idSchema, positiveIntegerSchema } from "../../../../lib/zod.js";
+import { postRouteSchema, idSchema, limitSchema, offsetSchema, patchRouteSchema } from "../../../../lib/zod.js";
 import { RouteModel } from "../../../../models/route.js";
-import { getRoute } from "../../../../lib/graphhopper.js";
+import { getRoute, RouteOptions } from "../../../../lib/graphhopper.js";
 import { IncidentModel } from "../../../../models/incident.js";
 
-const router = Router({ mergeParams: true });
+const router = Router();
 
-router.get("/", async (req, res) => {
+router.get("/users/:userId/routes", async (req, res) => {
   try {
     const authUser = res.locals.authUser as User;
-    const userId = idSchema.parse((req.params as { userId: string }).userId);
-    const limit = req.query.limit && typeof req.query.limit === "string" ? positiveIntegerSchema.parse(req.query.limit) : 10;
-    const offset = req.query.offset && typeof req.query.offset === "string" ? positiveIntegerSchema.parse(req.query.offset) : 0;
+
+    const userId = idSchema.parse(req.params.userId);
+
+    const limit = limitSchema.parse(req.query.limit);
+
+    const offset = offsetSchema.parse(req.query.offset);
 
     if (authUser.id !== userId && authUser.role !== "admin") {
-      res.status(403).json({ message: "Access denied." });
+      res.status(403).json(
+        {
+          message: "Access denied."
+        }
+      );
+
       return;
     }
 
     const userModel = new UserModel();
+
     const user = await userModel.getById(userId);
 
     if (!user) {
-      res.status(404).json({ message: "User not found." });
+      res.status(404).json(
+        {
+          message: "User not found."
+        }
+      );
+
       return;
     }
 
     const routeModel = new RouteModel();
+
     const routes = await routeModel.getByUserId(user.id, limit, offset);
 
     res.status(200).json(routes);
+
     return;
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(400).json({
-        message: "Invalid request.",
-        errors: error.errors
-      });
+      res.status(400).json(
+        {
+          message: error.errors.map((error) => error.message).join(" ")
+        }
+      );
+
       return;
     }
 
-    res.status(500).json({ message: "Internal server error." });
+    res.status(500).json(
+      {
+        message: "Internal server error."
+      }
+    );
+
     console.error(error);
+
     return;
   }
 });
 
-router.get("/:routeId", async (req, res) => {
+router.get("/users/:userId/routes/:routeId", async (req, res) => {
   try {
     const authUser = res.locals.authUser as User;
-    const userId = idSchema.parse((req.params as { routeId: string, userId: string }).userId);
+
+    const userId = idSchema.parse(req.params.userId);
+
     const routeId = idSchema.parse(req.params.routeId);
 
     if (authUser.id !== userId && authUser.role !== "admin") {
-      res.status(403).json({ message: "Access denied." });
+      res.status(403).json(
+        {
+          message: "Access denied."
+        }
+      );
+
       return;
     }
 
     const userModel = new UserModel();
+
     const user = await userModel.getById(userId);
 
     if (!user) {
-      res.status(404).json({ message: "User not found." });
+      res.status(404).json(
+        {
+          message: "User not found."
+        }
+      );
       return;
     }
 
     const routeModel = new RouteModel();
+
     const route = await routeModel.getById(routeId);
 
-    if (!route || route.created_by !== userId) {
-      res.status(404).json({ message: "Route not found." });
+    if (!route || route.created_by !== user.id) {
+      res.status(404).json(
+        {
+          message: "Route not found."
+        }
+      );
+
       return;
     }
 
     res.status(200).json(route);
+
     return;
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(400).json({
-        message: "Invalid request.",
-        errors: error.errors
-      });
+      res.status(400).json(
+        {
+          message: error.errors.map((error) => error.message).join(" ")
+        }
+      );
+
       return;
     }
 
-    res.status(500).json({ message: "Internal server error." });
+    res.status(500).json(
+      {
+        message: "Internal server error."
+      }
+    );
+
     console.error(error);
+
     return;
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/users/:userId/routes", async (req, res) => {
   try {
     const authUser = res.locals.authUser as User;
-    const userId = idSchema.parse((req.params as { userId: string }).userId);
-    const { profile, points } = createRouteSchema.parse(req.body);
+
+    const userId = idSchema.parse(req.params.userId);
+
+    const {
+      profile,
+      points
+    } = postRouteSchema.parse(req.body);
 
     if (authUser.id !== userId && authUser.role !== "admin") {
-      res.status(403).json({ message: "Access denied." });
+      res.status(403).json(
+        {
+          message: "Access denied."
+        }
+      );
+
       return;
     }
 
     const userModel = new UserModel();
-    let user = await userModel.getById(userId);
+
+    const user = await userModel.getById(userId);
 
     if (!user) {
-      res.status(404).json({ message: "User not found." });
+      res.status(404).json(
+        {
+          message: "User not found."
+        }
+      );
+
       return;
     }
 
     const incidentModel = new IncidentModel();
+
     const incidents = await incidentModel.getAll(1000000000, 0);
 
-    const routeResponseBody = await getRoute({
+    const routeOptions: RouteOptions = {
       profile,
       points,
       locale: "fr",
@@ -182,63 +250,101 @@ router.post("/", async (req, res) => {
           }))
         }
       }
-    });
+    };
+
+    const routeResponse = await getRoute(routeOptions);
 
     const routeModel = new RouteModel();
-    const route = await routeModel.create({
-      graphhopper_response: routeResponseBody,
-      created_by: userId
-    });
+
+    const route = await routeModel.create(
+      {
+        graphhopper_response: routeResponse.body,
+        created_by: authUser.id
+      }
+    );
 
     res.status(201).json(route);
+
     return;
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(400).json({
-        message: "Invalid request.",
-        errors: error.errors
-      });
+      res.status(400).json(
+        {
+          message: error.errors.map((error) => error.message).join(" ")
+        }
+      );
+
       return;
     }
 
-    res.status(500).json({ message: "Internal server error." });
+    res.status(500).json(
+      {
+        message: "Internal server error."
+      }
+    );
+
     console.error(error);
+
     return;
   }
 });
 
-router.patch("/:routeId", async (req, res) => {
+router.patch("/users/:userId/routes/:routeId", async (req, res) => {
   try {
     const authUser = res.locals.authUser as User;
-    const userId = idSchema.parse((req.params as { routeId: string, userId: string }).userId);
+
+    const userId = idSchema.parse(req.params.userId);
+
     const routeId = idSchema.parse(req.params.routeId);
-    const { profile, points } = createRouteSchema.parse(req.body);
+
+    const {
+      profile,
+      points
+    } = patchRouteSchema.parse(req.body);
 
     if (authUser.id !== userId && authUser.role !== "admin") {
-      res.status(403).json({ message: "Access denied." });
+      res.status(403).json(
+        {
+          message: "Access denied."
+        }
+      );
+
       return;
     }
 
     const userModel = new UserModel();
+
     const user = await userModel.getById(userId);
 
     if (!user) {
-      res.status(404).json({ message: "User not found." });
+      res.status(404).json(
+        {
+          message: "User not found."
+        }
+      );
+
       return;
     }
 
     const routeModel = new RouteModel();
+
     let route = await routeModel.getById(routeId);
 
-    if (!route || route.created_by !== userId) {
-      res.status(404).json({ message: "Route not found." });
+    if (!route || route.created_by !== user.id) {
+      res.status(404).json(
+        {
+          message: "Route not found."
+        }
+      );
+
       return;
     }
 
     const incidentModel = new IncidentModel();
+
     const incidents = await incidentModel.getAll(1000000000, 0);
 
-    const routeResponseBody = await getRoute({
+    const routeOptions: RouteOptions = {
       profile,
       points,
       locale: "fr",
@@ -306,72 +412,118 @@ router.patch("/:routeId", async (req, res) => {
           }))
         }
       }
-    });
+    };
 
-    route = await routeModel.update(route.id, {
-      graphhopper_response: routeResponseBody,
-      modified_by: userId
-    });
+    const routeResponse = await getRoute(routeOptions);
+
+    route = await routeModel.update(
+      route.id,
+      {
+        graphhopper_response: routeResponse.body,
+        modified_by: authUser.id
+      }
+    );
 
     res.status(200).json(route);
+
     return;
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(400).json({
-        message: "Invalid request.",
-        errors: error.errors
-      });
+      res.status(400).json(
+        {
+          message: error.errors.map((error) => error.message).join(" ")
+        }
+      );
+
       return;
     }
 
-    res.status(500).json({ message: "Internal server error." });
+    res.status(500).json(
+      {
+        message: "Internal server error."
+      }
+    );
+
     console.error(error);
+
     return;
   }
 });
 
-router.delete("/:routeId", async (req, res) => {
+router.delete("/users/:userId/routes/:routeId", async (req, res) => {
   try {
     const authUser = res.locals.authUser as User;
-    const userId = idSchema.parse((req.params as { routeId: string, userId: string }).userId);
+
+    const userId = idSchema.parse(req.params.userId);
+
     const routeId = idSchema.parse(req.params.routeId);
 
     if (authUser.id !== userId && authUser.role !== "admin") {
-      res.status(403).json({ message: "Access denied." });
+      res.status(403).json(
+        {
+          message: "Access denied."
+        }
+      );
+
       return;
     }
 
     const userModel = new UserModel();
+
     const user = await userModel.getById(userId);
 
     if (!user) {
-      res.status(404).json({ message: "User not found." });
+      res.status(404).json(
+        {
+          message: "User not found."
+        }
+      );
+
       return;
     }
 
     const routeModel = new RouteModel();
+
     const route = await routeModel.getById(routeId);
 
-    if (!route || route.created_by !== userId) {
-      res.status(404).json({ message: "Route not found." });
+    if (!route || route.created_by !== user.id) {
+      res.status(404).json(
+        {
+          message: "Route not found."
+        }
+      );
+
       return;
     }
 
     await routeModel.delete(route.id);
 
-    res.status(200).json({ message: "Route deleted." });
+    res.status(200).json(
+      {
+        message: "Route deleted."
+      }
+    );
+
     return;
   } catch (error) {
     if (error instanceof ZodError) {
-      res.status(400).json({
-        message: "Invalid request.",
-        errors: error.errors
-      });
+      res.status(400).json(
+        {
+          message: error.errors.map((error) => error.message).join(" ")
+        }
+      );
+
       return;
     }
 
-    res.status(500).json({ message: "Internal server error." });
+    res.status(500).json(
+      {
+        message: "Internal server error."
+      }
+    );
+
     console.error(error);
+
     return;
   }
 });

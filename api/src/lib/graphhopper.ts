@@ -1,3 +1,9 @@
+if (!process.env.GRAPHHOPPER_API_KEY) throw new Error("Missing environment variable: GRAPHHOPPER_API_KEY");
+
+const API_KEY = process.env.GRAPHHOPPER_API_KEY;
+
+export type RoutingProfile = "car" | "car_avoid_motorway" | "car_avoid_ferry" | "car_avoid_toll" | "small_truck" | "truck" | "scooter" | "foot" | "hike" | "bike" | "mtb" | "racingbike" | "ecargobike" | "as_the_crow_flies";
+
 export interface CustomModel {
   /**
    * See [speed customization](https://docs.graphhopper.com/openapi/routing/postroute#tag/Custom-Model/Customizing-speed)
@@ -19,27 +25,14 @@ export interface CustomModel {
     multiply_by?: string
   }>,
   /**
-   * Use higher values to prefer shorter routes. See [here](https://docs.graphhopper.com/openapi/routing/postroute#tag/Custom-Model/Customizing-distance_influence) for more details.
+   * Use higher values to prefer shorter routes. See [here](https://docs.graphhopper.com/openapi/routing/postroute#tag/Custom-Model/Customizing-distance_influence) for more details.  
    * Default `70`
    */
   distance_influence?: number,
   /**
    * Areas are given in a GeoJson format as FeatureCollection. See more details and an example [here](https://docs.graphhopper.com/openapi/routing/postroute#tag/Custom-Model/Define-areas).
    */
-  areas?: {
-    type: "FeatureCollection",
-    /**
-     * A FeatureCollection is an array of type "Feature" from GeoJSON
-     */
-    features: Array<{
-      type: "Feature",
-      id: string,
-      geometry: {
-        type: "Polygon",
-        coordinates: Array<Array<[number, number]>>
-      }
-    }>
-  }
+  areas?: FeatureCollection
 }
 
 export interface RouteOptions {
@@ -47,7 +40,7 @@ export interface RouteOptions {
    * The routing profile. It determines the network, speed and other physical attributes used when computing the route. See the section about [routing profiles](https://docs.graphhopper.com/openapi/routing/postroute#tag/Map-Data-and-Routing-Profiles) for more details and valid profile values.  
    * Example: `"bike"`
    */
-  profile: "car" | "car_avoid_motorway" | "car_avoid_ferry" | "car_avoid_toll" | "small_truck" | "truck" | "scooter" | "foot" | "hike" | "bike" | "mtb" | "racingbike" | "ecargobike" | "as_the_crow_flies",
+  profile: RoutingProfile,
   /**
    * The points for the route in an array of `[longitude,latitude]`. For instance, if you want to calculate a route from point A to B to C then you specify `points: [ [A_longitude, A_latitude], [B_longitude, B_latitude], [C_longitude, C_latitude]]`.  
    * Example: `[[11.539421,48.118477],[11.559023,48.12228]]`
@@ -192,16 +185,6 @@ export interface RouteOptions {
   "alternative_route.max_share_factor"?: number
 }
 
-export type EncodedLineString = string;
-
-export interface LineString {
-  type: string,
-  /**
-   * A list of coordinate pairs or triples, `[lon,lat]` or `[lon,lat,elevation]`.
-   */
-  coordinates: Array<[number, number] | [number, number, number]>
-};
-
 export interface RouteResponseHeaders {
   /**
    * Your current daily credit limit.
@@ -242,11 +225,11 @@ export interface RouteResponseBody {
     /**
      * The geometry of the route. The format depends on the value of `points_encoded`.
      */
-    points: EncodedLineString | LineString,
+    points: LineString | string,
     /**
      * The snapped input points. The format depends on the value of `points_encoded`.
      */
-    snapped_waypoints: EncodedLineString | LineString,
+    snapped_waypoints: LineString | string,
     /**
      * Whether the `points` and `snapped_waypoints` fields are polyline-encoded strings rather than JSON arrays of coordinates. See the field description for more information on the two formats.
      */
@@ -330,17 +313,20 @@ export interface RouteResponseBody {
   }
 }
 
+export interface RouteResponse {
+  headers: RouteResponseHeaders,
+  body: RouteResponseBody
+}
+
 /**
  * Calculate a route
  * @param routeOptions Options to calculate the route
  * @returns The route response body
  * @throws Error if the GraphHopper API key is not set or if the request fails
  */
-export async function getRoute(routeOptions: RouteOptions): Promise<RouteResponseBody> {
+export async function getRoute(routeOptions: RouteOptions) {
   try {
-    if (!process.env.GRAPHHOPPER_API_KEY) throw new Error("GraphHopper API key is not set");
-
-    const response = await fetch(`https://graphhopper.com/api/1/route?key=${process.env.GRAPHHOPPER_API_KEY}`, {
+    const graphhopperResponse = await fetch(`https://graphhopper.com/api/1/route?key=${API_KEY}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -348,11 +334,16 @@ export async function getRoute(routeOptions: RouteOptions): Promise<RouteRespons
       body: JSON.stringify(routeOptions)
     });
 
-    if (!response.ok) {
-      throw new Error(`GraphHopper API error: ${response.status} ${response.statusText}`);
+    if (!graphhopperResponse.ok) {
+      throw new Error(`GraphHopper API error: ${graphhopperResponse.status} ${graphhopperResponse.statusText}`);
     }
 
-    return await response.json();
+    const response: RouteResponse = {
+      headers: graphhopperResponse.headers as Headers & RouteResponseHeaders,
+      body: await graphhopperResponse.json() as RouteResponseBody
+    }
+
+    return response;
   } catch (error) {
     throw error;
   }

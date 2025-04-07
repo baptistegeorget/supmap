@@ -1,8 +1,9 @@
+import { RouteResponseBody } from "../lib/graphhopper.js";
 import { pool } from "../lib/pg.js";
 
 export interface Route {
   id: string;
-  graphhopper_response: any;
+  graphhopper_response: RouteResponseBody;
   created_on: string;
   created_by: string;
   modified_on: string;
