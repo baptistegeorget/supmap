@@ -42,7 +42,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Échec de l'opération");
+        throw new Error(errorData.error || errorData.message || "Une erreur s'est produite");
       }
 
       const data = await response.json();
