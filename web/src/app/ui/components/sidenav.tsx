@@ -17,7 +17,7 @@ function SideNavContent() {
   const [userName, setUserName] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token") || Cookie.get("auth_token");
+    const token = Cookie.get("auth_token");
     if (token) {
       fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/me`, {
         method: "GET",
@@ -35,7 +35,6 @@ function SideNavContent() {
         })
         .catch(() => {
           Cookie.remove("auth_token"); // Supprimer le token si invalide
-          localStorage.removeItem("token"); // Supprimer le token local
 
           setUserName(null);
         });
@@ -70,8 +69,7 @@ function SideNavContent() {
       }
 
       const data = await response.json();
-      Cookie.set("auth_token", data.token, { expires: 7, secure: true, sameSite: "Strict" });
-      localStorage.setItem("token", data.token);
+      Cookie.set("auth_token", data.token, { expires: 7, secure: true, sameSite: "None" });
       setUserName(data.name);
       setIsLoginModalOpen(false);
       window.location.href = "/";
@@ -82,7 +80,6 @@ function SideNavContent() {
 
   const handleLogout = () => {
     Cookie.remove("auth_token");
-    localStorage.removeItem("token");
 
     setUserName(null);
     window.location.reload(); // Recharge la page pour appliquer les changements

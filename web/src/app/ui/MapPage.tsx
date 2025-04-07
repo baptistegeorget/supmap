@@ -31,7 +31,7 @@ const MapPage = () => {
   // Référence à la carte
   const mapRef = useRef<google.maps.Map | null>(null);
 
-  const $token = localStorage.getItem("token") || Cookie.get("auth_token");
+  const $token = Cookie.get("auth_token");
 
   // Récupérer la position actuelle de l'utilisateur
   useEffect(() => {
