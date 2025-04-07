@@ -15,7 +15,7 @@ export default function Page() {
 
   const [userData, setUserData] = useState({ email: "", username: "", picture: "" });
 
-  const token = localStorage.getItem("token") || Cookie.get("auth_token");
+  const token = Cookie.get("auth_token");
   
 
   useEffect(() => {
