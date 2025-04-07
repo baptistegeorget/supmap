@@ -13,7 +13,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 const router = express.Router();
 
-router.post("/signin", async (req, res) => {
+router.post("/auth/signin", async (req, res) => {
   try {
     const {
       email,
@@ -75,7 +75,7 @@ router.post("/signin", async (req, res) => {
   }
 });
 
-router.get("/google", async (_req, res) => {
+router.get("/auth/google", async (_req, res) => {
   try {
     const url = googleOAuth2Client.generateAuthUrl(
       {
@@ -108,7 +108,7 @@ router.get("/google", async (_req, res) => {
   }
 });
 
-router.post("/google/callback", async (req, res) => {
+router.post("/auth/google/callback", async (req, res) => {
   try {
     const {
       code
@@ -172,7 +172,7 @@ router.post("/google/callback", async (req, res) => {
   }
 });
 
-router.get("/me", auth, async (_req, res) => {
+router.get("/auth/me", auth, async (_req, res) => {
   try {
     const authUser = res.locals.authUser as User;
 
