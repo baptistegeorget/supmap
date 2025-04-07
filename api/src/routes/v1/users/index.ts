@@ -1,4 +1,4 @@
-import express from "express";
+import { Router } from "express";
 import { ZodError } from "zod";
 import { postUserSchema, idSchema, limitSchema, patchUserSchema, offsetSchema } from "../../../lib/zod.js";
 import { decrypt, encrypt, hash, verify } from "../../../lib/crypto.js";
@@ -7,7 +7,7 @@ import { UserModel, User } from "../../../models/user.js";
 import routesRouter from "./routes/index.js";
 import incidentsRouter from "./incidents/index.js";
 
-const router = express.Router();
+const router = Router();
 
 router.use(auth, routesRouter);
 router.use(auth, incidentsRouter)

@@ -1,4 +1,4 @@
-import express from "express";
+import { Router } from "express";
 import { ZodError } from "zod";
 import jwt from "jsonwebtoken";
 import { googleCallbackSchema, signInSchema } from "../../../lib/zod.js";
@@ -11,7 +11,7 @@ if (!process.env.JWT_SECRET) throw new Error("Missing environment variable: JWT_
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-const router = express.Router();
+const router = Router();
 
 router.post("/auth/signin", async (req, res) => {
   try {
