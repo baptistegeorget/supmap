@@ -50,6 +50,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
 
           // Stocker le token dans un cookie
       Cookie.set('auth_token', data.token, { expires: 7, secure: true, sameSite: 'Strict' });
+      localStorage.setItem("token", data.token);
       window.location.reload(); // Recharger la page pour mettre à jour l'état de l'application
 
       onClose();
