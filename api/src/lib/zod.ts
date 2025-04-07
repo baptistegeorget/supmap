@@ -4,7 +4,8 @@ import {
   number as zodNumber,
   enum as zodEnum,
   array as zodArray,
-  tuple as zodTuple
+  tuple as zodTuple,
+  boolean as zodBoolean
 } from "zod";
 
 export const emailSchema = zodString(
@@ -263,5 +264,25 @@ export const patchIncidentSchema = zodObject(
   {
     type: incidentTypeSchema.optional(),
     location: geometryPointSchema.optional()
+  }
+);
+
+export const postIncidentVoteSchema = zodObject(
+  {
+    value: zodBoolean(
+      {
+        required_error: "Value is required."
+      }
+    )
+  }
+);
+
+export const patchIncidentVoteSchema = zodObject(
+  {
+    value: zodBoolean(
+      {
+        required_error: "Value is required."
+      }
+    ).optional()
   }
 );
