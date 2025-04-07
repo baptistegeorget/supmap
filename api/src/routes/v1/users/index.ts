@@ -9,9 +9,6 @@ import incidentsRouter from "./incidents/index.js";
 
 const router = Router();
 
-router.use(auth, routesRouter);
-router.use(auth, incidentsRouter)
-
 router.get("/users", auth, async (req, res) => {
   try {
     const limit = limitSchema.parse(req.query.limit)
@@ -356,5 +353,8 @@ router.delete("/users/:userId", auth, async (req, res) => {
     return;
   }
 });
+
+router.use(auth, routesRouter);
+router.use(auth, incidentsRouter)
 
 export default router;

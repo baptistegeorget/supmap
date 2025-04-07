@@ -6,8 +6,6 @@ import votesRouter from "./votes/index.js";
 
 const router = Router();
 
-router.use(votesRouter);
-
 router.get("/incidents", async (req, res) => {
   try {
     const limit = limitSchema.parse(req.query.limit);
@@ -87,5 +85,7 @@ router.get("/incidents/:incidentId", async (req, res) => {
     return;
   }
 });
+
+router.use(votesRouter);
 
 export default router;

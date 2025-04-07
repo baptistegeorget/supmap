@@ -158,6 +158,46 @@ export class IncidentModel {
     }
   }
 
+  async getRecents(time: number, limit: number = 10, offset: number = 0): Promise<Incident[]> {
+    try {
+      const query = `
+        SELECT
+          i."id",
+          i."type",
+          json_build_object(
+            'type', 'Point',
+            'coordinates', ST_AsGeoJSON(i."location")::json->'coordinates'
+          ) AS "location",
+          i."created_on",
+          i."created_by",
+          i."modified_on",
+          i."modified_by"
+        FROM "incident" i
+        LEFT JOIN "incident_vote" iv ON i."id" = iv."incident_id"
+        WHERE 
+          i."created_on" >= NOW() - ($1 || ' milliseconds')::interval
+          OR i."modified_on" >= NOW() - ($1 || ' milliseconds')::interval
+          OR iv."created_on" >= NOW() - ($1 || ' milliseconds')::interval
+          OR iv."modified_on" >= NOW() - ($1 || ' milliseconds')::interval
+        LIMIT $2
+        OFFSET $3
+      `;
+
+      const values = [
+        time, 
+        limit, 
+        offset
+      ];
+
+      const client = await pool.connect();
+      const result = await client.query<Incident>(query, values);
+      client.release();
+      return result.rows;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async getById(id: string): Promise<Incident | null> {
     try {
       const query = `

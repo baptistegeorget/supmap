@@ -180,7 +180,7 @@ router.post("/users/:userId/routes", async (req, res) => {
 
     const incidentModel = new IncidentModel();
 
-    const incidents = await incidentModel.getAll(1000000000, 0);
+    const incidents = await incidentModel.getRecents(1800000, 1000000000, 0);
 
     const routeOptions: RouteOptions = {
       profile,
@@ -342,7 +342,7 @@ router.patch("/users/:userId/routes/:routeId", async (req, res) => {
 
     const incidentModel = new IncidentModel();
 
-    const incidents = await incidentModel.getAll(1000000000, 0);
+    const incidents = await incidentModel.getRecents(1800000, 1000000000, 0);
 
     const routeOptions: RouteOptions = {
       profile,
