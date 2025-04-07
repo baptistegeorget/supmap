@@ -58,6 +58,30 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     }
   };
 
+  async function fetchAndRedirectGoogle() {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/google`);
+  
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP ${response.status}`);
+      }
+  
+      const result = await response.json();
+  
+      // Supposons que le lien de redirection est contenu dans `result.redirectUrl`
+      const redirectUrl = result.url;
+  
+      if (redirectUrl && typeof redirectUrl === "string") {
+        window.location.href = redirectUrl;
+      } else {
+        throw new Error("Aucune URL de redirection trouvée dans la réponse");
+      }
+    } catch (error) {
+      console.error("Erreur lors du fetch et de la redirection :", error);
+    }
+  }
+  
+
   if (!isOpen) return null;
 
   return (
@@ -125,7 +149,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
         <div className="mt-6 flex justify-center">
           <button
             className="w-[calc(420px+1rem)] py-2 bg-red-600 text-white rounded-md hover:opacity-80"
-            onClick={() => window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/google`}
+            onClick={fetchAndRedirectGoogle}
           >
             Se connecter avec Google
           </button>
