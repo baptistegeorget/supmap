@@ -15,9 +15,14 @@ export default function Page() {
 
   const [userData, setUserData] = useState({ email: "", username: "", picture: "" });
 
-  const token = Cookie.get("auth_token");
-  
+  const [token, setToken] = useState<string | undefined>(undefined);
 
+  useEffect(() => {
+    const localToken = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const cookieToken = Cookie.get("auth_token");
+    setToken(localToken || cookieToken);
+  }, []);
+  
   useEffect(() => {
     async function fetchUserData() {
       if (token) {

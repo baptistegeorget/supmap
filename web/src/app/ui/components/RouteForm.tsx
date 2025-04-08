@@ -68,7 +68,7 @@ const RouteForm = ({
     const timeout = setTimeout(async () => {
       const results = await getGeocodingSuggestions(query);
       setSuggestions(results);
-    }, 5000); // Délai de 1 seconde
+    }, 2000); // Délai de 2 secondes
 
     setInputTimeout(timeout);
   };
