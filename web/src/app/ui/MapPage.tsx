@@ -31,8 +31,8 @@ const MapPage = () => {
   // Référence à la carte
   const mapRef = useRef<google.maps.Map | null>(null);
 
-  const $token = Cookie.get("auth_token");
-
+  const $token = localStorage.getItem("token") || Cookie.get("auth_token");
+  
   // Récupérer la position actuelle de l'utilisateur
   useEffect(() => {
     if (typeof window !== "undefined" && navigator.geolocation) {
@@ -42,11 +42,22 @@ const MapPage = () => {
           setPosition([longitude, latitude]);
         },
         (err) => {
-          console.error("Erreur de géolocalisation:", err);
+          console.warn("Géolocalisation refusée ou échouée:", err.message);
+          // Fallback sur null pour que MapComponent utilise sa valeur par défaut (Paris)
+          setPosition(null);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
         }
       );
+    } else {
+      // Le navigateur ne supporte pas la géoloc
+      console.warn("La géolocalisation n'est pas disponible.");
+      setPosition(null);
     }
   }, []);
+  
 
   // Récupérer l'itinéraire depuis l'API
   const fetchRoute = async () => {
@@ -146,14 +157,6 @@ const MapPage = () => {
     setFromCoords(toCoords);
     setToCoords(fromCoords);
   };
-
-  if (!position) {
-    return (
-      <div className="h-screen w-full flex items-center justify-center">
-        Chargement de votre position...
-      </div>
-    );
-  }
 
   return (
     <div className="h-screen w-full relative">
