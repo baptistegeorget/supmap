@@ -138,6 +138,50 @@ export class UserModel {
     }
   }
 
+  async getStats(start: Date, end: Date): Promise<Stats> {
+    try {
+      const query = `
+        SELECT 
+          (SELECT COUNT(*) FROM "route" WHERE "created_on" BETWEEN $1 AND $2) AS total_routes,
+          (SELECT COALESCE(AVG((graphhopper_response->'paths'->0->>'distance')::FLOAT / 1000), 0) FROM "route" WHERE "created_on" BETWEEN $1 AND $2) AS average_distance_km,
+          (SELECT COUNT(*) FROM "incident" WHERE "type" = 'accident' AND "created_on" BETWEEN $1 AND $2) AS total_accidents,
+          (SELECT COUNT(*) FROM "incident" WHERE "type" = 'traffic_jam' AND "created_on" BETWEEN $1 AND $2) AS total_traffic_jams,
+          (SELECT COUNT(*) FROM "incident" WHERE "type" = 'road_closed' AND "created_on" BETWEEN $1 AND $2) AS total_road_closed
+      `;
+
+      const values = [start, end];
+
+      const client = await pool.connect();
+      const result = await client.query<Stats>(query, values);
+      client.release();
+      return result.rows[0];
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getStatsById(id: string, start: Date, end: Date): Promise<Stats> {
+    try {
+      const query = `
+        SELECT 
+          (SELECT COUNT(*) FROM "route" WHERE "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS total_routes,
+          (SELECT COALESCE(AVG((graphhopper_response->'paths'->0->>'distance')::FLOAT / 1000), 0) FROM "route" WHERE "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS average_distance_km,
+          (SELECT COUNT(*) FROM "incident" WHERE "type" = 'accident' AND "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS total_accidents,
+          (SELECT COUNT(*) FROM "incident" WHERE "type" = 'traffic_jam' AND "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS total_traffic_jams,
+          (SELECT COUNT(*) FROM "incident" WHERE "type" = 'road_closed' AND "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS total_road_closed
+      `;
+
+      const values = [start, end, id];
+
+      const client = await pool.connect();
+      const result = await client.query<Stats>(query, values);
+      client.release();
+      return result.rows[0];
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async update(id: string, user: Omit<User, "id" | "role" | "created_on" | "modified_on">): Promise<User> {
     try {
       const query = `

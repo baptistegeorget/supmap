@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { ZodError } from "zod";
-import { postUserSchema, idSchema, limitSchema, patchUserSchema, offsetSchema } from "../../../lib/zod.js";
+import { postUserSchema, idSchema, limitSchema, patchUserSchema, offsetSchema, getStatsSchema } from "../../../lib/zod.js";
 import { decrypt, encrypt, hash, verify } from "../../../lib/crypto.js";
 import { auth } from "../../../middlewares/auth.js";
 import { UserModel, User } from "../../../models/user.js";
@@ -8,6 +8,118 @@ import routesRouter from "./routes/index.js";
 import incidentsRouter from "./incidents/index.js";
 
 const router = Router();
+
+router.get("/users/stats", auth, async (req, res) => {
+  try {
+    const authUser = res.locals.authUser as User;
+    
+    const {
+      start,
+      end
+    } = getStatsSchema.parse(req.query);
+    console.log(authUser);
+    if (authUser.role !== "admin") {
+      res.status(403).json(
+        {
+          message: "Access denied."
+        }
+      );
+
+      return;
+    }
+
+    const userModel = new UserModel();
+
+    const stats = await userModel.getStats(start, end);
+
+    res.status(200).json(stats);
+
+    return;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      res.status(400).json(
+        {
+          message: error.errors.map((error) => error.message).join(", ")
+        }
+      );
+
+      return;
+    }
+
+    res.status(500).json(
+      {
+        message: "Internal server error."
+      }
+    );
+
+    console.error(error);
+
+    return;
+  }
+});
+
+router.get("/users/:userId/stats", auth, async (req, res) => {
+  try {
+    const authUser = res.locals.authUser as User;
+
+    const userId = idSchema.parse(req.params.userId);
+
+    if (authUser.id !== userId && authUser.role !== "admin") {
+      res.status(403).json(
+        {
+          message: "Access denied."
+        }
+      );
+
+      return;
+    }
+
+    const {
+      start,
+      end
+    } = getStatsSchema.parse(req.query);
+
+    const userModel = new UserModel();
+
+    const user = await userModel.getById(userId);
+
+    if (!user) {
+      res.status(404).json(
+        {
+          message: "User not found."
+        }
+      );
+
+      return;
+    }
+
+    const stats = await userModel.getStatsById(userId, start, end);
+
+    res.status(200).json(stats);
+
+    return;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      res.status(400).json(
+        {
+          message: error.errors.map((error) => error.message).join(", ")
+        }
+      );
+
+      return;
+    }
+
+    res.status(500).json(
+      {
+        message: "Internal server error."
+      }
+    );
+
+    console.error(error);
+
+    return;
+  }
+});
 
 router.get("/users", auth, async (req, res) => {
   try {
@@ -36,7 +148,7 @@ router.get("/users", auth, async (req, res) => {
     if (error instanceof ZodError) {
       res.status(400).json(
         {
-          message: error.errors.map((error) => error.message).join(" ")
+          message: error.errors.map((error) => error.message).join(", ")
         }
       );
 
@@ -85,7 +197,7 @@ router.get("/users/:userId", auth, async (req, res) => {
     if (error instanceof ZodError) {
       res.status(400).json(
         {
-          message: error.errors.map((error) => error.message).join(" ")
+          message: error.errors.map((error) => error.message).join(", ")
         }
       );
 
@@ -148,7 +260,7 @@ router.post("/users", async (req, res) => {
     if (error instanceof ZodError) {
       res.status(400).json(
         {
-          message: error.errors.map((error) => error.message).join(" ")
+          message: error.errors.map((error) => error.message).join(", ")
         }
       );
 
@@ -273,7 +385,7 @@ router.patch("/users/:userId", auth, async (req, res) => {
     if (error instanceof ZodError) {
       res.status(400).json(
         {
-          message: error.errors.map((error) => error.message).join(" ")
+          message: error.errors.map((error) => error.message).join(", ")
         }
       );
 
@@ -335,7 +447,7 @@ router.delete("/users/:userId", auth, async (req, res) => {
     if (error instanceof ZodError) {
       res.status(400).json(
         {
-          message: error.errors.map((error) => error.message).join(" ")
+          message: error.errors.map((error) => error.message).join(", ")
         }
       );
 

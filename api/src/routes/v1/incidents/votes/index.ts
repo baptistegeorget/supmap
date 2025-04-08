@@ -40,7 +40,7 @@ router.get("/incidents/:incidentId/votes", async (req, res) => {
     if (error instanceof ZodError) {
       res.status(400).json(
         {
-          message: error.errors.map((error) => error.message).join(" ")
+          message: error.errors.map((error) => error.message).join(", ")
         }
       );
 
@@ -100,7 +100,7 @@ router.get("/incidents/:incidentId/votes/:voteId", async (req, res) => {
     if (error instanceof ZodError) {
       res.status(400).json(
         {
-          message: error.errors.map((error) => error.message).join(" ")
+          message: error.errors.map((error) => error.message).join(", ")
         }
       );
 
@@ -172,7 +172,7 @@ router.post("/incidents/:incidentId/votes", async (req, res) => {
     if (error instanceof ZodError) {
       res.status(400).json(
         {
-          message: error.errors.map((error) => error.message).join(" ")
+          message: error.errors.map((error) => error.message).join(", ")
         }
       );
 
@@ -257,7 +257,7 @@ router.patch("/incidents/:incidentId/votes/:voteId", async (req, res) => {
     if (error instanceof ZodError) {
       res.status(400).json(
         {
-          message: error.errors.map((error) => error.message).join(" ")
+          message: error.errors.map((error) => error.message).join(", ")
         }
       );
 
@@ -335,7 +335,7 @@ router.delete("/incidents/:incidentId/votes/:voteId", async (req, res) => {
     if (error instanceof ZodError) {
       res.status(400).json(
         {
-          message: error.errors.map((error) => error.message).join(" ")
+          message: error.errors.map((error) => error.message).join(", ")
         }
       );
 

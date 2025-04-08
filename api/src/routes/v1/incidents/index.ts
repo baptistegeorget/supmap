@@ -23,7 +23,7 @@ router.get("/incidents", async (req, res) => {
     if (error instanceof ZodError) {
       res.status(400).json(
         {
-          message: error.errors.map((error) => error.message).join(" ")
+          message: error.errors.map((error) => error.message).join(", ")
         }
       );
 
@@ -67,7 +67,7 @@ router.get("/incidents/:incidentId", async (req, res) => {
     if (error instanceof ZodError) {
       res.status(400).json(
         {
-          message: error.errors.map((error) => error.message).join(" ")
+          message: error.errors.map((error) => error.message).join(", ")
         }
       );
 

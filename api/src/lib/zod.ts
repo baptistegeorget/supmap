@@ -286,3 +286,43 @@ export const patchIncidentVoteSchema = zodObject(
     ).optional()
   }
 );
+
+export const getStatsSchema = zodObject(
+  {
+    start: zodString(
+      {
+        required_error: "Start date is required."
+      }
+    ).regex(
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/,
+      {
+        message: "Invalid start date format. Use YYYY-MM-DDTHH:MM:SSZ."
+      }
+    ).refine(
+      value => new Date(value).getTime() > 0,
+      {
+        message: "Invalid start date."
+      }
+    ).transform(value => new Date(value)),
+    end: zodString(
+      {
+        required_error: "End date is required."
+      }
+    ).regex(
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/,
+      {
+        message: "Invalid end date format. Use YYYY-MM-DDTHH:MM:SSZ."
+      }
+    ).refine(
+      value => new Date(value).getTime() > 0,
+      {
+        message: "Invalid end date."
+      }
+    ).transform(value => new Date(value))
+  }
+).refine(
+  data => data.start.getTime() < data.end.getTime(),
+  {
+    message: "Start date must be before end date."
+  }
+);

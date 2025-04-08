@@ -54,3 +54,11 @@ interface FeatureCollection {
     }
   }
 }
+
+interface Stats {
+  total_routes: number,
+  average_distance_km: number,
+  total_accidents: number,
+  total_traffic_jams: number,
+  total_road_closed: number
+}
