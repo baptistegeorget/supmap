@@ -146,7 +146,9 @@ export class UserModel {
           (SELECT COALESCE(AVG((graphhopper_response->'paths'->0->>'distance')::FLOAT / 1000), 0) FROM "route" WHERE "created_on" BETWEEN $1 AND $2) AS average_distance_km,
           (SELECT COUNT(*) FROM "incident" WHERE "type" = 'accident' AND "created_on" BETWEEN $1 AND $2) AS total_accidents,
           (SELECT COUNT(*) FROM "incident" WHERE "type" = 'traffic_jam' AND "created_on" BETWEEN $1 AND $2) AS total_traffic_jams,
-          (SELECT COUNT(*) FROM "incident" WHERE "type" = 'road_closed' AND "created_on" BETWEEN $1 AND $2) AS total_road_closed
+          (SELECT COUNT(*) FROM "incident" WHERE "type" = 'road_closed' AND "created_on" BETWEEN $1 AND $2) AS total_road_closed,
+          (SELECT COUNT(*) FROM "incident" WHERE "type" = 'police_control' AND "created_on" BETWEEN $1 AND $2) AS total_police_control,
+          (SELECT COUNT(*) FROM "incident" WHERE "type" = 'roadblock' AND "created_on" BETWEEN $1 AND $2) AS total_roadblock
       `;
 
       const values = [start, end];
@@ -168,7 +170,9 @@ export class UserModel {
           (SELECT COALESCE(AVG((graphhopper_response->'paths'->0->>'distance')::FLOAT / 1000), 0) FROM "route" WHERE "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS average_distance_km,
           (SELECT COUNT(*) FROM "incident" WHERE "type" = 'accident' AND "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS total_accidents,
           (SELECT COUNT(*) FROM "incident" WHERE "type" = 'traffic_jam' AND "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS total_traffic_jams,
-          (SELECT COUNT(*) FROM "incident" WHERE "type" = 'road_closed' AND "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS total_road_closed
+          (SELECT COUNT(*) FROM "incident" WHERE "type" = 'road_closed' AND "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS total_road_closed,
+          (SELECT COUNT(*) FROM "incident" WHERE "type" = 'police_control' AND "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS total_police_control,
+          (SELECT COUNT(*) FROM "incident" WHERE "type" = 'roadblock' AND "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS total_roadblock
       `;
 
       const values = [start, end, id];
