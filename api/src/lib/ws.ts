@@ -110,7 +110,7 @@ wss.on("connection", (ws, req) => {
 
         (ws as WebSocket & { points: Array<[number, number]> }).points = polyline.decode(graphHopperResponse.body.paths[0].points as string).map((point: number[]) => [point[1], point[0]]);
 
-        response.points = graphHopperResponse.body.paths[0].points;
+        response.graphhopper_response = graphHopperResponse;
       }
 
       const nearIncidents = await incidentModel.getByLocation(
