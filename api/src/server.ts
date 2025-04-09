@@ -1,5 +1,7 @@
-import { app } from "./lib/express.js";
+import { server } from "./lib/http.js";
 
-app.listen(process.env.PORT || 8000, () => {
-  console.log(`Application start on port ${process.env.PORT || 8000}`);
+const PORT = process.env.PORT || 8000;
+
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

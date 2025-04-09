@@ -326,3 +326,19 @@ export const getStatsSchema = zodObject(
     message: "Start date must be before end date."
   }
 );
+
+export const pathIndexSchema = zodString({
+  required_error: "Path index is required."
+}).regex(
+  /^[0-2]$/,
+  {
+    message: "Invalid path index."
+  }
+).transform(
+  (value) => parseInt(value, 10)
+).refine(
+  value => value >= 0 && value <= 2,
+  {
+    message: "Path index must be between 0 and 2."
+  }
+);

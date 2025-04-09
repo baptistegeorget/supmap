@@ -204,106 +204,108 @@ export interface RouteResponseHeaders {
   "X-RateLimit-Credits": number
 }
 
-export interface RouteResponseBody {
-  paths: Array<{
+export interface Path {
+  /**
+   * The total distance, in meters. To get this information for one 'leg' please read [this blog post](https://www.graphhopper.com/blog/2019/11/28/routing-api-using-path-details/).
+   */
+  distance: number,
+  /**
+   * The total travel time, in milliseconds. To get this information for one 'leg' please read [this blog post](https://www.graphhopper.com/blog/2019/11/28/routing-api-using-path-details/).
+   */
+  time: number,
+  /**
+   * The total ascent, in meters.
+   */
+  ascend: number,
+  /**
+   * The total descent, in meters.
+   */
+  descend: number,
+  /**
+   * The geometry of the route. The format depends on the value of `points_encoded`.
+   */
+  points: LineString | string,
+  /**
+   * The snapped input points. The format depends on the value of `points_encoded`.
+   */
+  snapped_waypoints: LineString | string,
+  /**
+   * Whether the `points` and `snapped_waypoints` fields are polyline-encoded strings rather than JSON arrays of coordinates. See the field description for more information on the two formats.
+   */
+  points_encoded: boolean,
+  /**
+   * The bounding box of the route geometry. Format: `[minLon, minLat, maxLon, maxLat]`.
+   */
+  bbox: [number, number, number, number],
+  /**
+   * The instructions for this route. This feature is under active development, and our instructions can sometimes be misleading, so be mindful when using them for navigation.
+   */
+  instructions: Array<{
     /**
-     * The total distance, in meters. To get this information for one 'leg' please read [this blog post](https://www.graphhopper.com/blog/2019/11/28/routing-api-using-path-details/).
+     * A description what the user has to do in order to follow the route. The language depends on the locale parameter.
+     */
+    text: string,
+    /**
+     * The name of the street to turn onto in order to follow the route.
+     */
+    street_name: string,
+    /**
+     * The distance for this instruction, in meters.
      */
     distance: number,
     /**
-     * The total travel time, in milliseconds. To get this information for one 'leg' please read [this blog post](https://www.graphhopper.com/blog/2019/11/28/routing-api-using-path-details/).
+     * The duration for this instruction, in milliseconds.
      */
     time: number,
     /**
-     * The total ascent, in meters.
+     * Two indices into `points`, referring to the beginning and the end of the segment of the route this instruction refers to.
      */
-    ascend: number,
+    interval: [number, number],
     /**
-     * The total descent, in meters.
+     * A number which specifies the sign to show:
+     * 
+     * | Instruction Sign Number | Description                                                                                                            |
+     * |-------------------------|------------------------------------------------------------------------------------------------------------------------|
+     * | -98                     | an U-turn without the knowledge if it is a right or left U-turn                                                        |
+     * | -8                      | a left U-turn                                                                                                          |
+     * | -7                      | keep left                                                                                                              |
+     * | -6                      | **not yet used**: leave roundabout                                                                                     |
+     * | -3                      | turn sharp left                                                                                                        |
+     * | -2                      | turn left                                                                                                              |
+     * | -1                      | turn slight left                                                                                                       |
+     * | 0                       | continue on street                                                                                                     |
+     * | 1                       | turn slight right                                                                                                      |
+     * | 2                       | turn right                                                                                                             |
+     * | 3                       | turn sharp right                                                                                                       |
+     * | 4                       | the finish instruction before the last point                                                                           |
+     * | 5                       | the instruction before a via point                                                                                     |
+     * | 6                       | the instruction before entering a roundabout                                                                           |
+     * | 7                       | keep right                                                                                                             |
+     * | 8                       | a right U-turn                                                                                                         |
+     * | *                       | **For future compatibility** it is important that all clients are able to handle also unknown instruction sign numbers |
      */
-    descend: number,
+    sign: number,
     /**
-     * The geometry of the route. The format depends on the value of `points_encoded`.
+     * Only available for roundabout instructions (sign is 6). The count of exits at which the route leaves the roundabout.
      */
-    points: LineString | string,
+    exit_number: number,
     /**
-     * The snapped input points. The format depends on the value of `points_encoded`.
+     * Only available for roundabout instructions (sign is 6). The radian of the route within the roundabout `0 < r < 2*PI` for clockwise and `-2*PI < r < 0` for counterclockwise turns.
      */
-    snapped_waypoints: LineString | string,
-    /**
-     * Whether the `points` and `snapped_waypoints` fields are polyline-encoded strings rather than JSON arrays of coordinates. See the field description for more information on the two formats.
-     */
-    points_encoded: boolean,
-    /**
-     * The bounding box of the route geometry. Format: `[minLon, minLat, maxLon, maxLat]`.
-     */
-    bbox: [number, number, number, number],
-    /**
-     * The instructions for this route. This feature is under active development, and our instructions can sometimes be misleading, so be mindful when using them for navigation.
-     */
-    instructions: Array<{
-      /**
-       * A description what the user has to do in order to follow the route. The language depends on the locale parameter.
-       */
-      text: string,
-      /**
-       * The name of the street to turn onto in order to follow the route.
-       */
-      street_name: string,
-      /**
-       * The distance for this instruction, in meters.
-       */
-      distance: number,
-      /**
-       * The duration for this instruction, in milliseconds.
-       */
-      time: number,
-      /**
-       * Two indices into `points`, referring to the beginning and the end of the segment of the route this instruction refers to.
-       */
-      interval: [number, number],
-      /**
-       * A number which specifies the sign to show:
-       * 
-       * | Instruction Sign Number | Description                                                                                                            |
-       * |-------------------------|------------------------------------------------------------------------------------------------------------------------|
-       * | -98                     | an U-turn without the knowledge if it is a right or left U-turn                                                        |
-       * | -8                      | a left U-turn                                                                                                          |
-       * | -7                      | keep left                                                                                                              |
-       * | -6                      | **not yet used**: leave roundabout                                                                                     |
-       * | -3                      | turn sharp left                                                                                                        |
-       * | -2                      | turn left                                                                                                              |
-       * | -1                      | turn slight left                                                                                                       |
-       * | 0                       | continue on street                                                                                                     |
-       * | 1                       | turn slight right                                                                                                      |
-       * | 2                       | turn right                                                                                                             |
-       * | 3                       | turn sharp right                                                                                                       |
-       * | 4                       | the finish instruction before the last point                                                                           |
-       * | 5                       | the instruction before a via point                                                                                     |
-       * | 6                       | the instruction before entering a roundabout                                                                           |
-       * | 7                       | keep right                                                                                                             |
-       * | 8                       | a right U-turn                                                                                                         |
-       * | *                       | **For future compatibility** it is important that all clients are able to handle also unknown instruction sign numbers |
-       */
-      sign: number,
-      /**
-       * Only available for roundabout instructions (sign is 6). The count of exits at which the route leaves the roundabout.
-       */
-      exit_number: number,
-      /**
-       * Only available for roundabout instructions (sign is 6). The radian of the route within the roundabout `0 < r < 2*PI` for clockwise and `-2*PI < r < 0` for counterclockwise turns.
-       */
-      turn_angle: number
-    }>,
-    /**
-     * Details, as requested with the `details` parameter. Consider the value `{"street_name": [[0,2,"Frankfurter Straße"],[2,6,"Zollweg"]]}`. In this example, the route uses two streets: The first, Frankfurter Straße, is used between `points[0]` and `points[2]`, and the second, Zollweg, between `points[2]` and `points[6]`. Read more about the usage of path details [here](https://discuss.graphhopper.com/t/2539).
-     */
-    details: any,
-    /**
-     * An array of indices (zero-based), specifiying the order in which the input points are visited. Only present if the `optimize` parameter was used.
-     */
-    points_order: number[]
+    turn_angle: number
   }>,
+  /**
+   * Details, as requested with the `details` parameter. Consider the value `{"street_name": [[0,2,"Frankfurter Straße"],[2,6,"Zollweg"]]}`. In this example, the route uses two streets: The first, Frankfurter Straße, is used between `points[0]` and `points[2]`, and the second, Zollweg, between `points[2]` and `points[6]`. Read more about the usage of path details [here](https://discuss.graphhopper.com/t/2539).
+   */
+  details: any,
+  /**
+   * An array of indices (zero-based), specifiying the order in which the input points are visited. Only present if the `optimize` parameter was used.
+   */
+  points_order: number[]
+}
+
+export interface RouteResponseBody {
+  paths: Array<Path>,
   info: {
     /**
      * Attribution according to our documentation is necessary if no white-label option included.

@@ -134,8 +134,8 @@ export class IncidentModel {
           "modified_by"
         FROM "incident"
         WHERE ST_DWithin(
-          "location",
-          ST_GeomFromGeoJSON($1),
+          "location"::geography,
+          ST_GeomFromGeoJSON($1)::geography,
           $2
         )
         LIMIT $3 
