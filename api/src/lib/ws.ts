@@ -20,7 +20,7 @@ wss.on("connection", (ws, req) => {
 
       const incidentModel = new IncidentModel();
 
-      const incidents = await incidentModel.getAll(1000000000);
+      const incidents = await incidentModel.getRecents(1800000, 1000000000, 0);
 
       const response: any = {};
 

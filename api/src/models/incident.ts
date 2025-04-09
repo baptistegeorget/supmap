@@ -175,10 +175,28 @@ export class IncidentModel {
         FROM "incident" i
         LEFT JOIN "incident_vote" iv ON i."id" = iv."incident_id"
         WHERE 
-          i."created_on" >= NOW() - ($1 || ' milliseconds')::interval
-          OR i."modified_on" >= NOW() - ($1 || ' milliseconds')::interval
-          OR iv."created_on" >= NOW() - ($1 || ' milliseconds')::interval
-          OR iv."modified_on" >= NOW() - ($1 || ' milliseconds')::interval
+          (
+            i."created_on" >= NOW() - ($1 || ' milliseconds')::interval
+            OR i."modified_on" >= NOW() - ($1 || ' milliseconds')::interval
+            OR iv."created_on" >= NOW() - ($1 || ' milliseconds')::interval
+            OR iv."modified_on" >= NOW() - ($1 || ' milliseconds')::interval
+          )
+          AND (
+            -- Aucun vote pour l'incident
+            NOT EXISTS (
+              SELECT 1
+              FROM "incident_vote" iv_sub
+              WHERE iv_sub."incident_id" = i."id"
+            )
+            OR
+            -- Au moins 50% de votes positifs
+            (
+              SELECT COUNT(*) FILTER (WHERE iv_sub."value" = true) * 1.0 / NULLIF(COUNT(*), 0)
+              FROM "incident_vote" iv_sub
+              WHERE iv_sub."incident_id" = i."id"
+            ) >= 0.5
+          )
+        GROUP BY i."id"
         LIMIT $2
         OFFSET $3
       `;
