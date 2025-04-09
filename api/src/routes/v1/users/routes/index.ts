@@ -208,6 +208,16 @@ router.post("/users/:userId/routes", async (req, res) => {
                 if: "in_" + incident.id,
                 multiply_by: "0"
               }
+            case "police_control":
+              return {
+                if: "in_" + incident.id,
+                multiply_by: "0.9"
+              }
+            case "roadblock":
+              return {
+                if: "in_" + incident.id,
+                multiply_by: "0.7"
+              }
             default:
               return {
                 if: "in_" + incident.id,
@@ -369,6 +379,16 @@ router.patch("/users/:userId/routes/:routeId", async (req, res) => {
               return {
                 if: "in_" + incident.id,
                 multiply_by: "0"
+              }
+            case "police_control":
+              return {
+                if: "in_" + incident.id,
+                multiply_by: "0.9"
+              }
+            case "roadblock":
+              return {
+                if: "in_" + incident.id,
+                multiply_by: "0.7"
               }
             default:
               return {

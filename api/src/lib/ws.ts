@@ -52,6 +52,16 @@ wss.on("connection", (ws, req) => {
                     if: "in_" + incident.id,
                     multiply_by: "0"
                   }
+                case "police_control":
+                  return {
+                    if: "in_" + incident.id,
+                    multiply_by: "0.9"
+                  }
+                case "roadblock":
+                  return {
+                    if: "in_" + incident.id,
+                    multiply_by: "0.7"
+                  }
                 default:
                   return {
                     if: "in_" + incident.id,
