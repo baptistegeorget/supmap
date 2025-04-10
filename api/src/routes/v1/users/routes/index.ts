@@ -3,7 +3,7 @@ import { ZodError } from "zod";
 import { User, UserModel } from "../../../../models/user.js";
 import { postRouteSchema, idSchema, limitSchema, offsetSchema, patchRouteSchema } from "../../../../lib/zod.js";
 import { RouteModel } from "../../../../models/route.js";
-import { getRoute, RouteOptions } from "../../../../lib/graphhopper.js";
+import { Body, getRoute, GraphHopperError, Options } from "../../../../lib/graphhopper.js";
 import { IncidentModel } from "../../../../models/incident.js";
 
 const router = Router();
@@ -182,7 +182,7 @@ router.post("/users/:userId/routes", async (req, res) => {
 
     const incidents = await incidentModel.getRecents(1800000, 1000000000, 0);
 
-    const routeOptions: RouteOptions = {
+    const routeOptions: Options = {
       profile,
       points,
       locale: "fr",
@@ -262,13 +262,22 @@ router.post("/users/:userId/routes", async (req, res) => {
       }
     };
 
-    const routeResponse = await getRoute(routeOptions);
+    let routeResponse: Body
+
+    try {
+      routeResponse = await getRoute(routeOptions);
+    } catch (error) {
+      routeOptions["ch.disable"] = false;
+      routeOptions.custom_model = undefined;
+
+      routeResponse = await getRoute(routeOptions);
+    }
 
     const routeModel = new RouteModel();
 
     const route = await routeModel.create(
       {
-        graphhopper_response: routeResponse.body,
+        graphhopper_response: routeResponse,
         created_by: authUser.id
       }
     );
@@ -283,6 +292,18 @@ router.post("/users/:userId/routes", async (req, res) => {
           message: error.errors.map((error) => error.message).join(", ")
         }
       );
+
+      return;
+    }
+
+    if (error instanceof GraphHopperError) {
+      res.status(400).json(
+        {
+          message: "No routes found."
+        }
+      );
+
+      console.error(error);
 
       return;
     }
@@ -354,7 +375,7 @@ router.patch("/users/:userId/routes/:routeId", async (req, res) => {
 
     const incidents = await incidentModel.getRecents(1800000, 1000000000, 0);
 
-    const routeOptions: RouteOptions = {
+    const routeOptions: Options = {
       profile,
       points,
       locale: "fr",
@@ -434,12 +455,21 @@ router.patch("/users/:userId/routes/:routeId", async (req, res) => {
       }
     };
 
-    const routeResponse = await getRoute(routeOptions);
+    let routeResponse: Body
+
+    try {
+      routeResponse = await getRoute(routeOptions);
+    } catch (error) {
+      routeOptions["ch.disable"] = false;
+      routeOptions.custom_model = undefined;
+
+      routeResponse = await getRoute(routeOptions);
+    }
 
     route = await routeModel.update(
       route.id,
       {
-        graphhopper_response: routeResponse.body,
+        graphhopper_response: routeResponse,
         modified_by: authUser.id
       }
     );
@@ -454,6 +484,18 @@ router.patch("/users/:userId/routes/:routeId", async (req, res) => {
           message: error.errors.map((error) => error.message).join(", ")
         }
       );
+
+      return;
+    }
+
+    if (error instanceof GraphHopperError) {
+      res.status(400).json(
+        {
+          message: "No routes found."
+        }
+      );
+
+      console.error(error);
 
       return;
     }

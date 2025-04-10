@@ -35,7 +35,7 @@ export interface CustomModel {
   areas?: FeatureCollection
 }
 
-export interface RouteOptions {
+export interface Options {
   /**
    * The routing profile. It determines the network, speed and other physical attributes used when computing the route. See the section about [routing profiles](https://docs.graphhopper.com/openapi/routing/postroute#tag/Map-Data-and-Routing-Profiles) for more details and valid profile values.  
    * Example: `"bike"`
@@ -185,7 +185,7 @@ export interface RouteOptions {
   "alternative_route.max_share_factor"?: number
 }
 
-export interface RouteResponseHeaders {
+export interface Headers {
   /**
    * Your current daily credit limit.
    */
@@ -304,7 +304,7 @@ export interface Path {
   points_order: number[]
 }
 
-export interface RouteResponseBody {
+export interface Body {
   paths: Array<Path>,
   info: {
     /**
@@ -315,37 +315,36 @@ export interface RouteResponseBody {
   }
 }
 
-export interface RouteResponse {
-  headers: RouteResponseHeaders,
-  body: RouteResponseBody
+export class GraphHopperError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "GraphHopperError";
+  }
 }
 
 /**
  * Calculate a route
- * @param routeOptions Options to calculate the route
+ * @param options Options to calculate the route
  * @returns The route response body
  * @throws Error if the GraphHopper API key is not set or if the request fails
  */
-export async function getRoute(routeOptions: RouteOptions) {
+export async function getRoute(options: Options) {
   try {
     const graphhopperResponse = await fetch(`https://graphhopper.com/api/1/route?key=${API_KEY}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(routeOptions)
+      body: JSON.stringify(options)
     });
 
     if (!graphhopperResponse.ok) {
-      throw new Error(`GraphHopper API error: ${graphhopperResponse.status} ${graphhopperResponse.statusText}`);
+      const message = (await graphhopperResponse.json()).message as string;
+
+      throw new GraphHopperError(message);
     }
 
-    const response: RouteResponse = {
-      headers: graphhopperResponse.headers as Headers & RouteResponseHeaders,
-      body: await graphhopperResponse.json() as RouteResponseBody
-    }
-
-    return response;
+    return await graphhopperResponse.json() as Body;
   } catch (error) {
     throw error;
   }
