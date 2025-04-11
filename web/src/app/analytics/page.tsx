@@ -51,7 +51,7 @@ export default function Page() {
   }, [token]);
 
   return (
-    <div className="flex flex-col px-3 py-4 h-full w-full bg-gray-50 overflow-hidden">
+    <div className="flex flex-col px-4 py-4 h-full w-full bg-gray-50 overflow-hidden analyse_container">
       <div className="analyse_header">
         <div className="analyse_header--welcome">
           <h1 className="text-2xl font-bold">
@@ -62,7 +62,9 @@ export default function Page() {
         <div className="analyse_header--date">
           <span className="text-gray-600">{new Date().toLocaleDateString()}</span>
         </div>
-
+        <div className="data_container">
+          
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,17 @@
 /*Style de la page des KPI*/
 
+.analyse_container{
+    position: relative;
+}
 .analyse_header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.analyse_header--date span {
+    font-size: 1.2rem;
+    text-decoration: it;
+    font-weight: 600;
+    color: var(--blue);
 }
