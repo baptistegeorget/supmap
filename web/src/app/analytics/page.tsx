@@ -1,17 +1,3 @@
-// import { verify, encrypt, decrypt } from "../../../../api/dist/lib/crypto";
-
-// export default function Page() {
-//   return (
-//     <div className="flex flex-col h-full w-full bg-gray-50 overflow-hidden">
-//       <div className="analyse_header">
-//         <h1 className="text-2xl font-bold">Analytics</h1>
-//         <p className="text-gray-600">Visualisez vos données de manière intuitive.</p>
-//       </div>
-      
-//     </div>
-//   );
-// }
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -62,8 +48,34 @@ export default function Page() {
         <div className="analyse_header--date">
           <span className="text-gray-600">{new Date().toLocaleDateString()}</span>
         </div>
-        <div className="data_container">
-          
+      </div>
+      <div className="analysis_content">
+
+        <div className="analysis_content--kpis">
+          <div className="analysis_content--kpis--card">
+            <h2 className="text-lg font-bold">Total des trajets</h2>
+            <p className="text-2xl font-bold">150</p>
+          </div>
+
+          <div className="analysis_content--kpis--card">
+            <h2 className="text-lg font-bold">Distance moyenne</h2>
+            <p className="text-2xl font-bold">25 km</p>
+          </div>
+
+          <div className="analysis_content--kpis--card">
+            <h2 className="text-lg font-bold">Total des trajets</h2>
+            <p className="text-2xl font-bold">150</p>
+          </div>
+
+          <div className="analysis_content--kpis--card">
+            <h2 className="text-lg font-bold">Distance moyenne</h2>
+            <p className="text-2xl font-bold">25 km</p>
+          </div>
+
+        </div>
+
+        <div className="analysis_content--diagrams">
+
         </div>
       </div>
     </div>
