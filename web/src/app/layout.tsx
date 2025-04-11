@@ -1,4 +1,6 @@
 import './globals.css';
+import './analytics/analytics.css';
+
 import SideNav from './ui/components/sidenav';
 
 export const metadata = {
@@ -25,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="w-full flex-none md:w-64">
             <SideNav />
           </div>
-          <div className="flex-1 overflow-auto">{children}</div>
+          <div className="flex-1 px-3 py-4 overflow-auto">{children}</div>
         </div>
       </body>
     </html>
