@@ -51,7 +51,7 @@ export default function Page() {
   }, [token]);
 
   return (
-    <div className="flex flex-col h-full w-full bg-gray-50 overflow-hidden">
+    <div className="flex flex-col px-3 py-4 h-full w-full bg-gray-50 overflow-hidden">
       <div className="analyse_header">
         <div className="analyse_header--welcome">
           <h1 className="text-2xl font-bold">

@@ -7,6 +7,8 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --blue: #402588;
+  --orange: #ff4c43;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -28,4 +30,8 @@ body {
   top: 300;
   right: 8px; /* Ajuster la distance par rapport au bord droit */
   z-index: 1000;
+}
+
+html {
+  font: 10px
 }

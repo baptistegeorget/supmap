@@ -1,4 +1,7 @@
+/*Style de la page des KPI*/
 
-.test{
-    background-color: red;
+.analyse_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
