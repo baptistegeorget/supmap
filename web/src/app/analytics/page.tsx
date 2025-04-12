@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Cookie from "js-cookie";
 
 export default function Page() {
-  const [userData, setUserData] = useState({ email: "", username: "", picture: "" });
+  const [userData, setUserData] = useState({id: "", email: "", username: "", picture: "" });
   const [statsData, setStatsData] = useState<any>(null);
   const [token, setToken] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
@@ -31,7 +31,7 @@ export default function Page() {
           });
           if (!response.ok) throw new Error("Impossible de récupérer les données utilisateur");
           const data = await response.json();
-          setUserData({ email: data.email, username: data.name, picture: data.picture || "" });
+          setUserData({ id: data.id, email: data.email, username: data.name, picture: data.picture || "" });
         } catch (error) {
           console.error("Erreur utilisateur :", error);
         }
@@ -50,7 +50,7 @@ export default function Page() {
 
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/1/stats?start=${startParam}&end=${endParam}`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/${userData.id}/stats?start=${startParam}&end=${endParam}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
