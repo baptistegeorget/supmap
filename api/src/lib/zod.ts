@@ -141,7 +141,9 @@ export const incidentTypeSchema = zodEnum(
   [
     "accident",
     "traffic_jam",
-    "road_closed"
+    "road_closed",
+    "police_control",
+    "roadblock"
   ],
   {
     required_error: "Incident type is required."
