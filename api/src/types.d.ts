@@ -61,6 +61,7 @@ interface Stats {
   total_distance_km: number,
   total_time: number,
   average_time: number,
+  total_signalements: number,
   total_accidents: number,
   total_traffic_jams: number,
   total_road_closed: number,
