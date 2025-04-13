@@ -1,8 +1,7 @@
 import { WebSocketServer, WebSocket } from "ws";
 import { IncidentModel } from "../models/incident.js";
 import polyline from "@mapbox/polyline";
-import { RouteOptions } from "./graphhopper.js";
-import { getRoute } from "./graphhopper.js";
+import { Options, getRoute, Body } from "./graphhopper.js";
 
 export const wss = new WebSocketServer({ noServer: true });
 
@@ -25,7 +24,7 @@ wss.on("connection", (ws, req) => {
       const response: any = {};
 
       if (!isPointOnRoute(location, currentPoints)) {
-        const routeOptions: RouteOptions = {
+        const routeOptions: Options = {
           profile,
           points: [
             location,
@@ -106,9 +105,18 @@ wss.on("connection", (ws, req) => {
           }
         };
 
-        const graphHopperResponse = await getRoute(routeOptions);
+        let graphHopperResponse: Body
 
-        (ws as WebSocket & { points: Array<[number, number]> }).points = polyline.decode(graphHopperResponse.body.paths[0].points as string).map((point: number[]) => [point[1], point[0]]);
+        try {
+          graphHopperResponse = await getRoute(routeOptions);
+        } catch (error) {
+          routeOptions["ch.disable"] = false;
+          routeOptions.custom_model = undefined;
+
+          graphHopperResponse = await getRoute(routeOptions);
+        }
+
+        (ws as WebSocket & { points: Array<[number, number]> }).points = polyline.decode(graphHopperResponse.paths[0].points as string).map((point: number[]) => [point[1], point[0]]);
 
         response.graphhopper_response = graphHopperResponse;
       }
