@@ -22,3 +22,36 @@
     align-items: center;
     margin-top: 2rem;
 }
+
+.analysis_content{
+    display: flex;
+    flex-direction: column;
+    margin-top: 1rem;
+}
+
+.analysis_content--kpis {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+}
+
+.analysis_content--kpis .kpi_card {
+    width: 100%;
+}
+
+.analysis_content--diagrams {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+}
+.analysis_content--diagrams .diagram_card {
+    width: 100%;
+}
+
+.analyse_header--date .date {
+    color: black;
+    font-weight: 400;
+    font-style: italic;
+}

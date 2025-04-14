@@ -223,7 +223,9 @@ export default function Page() {
           <p className="text-gray-600">Gardez un oeil sur vos données de navigation</p>
         </div>
         <div className="analyse_header--date">
-          <span className="text-gray-600">{new Date().toLocaleDateString()}</span>
+          <span className="date">
+          le {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          </span>
         </div>
       </div>
 
@@ -278,7 +280,7 @@ export default function Page() {
           </div>
           <div className="analysis_content--kpis--card">
             <h2 className="kpis_card--h2">Nombre de signalements</h2>
-            <p className="kpi">{loading ? "..." : statsData?.total_signalements}</p>
+            <p className="kpi">{loading ? "..." : statsData?.total_signalements ?? "-"}</p>
           </div>
         </div>
 
