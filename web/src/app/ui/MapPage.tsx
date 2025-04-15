@@ -98,20 +98,28 @@ const MapPage = () => {
         }),
       });
 
-      if (!routeResponse.ok) {
-        throw new Error("Erreur lors de la création de l'itinéraire.");
-      }
 
       const data = await routeResponse.json();
+
+      if (!routeResponse.ok) {
+        const apiErrorMessage = data?.message || "Erreur lors de la création de l'itinéraire.";
+        throw new Error(apiErrorMessage);
+      }
+
       console.log("Réponse de l'itinéraire:", data);
 
       // Mise à jour de l'état avec l'itinéraire
       setRoute(data.graphhopper_response); // Met à jour avec la réponse complète
 
-    } catch (error) {
-      console.error("Erreur lors de la récupération de l'itinéraire:", error);
-      setErrorMessage("Erreur lors de la récupération de l'itinéraire.");
-    }
+    } catch (error: unknown) {  // Utilisation de `unknown` au lieu de `Error`
+      if (error instanceof Error) {
+        console.error("Erreur lors de la récupération de l'itinéraire:", error);
+        setErrorMessage(error.message || "Une erreur inattendue est survenue.");
+      } else {
+        console.error("Erreur inconnue", error);
+        setErrorMessage("Une erreur inattendue est survenue.");
+      }
+    }  
   };
 
   const sendToMobile = async () => {

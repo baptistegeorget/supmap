@@ -83,7 +83,7 @@ function SideNavContent() {
     Cookie.remove("auth_token");
     localStorage.removeItem("token");
     setUserName(null);
-    window.location.reload(); // Recharge la page pour appliquer les changements
+    window.location.href = "/"; // Recharge la page pour appliquer les changements
   };
 
   return (
@@ -101,19 +101,22 @@ function SideNavContent() {
         <div className="hidden h-auto w-full grow rounded-md bg-gray-50 md:block"></div>
 
         {/* Lien vers les paramètres */}
-        <Link
-          href="/settings"
-          className={clsx(
-            "flex h-[48px] grow items-center justify-center gap-2 rounded-md p-3 text-sm font-medium hover:bg-customPurple hover:bg-opacity-15 hover:text-customOrange md:flex-none md:justify-start md:p-2 md:px-3",
-            {
-              "bg-customPurple bg-opacity-15 text-customOrange": pathname === "/settings",
-              "bg-gray-50 text-customPurple": pathname !== "/settings",
-            }
-          )}
-        >
-          <Cog6ToothIcon className="w-6" />
-          <div className="hidden md:block">Paramètres</div>
-        </Link>
+        {userName && (
+          <Link
+            href="/settings"
+            className={clsx(
+              "flex h-[48px] grow items-center justify-center gap-2 rounded-md p-3 text-sm font-medium hover:bg-customPurple hover:bg-opacity-15 hover:text-customOrange md:flex-none md:justify-start md:p-2 md:px-3",
+              {
+                "bg-customPurple bg-opacity-15 text-customOrange": pathname === "/settings",
+                "bg-gray-50 text-customPurple": pathname !== "/settings",
+              }
+            )}
+          >
+            <Cog6ToothIcon className="w-6" />
+            <div className="hidden md:block">Paramètres</div>
+          </Link>
+        )}
+
 
         {/* Bouton connexion/déconnexion */}
         {userName ? (

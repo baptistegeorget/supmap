@@ -13,7 +13,25 @@ import {
   BarElement,
   Title,
 } from 'chart.js';
-import { sign } from "crypto";
+
+interface StatsData {
+  total_routes: number;
+  average_distance_km: number;
+  total_time: string;
+  total_signalements: number;
+  total_accidents: number;
+  total_traffic_jams: number;
+  total_road_closed: number;
+  total_police_control: number;
+  total_roadblock: number;
+}
+
+interface Route {
+  created_on: string;
+  // Ajoute d'autres champs si nécessaires plus tard
+}
+
+
 
 ChartJS.register(
   ArcElement,
@@ -37,7 +55,7 @@ export default function Page() {
   const isDateRangeValid = new Date(startDate) <= new Date(endDate);
 
   // States data
-  const [statsData, setStatsData] = useState<any>(null);
+  const [statsData, setStatsData] = useState<StatsData | null>(null);
   const [routesPerMonthData, setRoutesPerMonthData] = useState<number[]>(Array(12).fill(0));
   const [incidentCounts, setIncidentCounts] = useState({
     signalements: 0,
@@ -81,7 +99,7 @@ export default function Page() {
   }, [token]);
 
   // Fonction pour récupérer les trajets
-  const fetchRoutesData = async (): Promise<any[]> => {
+  const fetchRoutesData = async (): Promise<Route[]> => {
     if (!token || !userData.id || !startDate || !endDate || !isDateRangeValid) return [];
 
     const startParam = `${startDate}T00:00:00Z`;
@@ -105,7 +123,7 @@ export default function Page() {
   };
 
   // Regroupement des trajets par mois
-  const countRoutesPerMonth = (routes: any[]) => {
+  const countRoutesPerMonth = (routes: Route[]) => {
     const counts = Array(12).fill(0);
     routes.forEach((route) => {
       const date = new Date(route.created_on);
@@ -157,7 +175,7 @@ export default function Page() {
   };
 
   // Calcul total incidents
-  const totalIncidents = Object.values(incidentCounts).reduce((acc, val) => acc + val, 0);
+  // const totalIncidents = Object.values(incidentCounts).reduce((acc, val) => acc + val, 0);
 
   // Données du Pie Chart des incidents
   const incidentChartData = {

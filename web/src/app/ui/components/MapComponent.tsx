@@ -13,17 +13,28 @@ interface MapComponentProps {
 }
 
 const loadGoogleMaps = (callback: () => void) => {
+  if (typeof window === "undefined") return;
+
   if (window.google && window.google.maps) {
     callback();
     return;
   }
+
+  const existingScript = document.querySelector("script[src^='https://maps.googleapis.com/maps/api/js']");
+
+  if (existingScript) {
+    existingScript.addEventListener("load", callback); // Attendre que l'existant se charge
+    return;
+  }
+
   const script = document.createElement("script");
-  script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=geometry`;
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places,geometry`;
   script.async = true;
   script.defer = true;
-  script.onload = callback;
+  script.addEventListener("load", callback);
   document.head.appendChild(script);
 };
+
 
 const formatDuration = (milliseconds: number) => {
   const minutes = Math.floor(milliseconds / 60000);

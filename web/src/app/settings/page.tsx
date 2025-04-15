@@ -91,7 +91,7 @@ export default function Page() {
       });
 
       setIsModalOpen(false);
-      window.location.reload();
+      window.location.href = "/";
     } catch (error) {
       console.error("Erreur lors de la mise à jour :", error);
       setErrorMessage("Une erreur est survenue lors de la mise à jour.");
