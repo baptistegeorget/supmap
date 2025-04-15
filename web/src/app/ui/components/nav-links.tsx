@@ -7,16 +7,42 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
+import Cookie from "js-cookie";
+import { useEffect, useState } from "react";
 
-// Map of links to display in the side navigation.
-// Depending on the size of the application, this would be stored in a database.
-const links = [
-  { name: 'Carte', href: '/', icon: MapIcon },
-  { name: 'Analyse', href: '/analytics', icon: ChartPieIcon },
-];
+// Définition du type pour les éléments de liens
+type LinkItem = {
+  name: string;
+  href: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+};
 
 export default function NavLinks() {
   const pathname = usePathname();
+  const [links, setLinks] = useState<LinkItem[]>([]);  // Utilisation du type LinkItem
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token") || Cookie.get("auth_token");
+
+    if (token) {
+      setLinks([
+        { name: 'Carte', href: '/', icon: MapIcon },
+        { name: 'Analyse', href: '/analytics', icon: ChartPieIcon },
+      ]);
+    } else {
+      setLinks([
+        { name: 'Carte', href: '/', icon: MapIcon },
+      ]);
+    }
+
+    setHasMounted(true);
+  }, []);
+
+  if (!hasMounted) {
+    return null; // Évite le rendu pendant SSR
+  }
+
   return (
     <>
       {links.map((link) => {
@@ -32,7 +58,7 @@ export default function NavLinks() {
                 'bg-gray-50 text-customPurple': pathname !== link.href,
               },
             )}
-            >
+          >
             <LinkIcon className="w-6" />
             <p className="hidden md:block">{link.name}</p>
           </Link>

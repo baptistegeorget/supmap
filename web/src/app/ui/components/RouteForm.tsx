@@ -1,27 +1,7 @@
-import { useState } from "react";
+"use client";
+
+import { useEffect, useRef } from "react";
 import { ArrowsUpDownIcon, DevicePhoneMobileIcon } from "@heroicons/react/24/outline";
-
-const API_KEY = process.env.NEXT_PUBLIC_GRAPHHOPPER_API_KEY;
-
-interface Suggestion {
-  housenumber?: string;
-  name: string;
-  city: string;
-  point: {
-    lat: number;
-    lng: number;
-  };
-}
-
-
-// Fonction pour appeler l'API de géocodage avec un délai de 10 secondes
-const getGeocodingSuggestions = async (query: string) => {
-  const url = `https://graphhopper.com/api/1/geocode?q=${encodeURIComponent(query)}&locale=fr&limit=5&key=${API_KEY}`;
-  console.log("Fetching geocoding suggestions from:", url);
-  const response = await fetch(url);
-  const data = await response.json();
-  return data.hits || [];
-};
 
 const RouteForm = ({
   from,
@@ -50,44 +30,54 @@ const RouteForm = ({
   errorMessage: string;
   swapFields: () => void;
 }) => {
-  const [fromSuggestions, setFromSuggestions] = useState<Suggestion[]>([]);
-  const [toSuggestions, setToSuggestions] = useState<Suggestion[]>([]);
-  const [inputTimeout, setInputTimeout] = useState<NodeJS.Timeout | null>(null);
+  const fromInputRef = useRef<HTMLInputElement>(null);
+  const toInputRef = useRef<HTMLInputElement>(null);
 
-  // Recherche d'adresses avec un délai
-  const handleSearch = (query: string, setSuggestions: (suggestions: Suggestion[]) => void) => {
-    if (query.length < 3) {
-      setSuggestions([]);
-      return;
+  useEffect(() => {
+    if (typeof window !== "undefined" && !window.google) {
+      const existingScript = document.querySelector("script[src^='https://maps.googleapis.com/maps/api/js']");
+      if (existingScript && existingScript instanceof HTMLScriptElement){
+        existingScript.addEventListener("load", initAutocomplete);
+      }
+    } else {
+      initAutocomplete();
     }
+  }, []);
 
-    if (inputTimeout) {
-      clearTimeout(inputTimeout);
-    }
+  const initAutocomplete = () => {
+    if (!window.google || !fromInputRef.current || !toInputRef.current) return;
 
-    const timeout = setTimeout(async () => {
-      const results = await getGeocodingSuggestions(query);
-      setSuggestions(results);
-    }, 2000); // Délai de 2 secondes
+    const fromAutocomplete = new window.google.maps.places.Autocomplete(fromInputRef.current, {
+      types: ["geocode"],
+      componentRestrictions: { country: "fr" },
+    });
 
-    setInputTimeout(timeout);
-  };
+    const toAutocomplete = new window.google.maps.places.Autocomplete(toInputRef.current, {
+      types: ["geocode"],
+      componentRestrictions: { country: "fr" },
+    });
 
-  // Sélection d'une adresse
-  const handleAddressSelect = (
-    address: Suggestion,
-    setAddress: (value: string) => void,
-    setCoords: (coords: { lat: number; lng: number } | null) => void,
-    setSuggestions: (suggestions: Suggestion[]) => void
-  ) => {
-    const { lat, lng } = address.point;
-    const formattedAddress = address.housenumber
-      ? `${address.housenumber} ${address.name}, ${address.city}`
-      : `${address.name}, ${address.city}`;
+    fromAutocomplete.addListener("place_changed", () => {
+      const place = fromAutocomplete.getPlace();
+      if (place.geometry?.location) {
+        const lat = place.geometry.location.lat();
+        const lng = place.geometry.location.lng();
+        const address = place.formatted_address || "";
+        setFrom(address);
+        setFromCoords({ lat, lng });
+      }
+    });
 
-    setAddress(formattedAddress);
-    setCoords({ lat, lng });
-    setSuggestions([]);
+    toAutocomplete.addListener("place_changed", () => {
+      const place = toAutocomplete.getPlace();
+      if (place.geometry?.location) {
+        const lat = place.geometry.location.lat();
+        const lng = place.geometry.location.lng();
+        const address = place.formatted_address || "";
+        setTo(address);
+        setToCoords({ lat, lng });
+      }
+    });
   };
 
   return (
@@ -100,31 +90,13 @@ const RouteForm = ({
               De :
             </span>
             <input
+              ref={fromInputRef}
               type="text"
               value={from}
-              onChange={(e) => {
-                setFrom(e.target.value);
-                handleSearch(e.target.value, setFromSuggestions);
-              }}
+              onChange={(e) => setFrom(e.target.value)}
               placeholder="Départ"
               className="w-full pl-16 pr-8 py-2 bg-gray-100 rounded-3xl border border-gray-300 focus:ring-2 focus:ring-customOrange focus:outline-none text-customPurple focus:text-customOrange hover:text-customOrange focus:border-customOrange hover:border-customOrange"
             />
-            {/* Liste de suggestions "De" sous le champ */}
-            {fromSuggestions.length > 0 && (
-              <ul className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-lg mt-1 z-50 shadow-md">
-                {fromSuggestions.map((suggestion, index) => (
-                  <li
-                    key={index}
-                    className="p-2 cursor-pointer hover:bg-gray-100"
-                    onClick={() =>
-                      handleAddressSelect(suggestion, setFrom, setFromCoords, setFromSuggestions)
-                    }
-                  >
-                    {suggestion.housenumber} {suggestion.name}, {suggestion.city}
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
 
           {/* Champ "Vers" */}
@@ -133,31 +105,13 @@ const RouteForm = ({
               Vers :
             </span>
             <input
+              ref={toInputRef}
               type="text"
               value={to}
-              onChange={(e) => {
-                setTo(e.target.value);
-                handleSearch(e.target.value, setToSuggestions);
-              }}
+              onChange={(e) => setTo(e.target.value)}
               placeholder="Destination"
               className="w-full pl-16 pr-8 py-2 bg-gray-100 rounded-3xl border border-gray-300 focus:ring-2 focus:ring-customOrange focus:outline-none text-customPurple focus:text-customOrange hover:text-customOrange focus:border-customOrange hover:border-customOrange"
             />
-            {/* Liste de suggestions "Vers" sous le champ */}
-            {toSuggestions.length > 0 && (
-              <ul className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-lg mt-1 z-50 shadow-md">
-                {toSuggestions.map((suggestion, index) => (
-                  <li
-                    key={index}
-                    className="p-2 cursor-pointer hover:bg-gray-100"
-                    onClick={() =>
-                      handleAddressSelect(suggestion, setTo, setToCoords, setToSuggestions)
-                    }
-                  >
-                    {suggestion.housenumber} {suggestion.name}, {suggestion.city}
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
         </div>
 

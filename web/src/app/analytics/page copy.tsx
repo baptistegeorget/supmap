@@ -3,9 +3,22 @@
 import { useState, useEffect } from "react";
 import Cookie from "js-cookie";
 
+interface StatsData {
+  total_routes: number;
+  average_distance_km: number;
+  average_time: number;
+  total_time: string;
+  total_signalements: number;
+  total_accidents: number;
+  total_traffic_jams: number;
+  total_road_closed: number;
+  total_police_control: number;
+  total_roadblock: number;
+}
+
 export default function Page() {
   const [userData, setUserData] = useState({id: "", email: "", username: "", picture: "" });
-  const [statsData, setStatsData] = useState<any>(null);
+  const [statsData, setStatsData] = useState<StatsData | null>(null);
   const [token, setToken] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
 
