@@ -85,10 +85,12 @@ router.post("/auth/signin", async (req, res) => {
 
 router.get("/auth/google", async (req, res) => {
   try {
+    const redirectUri = req.headers["User-Agent"]?.includes("Mobile") || req.headers["User-Agent"]?.includes("Tablet") || req.headers["User-Agent"]?.includes("Android") ? GOOGLE_REDIRECT_URI_MOBILE : GOOGLE_REDIRECT_URI_WEB;
+    console.log("Google redirect URI : ", redirectUri);
     const oAuth2Client = new OAuth2Client(
       GOOGLE_CLIENT_ID,
       GOOGLE_CLIENT_SECRET,
-      req.headers["User-Agent"]?.includes("Mobile") || req.headers["User-Agent"]?.includes("Tablet") || req.headers["User-Agent"]?.includes("Android") ? GOOGLE_REDIRECT_URI_MOBILE : GOOGLE_REDIRECT_URI_WEB
+      redirectUri
     );
 
     const url = oAuth2Client.generateAuthUrl(
