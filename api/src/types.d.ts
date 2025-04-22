@@ -68,3 +68,13 @@ interface Stats {
   total_police_control: number,
   total_roadblock: number
 }
+
+interface UserInfo {
+  sub: string,
+  name?: string,
+  given_name?: string,
+  family_name?: string,
+  picture?: string,
+  email: string,
+  email_verified: boolean
+}

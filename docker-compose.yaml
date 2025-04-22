@@ -26,7 +26,8 @@ services:
       - CRYPTO_KEY=${CRYPTO_KEY}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      - GOOGLE_REDIRECT_URI=http://localhost
+      - GOOGLE_REDIRECT_URI_WEB=http://localhost
+      - GOOGLE_REDIRECT_URI_MOBILE=supmap://google/callback
       - GRAPHHOPPER_API_KEY=${GRAPHHOPPER_API_KEY}
     ports:
       - "8000:8000"

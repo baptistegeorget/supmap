@@ -3,13 +3,21 @@ import { ZodError } from "zod";
 import jwt from "jsonwebtoken";
 import { googleCallbackSchema, signInSchema } from "../../../lib/zod.js";
 import { verify, encrypt, decrypt } from "../../../lib/crypto.js";
-import { oAuth2Client as googleOAuth2Client, UserInfo } from "../../../lib/google-auth-library.js";
 import { User, UserModel } from "../../../models/user.js";
 import { auth } from "../../../middlewares/auth.js";
+import { OAuth2Client } from "google-auth-library";
 
 if (!process.env.JWT_SECRET) throw new Error("Missing environment variable: JWT_SECRET");
+if (!process.env.GOOGLE_CLIENT_ID) throw new Error("Missing environment variable: GOOGLE_CLIENT_ID");
+if (!process.env.GOOGLE_CLIENT_SECRET) throw new Error("Missing environment variable: GOOGLE_CLIENT_SECRET");
+if (!process.env.GOOGLE_REDIRECT_URI_WEB) throw new Error("Missing environment variable: GOOGLE_REDIRECT_URI_WEB");
+if (!process.env.GOOGLE_REDIRECT_URI_MOBILE) throw new Error("Missing environment variable: GOOGLE_REDIRECT_URI_MOBILE");
 
 const JWT_SECRET = process.env.JWT_SECRET;
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+const GOOGLE_REDIRECT_URI_WEB = process.env.GOOGLE_REDIRECT_URI_WEB;
+const GOOGLE_REDIRECT_URI_MOBILE = process.env.GOOGLE_REDIRECT_URI_MOBILE;
 
 const router = Router();
 
@@ -75,9 +83,15 @@ router.post("/auth/signin", async (req, res) => {
   }
 });
 
-router.get("/auth/google", async (_req, res) => {
+router.get("/auth/google", async (req, res) => {
   try {
-    const url = googleOAuth2Client.generateAuthUrl(
+    const oAuth2Client = new OAuth2Client(
+      GOOGLE_CLIENT_ID,
+      GOOGLE_CLIENT_SECRET,
+      req.headers["user-agent"]?.includes("Mobile") ? GOOGLE_REDIRECT_URI_MOBILE : GOOGLE_REDIRECT_URI_WEB
+    );
+
+    const url = oAuth2Client.generateAuthUrl(
       {
         access_type: "offline",
         scope: [
@@ -110,17 +124,23 @@ router.get("/auth/google", async (_req, res) => {
 
 router.post("/auth/google/callback", async (req, res) => {
   try {
+    const oAuth2Client = new OAuth2Client(
+      GOOGLE_CLIENT_ID,
+      GOOGLE_CLIENT_SECRET,
+      req.headers["user-agent"]?.includes("Mobile") ? GOOGLE_REDIRECT_URI_MOBILE : GOOGLE_REDIRECT_URI_WEB
+    );
+
     const {
       code
     } = googleCallbackSchema.parse(req.body);
 
     const {
       tokens
-    } = await googleOAuth2Client.getToken(code);
+    } = await oAuth2Client.getToken(code);
 
-    googleOAuth2Client.setCredentials(tokens);
+    oAuth2Client.setCredentials(tokens);
 
-    const response = await googleOAuth2Client.request<UserInfo>(
+    const response = await oAuth2Client.request<UserInfo>(
       {
         url: "https://www.googleapis.com/oauth2/v3/userinfo"
       }
