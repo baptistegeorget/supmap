@@ -18,6 +18,7 @@ interface StatsData {
   total_routes: number;
   average_distance_km: number;
   total_time: string;
+  average_time: string;
   total_signalements: number;
   total_accidents: number;
   total_traffic_jams: number;
@@ -288,20 +289,24 @@ export default function Page() {
       <div className="analysis_content">
         <div className="analysis_content--kpis">
           <div className="analysis_content--kpis--card">
-            <h2 className="kpis_card--h2">Nombre de trajets</h2>
+            <h2 className="kpis_card--h2 text-gray-600">Trajets effectués</h2>
             <p className="kpi">{loading ? "..." : statsData?.total_routes ?? "-"}</p>
           </div>
           <div className="analysis_content--kpis--card">
-            <h2 className="kpis_card--h2">Distance moyenne des trajets</h2>
+            <h2 className="kpis_card--h2 text-gray-600">Distance moyenne</h2>
             <p className="kpi">{loading ? "..." : statsData?.average_distance_km ? `${statsData.average_distance_km} km` : "-"}</p>
             
           </div>
           <div className="analysis_content--kpis--card">
-            <h2 className="kpis_card--h2">Durée des trajets</h2>
+            <h2 className="kpis_card--h2 text-gray-600">Durée totale</h2>
             <p className="kpi">{loading ? "..." : statsData?.total_time ?? "-"}</p>
           </div>
           <div className="analysis_content--kpis--card">
-            <h2 className="kpis_card--h2">Nombre de signalements</h2>
+            <h2 className="kpis_card--h2 text-gray-600">Durée moyenne</h2>
+            <p className="kpi">{loading ? "..." : statsData?.average_time ?? "-"}</p>
+          </div>
+          <div className="analysis_content--kpis--card">
+            <h2 className="kpis_card--h2 text-gray-600">Signalements</h2>
             <p className="kpi">{loading ? "..." : statsData?.total_signalements ?? "-"}</p>
           </div>
         </div>
