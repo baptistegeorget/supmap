@@ -28,10 +28,7 @@ interface StatsData {
 
 interface Route {
   created_on: string;
-  // Ajoute d'autres champs si nécessaires plus tard
 }
-
-
 
 ChartJS.register(
   ArcElement,
@@ -49,12 +46,12 @@ export default function Page() {
   const [token, setToken] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
 
-  // States filtres dates
+  // Statss filtres dates
   const [startDate, setStartDate] = useState("2025-01-01");
   const [endDate, setEndDate] = useState("2025-12-31");
   const isDateRangeValid = new Date(startDate) <= new Date(endDate);
 
-  // States data
+  // Stats data
   const [statsData, setStatsData] = useState<StatsData | null>(null);
   const [routesPerMonthData, setRoutesPerMonthData] = useState<number[]>(Array(12).fill(0));
   const [incidentCounts, setIncidentCounts] = useState({
@@ -152,7 +149,7 @@ export default function Page() {
         const stats = await statsResponse.json();
         setStatsData(stats);
 
-        // Mettre à jour les incidents
+        // Mises à jour des incidents
         setIncidentCounts({
           signalements: stats?.total_signalements || 0,
           accidents: stats?.total_accidents || 0,
@@ -240,9 +237,14 @@ export default function Page() {
           </h1>
           <p className="text-gray-600">Gardez un oeil sur vos données de navigation</p>
         </div>
-        <div className="analyse_header--date">
-          <span className="date">
+        <div className="analyse_header--date analyse_header--date--desktop">
+          <span className="date text-gray-600">
           le {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          </span>
+        </div>
+        <div className="analyse_header--date analyse_header--date--responsive">
+          <span className="date text-gray-600">
+            {new Date().toLocaleDateString('fr-FR')}
           </span>
         </div>
       </div>
