@@ -251,27 +251,29 @@ export default function Page() {
 
       {/* Filtres de date */}
       <div className="filters_container">
-        <div className="filters_container--filter">
-          <label htmlFor="startDate" className="text-gray-600">Date de début</label>
-          <input
-            type="date"
-            id="startDate"
-            className="border rounded p-2"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
+        <div className="filters_input">
+          <div className="filters_container--filter">
+            <label htmlFor="startDate" className="text-gray-600">Date de début</label>
+            <input
+              type="date"
+              id="startDate"
+              className="border rounded p-2"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </div>
+          <div className="filters_container--filter">
+            <label htmlFor="endDate" className="text-gray-600">Date de fin</label>
+            <input
+              type="date"
+              id="endDate"
+              className="border rounded p-2"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </div>
         </div>
-        <div className="filters_container--filter">
-          <label htmlFor="endDate" className="text-gray-600">Date de fin</label>
-          <input
-            type="date"
-            id="endDate"
-            className="border rounded p-2"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-          />
-        </div>
-        <div className="filters_container--filter mt-2">
+        <div className="filters_container--filter filters_container--filter--button">
           <button
             className={`bg-customOrange text-white px-4 py-2 rounded ${!isDateRangeValid || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={fetchStatsData}
