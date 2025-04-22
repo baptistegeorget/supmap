@@ -230,7 +230,7 @@ export default function Page() {
   };
 
   return (
-    <div className="flex flex-col px-4 py-4 h-full w-full bg-gray-50 overflow-hidden analyse_container">
+    <div className="flex flex-col px-4 py-4 h-full w-full bg-gray-50 overflow-auto analyse_container">
       <div className="analyse_header">
         <div className="analyse_header--welcome">
           <h1 className="text-2xl font-bold">
