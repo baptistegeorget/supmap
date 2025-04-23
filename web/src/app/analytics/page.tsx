@@ -17,7 +17,7 @@ import {
   ChartOptions
 } from 'chart.js';
 import { barRoutesChartData, barRoutesChartOptions } from "@/charts/barRoutesChart";
-import { pieIncidentsChartData, pieIncidentsChartOptions } from "@/charts/pieIncidentsChart";
+import { barIncidentsChartData, barIncidentsChartOptions } from "@/charts/barIncidentsChart";
 
 interface StatsData {
   total_routes: number;
@@ -293,7 +293,7 @@ export default function Page() {
         <div className="analysis_content--diagrams">
           <div className="diagram_card diagram_card--pie">
             <h2 className="kpis_card--h2">Répartition des incidents</h2>
-            <Pie data={pieIncidentsChartData(incidentCounts)} options={pieIncidentsChartOptions} />
+            <Bar data={barIncidentsChartData(incidentCounts)} options={barIncidentsChartOptions} />
           </div>
           <div className="diagram_card diagram_card--bar">
             <h2 className="kpis_card--h2">Répartition des trajets</h2>

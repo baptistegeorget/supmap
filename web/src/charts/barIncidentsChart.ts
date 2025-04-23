@@ -1,6 +1,6 @@
 import { ChartOptions } from "chart.js";
 
-export const pieIncidentsChartData = (incidentCounts: {
+export const barIncidentsChartData = (incidentCounts: {
   accidents: number;
   trafficJams: number;
   roadClosed: number;
@@ -16,6 +16,7 @@ export const pieIncidentsChartData = (incidentCounts: {
   ],
   datasets: [
     {
+      label: 'Signalements',
       data: [
         incidentCounts.accidents,
         incidentCounts.trafficJams,
@@ -23,31 +24,35 @@ export const pieIncidentsChartData = (incidentCounts: {
         incidentCounts.policeControl,
         incidentCounts.roadblock,
       ],
-      backgroundColor: [
-        'rgba(255, 99, 132, 0.5)',
-        'rgba(54, 162, 235, 0.5)',
-        'rgba(255, 206, 86, 0.5)',
-        'rgba(75, 192, 192, 0.5)',
-        'rgba(153, 102, 255, 0.5)',
-      ],
-      borderColor: [
-        'rgb(255, 99, 132)',
-        'rgb(54, 162, 235)',
-        'rgb(255, 206, 86)',
-        'rgb(75, 192, 192)',
-        'rgb(153, 102, 255)',
-      ],
+      backgroundColor: 'rgba(54, 162, 235, 0.6)',
+      borderColor: 'rgb(54, 162, 235)',
       borderWidth: 1,
     },
   ],
 });
 
-export const pieIncidentsChartOptions: ChartOptions<'pie'> = {
+export const barIncidentsChartOptions: ChartOptions<'bar'> = {
   responsive: true,
   maintainAspectRatio: false,
+  indexAxis: 'y', // 🔁 pour un bar horizontal (enlève cette ligne pour vertical)
+  scales: {
+    x: {
+      beginAtZero: true,
+      title: {
+        display: true,
+        text: 'Nombre de signalements',
+      },
+    },
+    y: {
+      title: {
+        display: true,
+        text: 'Type d’incident',
+      },
+    },
+  },
   plugins: {
     legend: {
-      position: 'bottom',
+      display: false,
     },
   },
 };
