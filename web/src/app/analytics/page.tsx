@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Cookie from "js-cookie";
-import { Pie, Bar } from 'react-chartjs-2';
+import { Pie, Bar, Scatter } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -11,7 +11,9 @@ import {
   CategoryScale,
   LinearScale,
   BarElement,
+  PointElement,
   Title,
+  ChartOptions
 } from 'chart.js';
 
 interface StatsData {
@@ -38,6 +40,7 @@ ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
+  PointElement,
   Title
 );
 
@@ -47,7 +50,7 @@ export default function Page() {
   const [token, setToken] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
 
-  // Statss filtres dates
+  // States filtres dates
   const [startDate, setStartDate] = useState("2025-01-01");
   const [endDate, setEndDate] = useState("2025-12-31");
   const isDateRangeValid = new Date(startDate) <= new Date(endDate);
@@ -63,6 +66,10 @@ export default function Page() {
     policeControl: 0,
     roadblock: 0,
   });
+  // const [incidentsByHour, setIncidentsByHour] = useState<number[]>(Array(24).fill(0));
+  // const [incidents, setIncidents] = useState<any[]>([]);
+
+
 
   // Récupération token
   useEffect(() => {
@@ -120,6 +127,29 @@ export default function Page() {
     }
   };
 
+  const fetchIncidentsData = async (): Promise<any[]> => {
+    if (!token || !userData.id || !startDate || !endDate || !isDateRangeValid) return [];
+  
+    const startParam = `${startDate}T00:00:00Z`;
+    const endParam = `${endDate}T23:59:59Z`;
+  
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/${userData.id}/incidents?start=${startParam}&end=${endParam}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (!response.ok) throw new Error("Erreur incidents");
+      return await response.json();
+    } catch (error) {
+      console.error("Erreur incidents :", error);
+      return [];
+    }
+  };
+  
+  
+
   // Regroupement des trajets par mois
   const countRoutesPerMonth = (routes: Route[]) => {
     const counts = Array(12).fill(0);
@@ -130,6 +160,17 @@ export default function Page() {
     });
     return counts;
   };
+
+  // // Regroupement des incidents par heure
+  // const countIncidentsPerHour = (incidents: any[]) => {
+  //   const counts = Array(24).fill(0);
+  //   incidents.forEach((incident) => {
+  //     const hour = new Date(incident.created_on).getHours();
+  //     counts[hour]++;
+  //   });
+  //   return counts;
+  // };
+  
 
   // Fonction principale de récupération des stats
   const fetchStatsData = async (): Promise<void> => {
@@ -164,6 +205,11 @@ export default function Page() {
         const routes = await fetchRoutesData();
         const routesPerMonthCounts = countRoutesPerMonth(routes);
         setRoutesPerMonthData(routesPerMonthCounts);
+
+        // const incidents = await fetchIncidentsData();
+        // const hourlyCounts = countIncidentsPerHour(incidents);
+        // setIncidentsByHour(hourlyCounts);
+
       } catch (error) {
         console.error("Erreur stats :", error);
       } finally {
@@ -171,10 +217,9 @@ export default function Page() {
       }
     }
   };
-
   // Calcul total incidents
-  // const totalIncidents = Object.values(incidentCounts).reduce((acc, val) => acc + val, 0);
-
+ 
+  
   // Données du Pie Chart des incidents
   const incidentChartData = {
     labels: [
@@ -313,12 +358,12 @@ export default function Page() {
 
         {/* Graphiques */}
         <div className="analysis_content--diagrams">
-          <div className="diagram_card">
+          <div className="diagram_card diagram_card--pie">
             <h2 className="kpis_card--h2">Répartition des incidents</h2>
             <Pie data={incidentChartData} />
           </div>
-          <div className="diagram_card">
-            <h2 className="kpis_card--h2">Nombre de trajets par mois</h2>
+          <div className="diagram_card diagram_card--bar">
+            <h2 className="kpis_card--h2">Répartition des trajets</h2>
             <Bar data={routesPerMonthChartData} />
           </div>
         </div>
