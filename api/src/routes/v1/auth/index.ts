@@ -85,6 +85,7 @@ router.post("/auth/signin", async (req, res) => {
 
 router.get("/auth/google", async (req, res) => {
   try {
+    console.log(req.headers)
     const redirectUri = req.headers["X-Device-Type"]?.includes("mobile") ? GOOGLE_REDIRECT_URI_MOBILE : GOOGLE_REDIRECT_URI_WEB;
     
     const oAuth2Client = new OAuth2Client(
