@@ -1,6 +1,125 @@
 /*Style de la page des KPI*/
 
 
+/* BUTTONS */
+.button_dashboard{
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+
+    padding: 0.5rem 1.3rem;
+    border-radius: 0.4rem;
+    font-size: 1rem;
+    font-weight: 400;
+    z-index: 1;
+}
+
+.button_primary{
+    background-color: #F15B4E;
+    color: white;
+    border: 1px solid #F15B4E;
+}
+.button_primary::before{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #fff;
+    -webkit-transition: all 0.3s;
+    transition: all 0.3s;
+    z-index: -2;
+}
+.button_primary::after{
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    background-color: #fff;
+    z-index: -1;
+    transition: all 0.3s;
+}
+.button_primary:hover{
+    color: #F15B4E;
+}
+.button_primary:hover::after{
+    width: 100%;
+}
+
+
+
+
+.button_secondary{
+    background-color: #3D2683;
+    color: white;
+ 
+    border: 1px solid #3D2683;
+}
+.button_secondary::before{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #fff;
+    -webkit-transition: all 0.3s;
+    transition: all 0.3s;
+    z-index: -2;
+}
+.button_secondary::after{
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    background-color: #fff;
+    z-index: -1;
+    transition: all 0.3s;
+}
+.button_secondary:hover{
+    color: #3D2683;
+}
+.button_secondary:hover::after{
+    width: 100%;
+}
+
+.button_tertiary {
+    background-color: #fff;
+    color: #3D2683;
+    border: 1px solid #3D2683;
+}
+.button_tertiary::before{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #3D2683;
+    -webkit-transition: all 0.3s;
+    transition: all 0.3s;
+    z-index: -2;
+}
+.button_tertiary::after{
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    background-color: #3D2683;
+    z-index: -1;
+    transition: all 0.3s;
+}
+.button_tertiary:hover{
+    color: #fff;
+}
+.button_tertiary:hover::after{
+    width: 100%;
+}
+
 /* ANALYSE HEADER */
 .analyse_container{
     position: relative;
@@ -17,6 +136,12 @@
 }
 .analyse_header--welcome p {
     font-size: 1.1rem;
+}
+
+.analyse_header--date--desktop {
+    display: flex;
+    flex-direction: column;
+    align-items: end;
 }
 
 .analyse_header--date--responsive {
@@ -37,8 +162,9 @@
     }
     .analyse_header--date--responsive {
         display: flex;
-        justify-content: end;
-        align-items: center;
+        flex-direction: column;
+        /* justify-content: end; */
+        align-items: end;
     }
 
     .analyse_header--date--responsive span {
@@ -49,6 +175,13 @@
     }
     .analyse_header--welcome p {
         font-size: 1rem;
+    }
+
+    .responsive_buttons{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap : 0.5rem
     }
 }
 

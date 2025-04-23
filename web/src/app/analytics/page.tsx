@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Cookie from "js-cookie";
 import { Pie, Bar, Scatter } from 'react-chartjs-2';
@@ -48,7 +49,7 @@ ChartJS.register(
 
 export default function Page() {
   // States utilisateur et token
-  const [userData, setUserData] = useState({ id: "", email: "", username: "", picture: "" });
+  const [userData, setUserData] = useState({ id: "", email: "", username: "", picture: "", role: "" });
   const [token, setToken] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
 
@@ -68,6 +69,8 @@ export default function Page() {
     policeControl: 0,
     roadblock: 0,
   });
+
+  const router = useRouter();
 
 
 
@@ -93,6 +96,7 @@ export default function Page() {
             email: data.email,
             username: data.name,
             picture: data.picture || "",
+            role: data.role,
           });
         } catch (error) {
           console.error("Erreur utilisateur :", error);
@@ -196,11 +200,31 @@ export default function Page() {
           <span className="date text-gray-600">
           le {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </span>
+          {userData.role === "admin" && (
+          <div className="flex gap-4 mt-4 desktop_buttons">
+            <button className="px-4 py-2  button_dashboard button_tertiary" onClick={() => router.push("/analytics")}>
+                Vue utilisateur
+            </button>
+            <button className="px-4 py-2 button_dashboard button_secondary" onClick={() => router.push("/admin_dashboard")}>
+              Vue admin
+            </button>
+          </div>
+          )}
         </div>
         <div className="analyse_header--date analyse_header--date--responsive">
           <span className="date text-gray-600">
             {new Date().toLocaleDateString('fr-FR')}
           </span>
+          {userData.role === "admin" && (
+          <div className="flex gap-4 mt-4 responsive_buttons">
+            <button className="px-4 py-2 button_dashboard button_tertiary" onClick={() => router.push("/analytics")}>
+                Vue utilisateur
+            </button>
+            <button className="px-4 py-2 button_dashboard button_secondary" onClick={() => router.push("/admin_dashboard")}>
+              Vue admin
+            </button>
+          </div>
+          )}
         </div>
       </div>
 
@@ -230,7 +254,7 @@ export default function Page() {
         </div>
         <div className="filters_container--filter filters_container--filter--button">
           <button
-            className={`bg-customOrange text-white px-4 py-2 rounded ${!isDateRangeValid || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`button_dashboard button_primary px-4 py-2 ${!isDateRangeValid || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={fetchStatsData}
             disabled={!isDateRangeValid || loading}
           >
