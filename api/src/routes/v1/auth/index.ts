@@ -5,19 +5,11 @@ import { googleCallbackSchema, signInSchema } from "../../../lib/zod.js";
 import { verify, encrypt, decrypt } from "../../../lib/crypto.js";
 import { User, UserModel } from "../../../models/user.js";
 import { auth } from "../../../middlewares/auth.js";
-import { OAuth2Client } from "google-auth-library";
+import { oAuth2Client } from "../../../lib/google-auth-library.js";
 
 if (!process.env.JWT_SECRET) throw new Error("Missing environment variable: JWT_SECRET");
-if (!process.env.GOOGLE_CLIENT_ID) throw new Error("Missing environment variable: GOOGLE_CLIENT_ID");
-if (!process.env.GOOGLE_CLIENT_SECRET) throw new Error("Missing environment variable: GOOGLE_CLIENT_SECRET");
-if (!process.env.GOOGLE_REDIRECT_URI_WEB) throw new Error("Missing environment variable: GOOGLE_REDIRECT_URI_WEB");
-if (!process.env.GOOGLE_REDIRECT_URI_MOBILE) throw new Error("Missing environment variable: GOOGLE_REDIRECT_URI_MOBILE");
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const GOOGLE_REDIRECT_URI_WEB = process.env.GOOGLE_REDIRECT_URI_WEB;
-const GOOGLE_REDIRECT_URI_MOBILE = process.env.GOOGLE_REDIRECT_URI_MOBILE;
 
 const router = Router();
 
@@ -85,14 +77,6 @@ router.post("/auth/signin", async (req, res) => {
 
 router.get("/auth/google", async (req, res) => {
   try {
-    const redirectUri = req.headers["x-device-type"]?.includes("mobile") ? GOOGLE_REDIRECT_URI_MOBILE : GOOGLE_REDIRECT_URI_WEB;
-    
-    const oAuth2Client = new OAuth2Client(
-      GOOGLE_CLIENT_ID,
-      GOOGLE_CLIENT_SECRET,
-      redirectUri
-    );
-
     const url = oAuth2Client.generateAuthUrl(
       {
         access_type: "offline",
@@ -126,12 +110,6 @@ router.get("/auth/google", async (req, res) => {
 
 router.post("/auth/google/callback", async (req, res) => {
   try {
-    const oAuth2Client = new OAuth2Client(
-      GOOGLE_CLIENT_ID,
-      GOOGLE_CLIENT_SECRET,
-      req.headers["user-agent"]?.includes("Mobile") ? GOOGLE_REDIRECT_URI_MOBILE : GOOGLE_REDIRECT_URI_WEB
-    );
-
     const {
       code
     } = googleCallbackSchema.parse(req.body);
