@@ -15,6 +15,8 @@ import {
   Title,
   ChartOptions
 } from 'chart.js';
+import { barRoutesChartData, barRoutesChartOptions } from "@/charts/barRoutesChart";
+import { pieIncidentsChartData, pieIncidentsChartOptions } from "@/charts/pieIncidentsChart";
 
 interface StatsData {
   total_routes: number;
@@ -66,8 +68,6 @@ export default function Page() {
     policeControl: 0,
     roadblock: 0,
   });
-  // const [incidentsByHour, setIncidentsByHour] = useState<number[]>(Array(24).fill(0));
-  // const [incidents, setIncidents] = useState<any[]>([]);
 
 
 
@@ -127,28 +127,6 @@ export default function Page() {
     }
   };
 
-  const fetchIncidentsData = async (): Promise<any[]> => {
-    if (!token || !userData.id || !startDate || !endDate || !isDateRangeValid) return [];
-  
-    const startParam = `${startDate}T00:00:00Z`;
-    const endParam = `${endDate}T23:59:59Z`;
-  
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/${userData.id}/incidents?start=${startParam}&end=${endParam}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      if (!response.ok) throw new Error("Erreur incidents");
-      return await response.json();
-    } catch (error) {
-      console.error("Erreur incidents :", error);
-      return [];
-    }
-  };
-  
-  
 
   // Regroupement des trajets par mois
   const countRoutesPerMonth = (routes: Route[]) => {
@@ -160,17 +138,6 @@ export default function Page() {
     });
     return counts;
   };
-
-  // // Regroupement des incidents par heure
-  // const countIncidentsPerHour = (incidents: any[]) => {
-  //   const counts = Array(24).fill(0);
-  //   incidents.forEach((incident) => {
-  //     const hour = new Date(incident.created_on).getHours();
-  //     counts[hour]++;
-  //   });
-  //   return counts;
-  // };
-  
 
   // Fonction principale de récupération des stats
   const fetchStatsData = async (): Promise<void> => {
@@ -206,10 +173,6 @@ export default function Page() {
         const routesPerMonthCounts = countRoutesPerMonth(routes);
         setRoutesPerMonthData(routesPerMonthCounts);
 
-        // const incidents = await fetchIncidentsData();
-        // const hourlyCounts = countIncidentsPerHour(incidents);
-        // setIncidentsByHour(hourlyCounts);
-
       } catch (error) {
         console.error("Erreur stats :", error);
       } finally {
@@ -217,63 +180,9 @@ export default function Page() {
       }
     }
   };
-  // Calcul total incidents
- 
   
-  // Données du Pie Chart des incidents
-  const incidentChartData = {
-    labels: [
-      'Accidents',
-      'Embouteillages',
-      'Routes fermées',
-      'Contrôles de police',
-      'Barrages',
-    ],
-    datasets: [
-      {
-        data: [
-          incidentCounts.accidents,
-          incidentCounts.trafficJams,
-          incidentCounts.roadClosed,
-          incidentCounts.policeControl,
-          incidentCounts.roadblock,
-        ],
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.5)',
-          'rgba(54, 162, 235, 0.5)',
-          'rgba(255, 206, 86, 0.5)',
-          'rgba(75, 192, 192, 0.5)',
-          'rgba(153, 102, 255, 0.5)',
-        ],
-        borderColor: [
-          'rgb(255, 99, 132)',
-          'rgb(54, 162, 235)',
-          'rgb(255, 206, 86)',
-          'rgb(75, 192, 192)',
-          'rgb(153, 102, 255)',
-        ],
-        borderWidth: 1,
-      },
-    ],
-  };
 
-  // Données du Bar Chart des trajets par mois
-  const routesPerMonthChartData = {
-    labels: [
-      'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-      'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
-    ],
-    datasets: [
-      {
-        label: 'Nombre de trajets',
-        data: routesPerMonthData,
-        backgroundColor: 'rgba(255, 159, 64, 0.5)',
-        borderColor: 'rgb(255, 159, 64)',
-        borderWidth: 1,
-      },
-    ],
-  };
-
+ // Affichage
   return (
     <div className="flex flex-col px-4 py-4 h-full w-full bg-gray-50 overflow-auto analyse_container">
       <div className="analyse_header">
@@ -360,11 +269,11 @@ export default function Page() {
         <div className="analysis_content--diagrams">
           <div className="diagram_card diagram_card--pie">
             <h2 className="kpis_card--h2">Répartition des incidents</h2>
-            <Pie data={incidentChartData} />
+            <Pie data={pieIncidentsChartData(incidentCounts)} options={pieIncidentsChartOptions} />
           </div>
           <div className="diagram_card diagram_card--bar">
             <h2 className="kpis_card--h2">Répartition des trajets</h2>
-            <Bar data={routesPerMonthChartData} />
+            <Bar data={barRoutesChartData(routesPerMonthData)} options={barRoutesChartOptions} />
           </div>
         </div>
       </div>
