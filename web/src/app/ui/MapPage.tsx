@@ -27,6 +27,7 @@ const MapPage = () => {
   const [showQRPopup, setShowQRPopup] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isPreviewed, setIsPreviewed] = useState(false);
+  const [avoidTolls, setAvoidTolls] = useState(false);
 
   // Référence à la carte
   const mapRef = useRef<google.maps.Map | null>(null);
@@ -67,6 +68,14 @@ const MapPage = () => {
         return;
       }
 
+      let profile = "car";
+
+      if (avoidTolls) {
+        profile = "car_avoid_toll";
+      }
+
+      
+
       // Étape 1: Appeler la route /auth/me pour récupérer l'ID utilisateur
       const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/me`, {
         method: "GET",
@@ -90,7 +99,7 @@ const MapPage = () => {
           "Authorization": `Bearer ${$token}`,
         },
         body: JSON.stringify({ 
-          profile: "car",
+          profile: profile,
           points: [
             [fromCoords.lng, fromCoords.lat],
             [toCoords.lng, toCoords.lat],
@@ -182,6 +191,8 @@ const MapPage = () => {
         isPreviewed={isPreviewed}
         errorMessage={errorMessage}
         swapFields={swapFieldsWithCoords}
+        avoidTolls={avoidTolls}
+        setAvoidTolls={setAvoidTolls}
       />
 
       <MapComponent position={position} route={route?.paths || []} mapRef={mapRef} /> {/* Passage des chemins via `route?.paths` */}
