@@ -3,12 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Cookie from "js-cookie";
-import { Pie, Bar, Scatter } from 'react-chartjs-2';
+import { Pie, Bar, Scatter, Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   ArcElement,
   Tooltip,
   Legend,
+  LineElement,
   CategoryScale,
   LinearScale,
   BarElement,
@@ -16,7 +17,7 @@ import {
   Title,
   ChartOptions
 } from 'chart.js';
-import { barRoutesChartData, barRoutesChartOptions } from "@/charts/barRoutesChart";
+import { lineRoutesChartData, lineRoutesChartOptions } from "@/charts/lineRoutesChart";
 import { barIncidentsChartData, barIncidentsChartOptions } from "@/charts/barIncidentsChart";
 
 interface StatsData {
@@ -44,6 +45,7 @@ ChartJS.register(
   LinearScale,
   BarElement,
   PointElement,
+  LineElement,
   Title
 );
 
@@ -264,6 +266,7 @@ export default function Page() {
       </div>
 
       {/* KPI */}
+      <h2 className="dashboard_h2 dashboard_h2--kpi">Quelques <span>chiffres</span>...</h2>
       <div className="analysis_content">
         <div className="analysis_content--kpis">
           <div className="analysis_content--kpis--card">
@@ -289,18 +292,36 @@ export default function Page() {
           </div>
         </div>
 
+
         {/* Graphiques */}
+        <h2 className="dashboard_h2 dashboard_h2--graphiques">Vos données en <span>graphiques</span></h2>
         <div className="analysis_content--diagrams">
-          <div className="diagram_card diagram_card--pie">
-            <h2 className="kpis_card--h2">Répartition des incidents</h2>
-            <Bar data={barIncidentsChartData(incidentCounts)} options={barIncidentsChartOptions} />
+          <div className="diagram_incidents--section--incidents">
+            <div className="diagram_card diagram_incidents--graph">
+              <Bar data={barIncidentsChartData(incidentCounts)} options={barIncidentsChartOptions} />
+            </div>
+            <div className="diagram card diagram_incidents--text">
+              <h3 className="dashboard_h3">Nombre de signalements par type</h3>
+              <p>
+              Le graphique ci-dessous présente la répartition des incidents signalés en fonction de leur type. Chaque barre représente un type d’incident rencontré sur les routes, parmi lesquels on retrouve les accidents, les embouteillages, les routes fermées, les contrôles de police et les barrages.
+              Ce visuel permet d’avoir un aperçu immédiat des types d’événements les plus fréquents sur la période sélectionnée.
+              </p>
+            </div>
           </div>
-          <div className="diagram_card diagram_card--bar">
-            <h2 className="kpis_card--h2">Répartition des trajets</h2>
-            <Bar data={barRoutesChartData(routesPerMonthData)} options={barRoutesChartOptions} />
+          <div className="diagram_trajets--section--trajets">
+            <div className="diagram_card diagram_trajets--graph">
+              <Line data={lineRoutesChartData(routesPerMonthData)} options={lineRoutesChartOptions} />
+            </div>
+            <div className="diagram card diagram_trajets--text">
+              <h3 className="dashboard_h3">Évolution mensuelle des trajets</h3>
+              <p>
+              Ce graphique en courbe met en lumière la répartition des trajets effectués au fil des mois. Chaque point représente le nombre total de trajets réalisés sur une période mensuelle, permettant d’identifier les pics d’activité ainsi que les périodes plus calmes.
+              Cette visualisation est idéale pour suivre les tendances d’utilisation, détecter les variations saisonnières, et ajuster ses prévisions ou ses ressources en conséquence.
+              </p>
           </div>
         </div>
       </div>
     </div>
+  </div>
   );
 }

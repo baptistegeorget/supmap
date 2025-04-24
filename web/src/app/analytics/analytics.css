@@ -1,6 +1,22 @@
 /*Style de la page des KPI*/
 
+/* TYPO */
+.dashboard_h2{
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1.2rem;
+    font-style: italic;
+    font-family: "Indivisble", sans-serif;
+}
+.dashboard_h2 span{
+    color: #3D2683;
+}
 
+.dashboard_h3{
+    font-size: 1.1rem;
+    font-weight: 400;
+    margin-bottom: 1.2rem;
+}
 /* BUTTONS */
 .button_dashboard{
     overflow: hidden;
@@ -47,9 +63,6 @@
 .button_primary:hover::after{
     width: 100%;
 }
-
-
-
 
 .button_secondary{
     background-color: #3D2683;
@@ -234,7 +247,6 @@
 }
 
 
-
 /* DATAVIZ */
 
 .analysis_content{
@@ -243,7 +255,7 @@
 }
 
 .analysis_content--kpis{
-    margin-bottom: 3rem;
+    margin-bottom: 4.5rem;
     display: flex;
     justify-content: start;
     align-content: center;
@@ -308,16 +320,123 @@
 
 /* DIAGRAMS */
 
-.analysis_content--diagrams {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 1.5rem;
-}
-.analysis_content--diagrams .diagram_card {
-    width: 100%;
-}
-
 .diagram_card{
     max-height: 20rem;
+}
+
+
+.analysis_content--diagrams {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    margin-bottom: 4rem;
+}
+
+/* DIAGRAMS INCIDENTS */
+.diagram_incidents--section--incidents {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+    gap: 3.5rem;
+    position: relative;
+    
+}
+@media screen and (max-width: 1180px) {
+    .diagram_incidents--section--incidents {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+}
+.diagram_incidents--graph {
+    width: 60%;
+}
+.diagram_incidents--text{
+    width: 40%;
+    padding: 1rem 0.8rem;
+    border-radius: 0.8rem;
+    background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.1), 0 1px 2px rgb(0 0 0 / 0.06);
+   
+}
+
+.diagram_incidents--text h3{
+    position: relative;
+    width: fit-content;
+}
+.diagram_incidents--text h3::before{
+    content: '';
+    position: absolute;
+    display: block;
+    width: 25%;
+    height: .3rem;
+    bottom: -6px;
+    right: 0;
+    background-color: #F15B4E;
+}
+
+
+/* TRAJETS */
+.diagram_trajets--section--trajets {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    margin-top: 6rem;
+    gap: 3.5rem
+}
+.diagram_trajets--graph {
+    width: 60%;
+}
+.diagram_trajets--text{
+    width: 40%;
+    padding: 1rem 0.8rem;
+    border-radius: 0.8rem;
+    background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.1), 0 1px 2px rgb(0 0 0 / 0.06);
+}
+.diagram_trajets--text h3{
+    position: relative;
+    width: fit-content;
+}
+.diagram_trajets--text h3::before{
+    content: '';
+    position: absolute;
+    display: block;
+    width: 25%;
+    height: .3rem;
+    bottom: -6px;
+    right: 0;
+    background-color: #F15B4E;
+}
+
+
+@media screen and (max-width: 1180px) {
+    .diagram_incidents--section--incidents {
+        flex-direction: column-reverse;
+        align-items: center;
+    }
+    .diagram_incidents--graph {
+        width: 100%;
+    }
+    .diagram_incidents--text{
+        width: 100%;
+       
+    }
+
+    .diagram_trajets--section--trajets {
+        flex-direction: column-reverse;
+        align-items: center;
+    }
+    .diagram_trajets--graph {
+        width: 100%;
+    }
+    .diagram_trajets--text{
+        width: 100%;
+    }
+
+    .diagram_card{
+        max-height: 25rem;
+        height: 20rem;
+    }
+    
 }
