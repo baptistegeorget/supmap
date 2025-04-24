@@ -54,12 +54,12 @@ const RouteForm = ({
 
     const fromAutocomplete = new window.google.maps.places.Autocomplete(fromInputRef.current, {
       types: ["geocode"],
-      componentRestrictions: { country: "fr" },
+      componentRestrictions: { country: ["fr", "de", "it", "es", "be", "nl", "lu", "ch", "at", "se", "no", "dk", "fi", "pl", "cz", "sk", "hu", "pt", "ie", "gr"] },
     });
 
     const toAutocomplete = new window.google.maps.places.Autocomplete(toInputRef.current, {
       types: ["geocode"],
-      componentRestrictions: { country: "fr" },
+      componentRestrictions: { country: ["fr", "de", "it", "es", "be", "nl", "lu", "ch", "at", "se", "no", "dk", "fi", "pl", "cz", "sk", "hu", "pt", "ie", "gr"] },
     });
 
     fromAutocomplete.addListener("place_changed", () => {
