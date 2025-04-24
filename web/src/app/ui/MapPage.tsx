@@ -28,6 +28,8 @@ const MapPage = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [isPreviewed, setIsPreviewed] = useState(false);
   const [avoidTolls, setAvoidTolls] = useState(false);
+  const [isLoadingRoute, setIsLoadingRoute] = useState(false);
+
 
   // Référence à la carte
   const mapRef = useRef<google.maps.Map | null>(null);
@@ -62,6 +64,7 @@ const MapPage = () => {
 
   // Récupérer l'itinéraire depuis l'API
   const fetchRoute = async () => {
+    setIsLoadingRoute(true); 
     try {
       if (!fromCoords || !toCoords) {
         setErrorMessage("Veuillez sélectionner des adresses valides.");
@@ -128,6 +131,8 @@ const MapPage = () => {
         console.error("Erreur inconnue", error);
         setErrorMessage("Une erreur inattendue est survenue.");
       }
+    }  finally {
+      setIsLoadingRoute(false); // → toujours désactivé à la fin
     }  
   };
 
@@ -199,6 +204,15 @@ const MapPage = () => {
 
       <LocateButton setPosition={setPosition} mapRef={mapRef} />
       <CustomZoomControl mapRef={mapRef} />
+
+      {isLoadingRoute && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="flex flex-col items-center space-y-2">
+            <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-white font-medium">Recherche en cours...</p>
+          </div>
+        </div>
+      )}
 
       {showQRPopup && (
         <QRCodePopup from={from} to={to} onClose={() => setShowQRPopup(false)} />
