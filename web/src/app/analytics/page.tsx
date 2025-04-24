@@ -1,23 +1,30 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Cookie from "js-cookie";
-import { Pie, Bar } from 'react-chartjs-2';
+import { Pie, Bar, Scatter, Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   ArcElement,
   Tooltip,
   Legend,
+  LineElement,
   CategoryScale,
   LinearScale,
   BarElement,
+  PointElement,
   Title,
+  ChartOptions
 } from 'chart.js';
+import { lineRoutesChartData, lineRoutesChartOptions } from "@/charts/lineRoutesChart";
+import { barIncidentsChartData, barIncidentsChartOptions } from "@/charts/barIncidentsChart";
 
 interface StatsData {
   total_routes: number;
   average_distance_km: number;
   total_time: string;
+  average_time: string;
   total_signalements: number;
   total_accidents: number;
   total_traffic_jams: number;
@@ -28,10 +35,7 @@ interface StatsData {
 
 interface Route {
   created_on: string;
-  // Ajoute d'autres champs si nécessaires plus tard
 }
-
-
 
 ChartJS.register(
   ArcElement,
@@ -40,12 +44,14 @@ ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
+  PointElement,
+  LineElement,
   Title
 );
 
 export default function Page() {
   // States utilisateur et token
-  const [userData, setUserData] = useState({ id: "", email: "", username: "", picture: "" });
+  const [userData, setUserData] = useState({ id: "", email: "", username: "", picture: "", role: "" });
   const [token, setToken] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
 
@@ -54,7 +60,7 @@ export default function Page() {
   const [endDate, setEndDate] = useState("2025-12-31");
   const isDateRangeValid = new Date(startDate) <= new Date(endDate);
 
-  // States data
+  // Stats data
   const [statsData, setStatsData] = useState<StatsData | null>(null);
   const [routesPerMonthData, setRoutesPerMonthData] = useState<number[]>(Array(12).fill(0));
   const [incidentCounts, setIncidentCounts] = useState({
@@ -65,6 +71,10 @@ export default function Page() {
     policeControl: 0,
     roadblock: 0,
   });
+
+  const router = useRouter();
+
+
 
   // Récupération token
   useEffect(() => {
@@ -88,6 +98,7 @@ export default function Page() {
             email: data.email,
             username: data.name,
             picture: data.picture || "",
+            role: data.role,
           });
         } catch (error) {
           console.error("Erreur utilisateur :", error);
@@ -122,6 +133,7 @@ export default function Page() {
     }
   };
 
+
   // Regroupement des trajets par mois
   const countRoutesPerMonth = (routes: Route[]) => {
     const counts = Array(12).fill(0);
@@ -152,7 +164,7 @@ export default function Page() {
         const stats = await statsResponse.json();
         setStatsData(stats);
 
-        // Mettre à jour les incidents
+        // Mises à jour des incidents
         setIncidentCounts({
           signalements: stats?.total_signalements || 0,
           accidents: stats?.total_accidents || 0,
@@ -166,6 +178,7 @@ export default function Page() {
         const routes = await fetchRoutesData();
         const routesPerMonthCounts = countRoutesPerMonth(routes);
         setRoutesPerMonthData(routesPerMonthCounts);
+
       } catch (error) {
         console.error("Erreur stats :", error);
       } finally {
@@ -173,66 +186,11 @@ export default function Page() {
       }
     }
   };
+  
 
-  // Calcul total incidents
-  // const totalIncidents = Object.values(incidentCounts).reduce((acc, val) => acc + val, 0);
-
-  // Données du Pie Chart des incidents
-  const incidentChartData = {
-    labels: [
-      'Accidents',
-      'Embouteillages',
-      'Routes fermées',
-      'Contrôles de police',
-      'Barrages',
-    ],
-    datasets: [
-      {
-        data: [
-          incidentCounts.accidents,
-          incidentCounts.trafficJams,
-          incidentCounts.roadClosed,
-          incidentCounts.policeControl,
-          incidentCounts.roadblock,
-        ],
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.5)',
-          'rgba(54, 162, 235, 0.5)',
-          'rgba(255, 206, 86, 0.5)',
-          'rgba(75, 192, 192, 0.5)',
-          'rgba(153, 102, 255, 0.5)',
-        ],
-        borderColor: [
-          'rgb(255, 99, 132)',
-          'rgb(54, 162, 235)',
-          'rgb(255, 206, 86)',
-          'rgb(75, 192, 192)',
-          'rgb(153, 102, 255)',
-        ],
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  // Données du Bar Chart des trajets par mois
-  const routesPerMonthChartData = {
-    labels: [
-      'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-      'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
-    ],
-    datasets: [
-      {
-        label: 'Nombre de trajets',
-        data: routesPerMonthData,
-        backgroundColor: 'rgba(255, 159, 64, 0.5)',
-        borderColor: 'rgb(255, 159, 64)',
-        borderWidth: 1,
-      },
-    ],
-  };
-
+ // Affichage
   return (
-    <div className="flex flex-col px-4 py-4 h-full w-full bg-gray-50 overflow-hidden analyse_container">
+    <div className="flex flex-col px-4 py-4 h-full w-full bg-gray-50 overflow-auto analyse_container">
       <div className="analyse_header">
         <div className="analyse_header--welcome">
           <h1 className="text-2xl font-bold">
@@ -240,38 +198,65 @@ export default function Page() {
           </h1>
           <p className="text-gray-600">Gardez un oeil sur vos données de navigation</p>
         </div>
-        <div className="analyse_header--date">
-          <span className="date">
+        <div className="analyse_header--date analyse_header--date--desktop">
+          <span className="date text-gray-600">
           le {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </span>
+          {userData.role === "admin" && (
+          <div className="flex gap-4 mt-4 desktop_buttons">
+            <button className="px-4 py-2  button_dashboard button_tertiary" onClick={() => router.push("/analytics")}>
+                Vue utilisateur
+            </button>
+            <button className="px-4 py-2 button_dashboard button_secondary" onClick={() => router.push("/admin_dashboard")}>
+              Vue admin
+            </button>
+          </div>
+          )}
+        </div>
+        <div className="analyse_header--date analyse_header--date--responsive">
+          <span className="date text-gray-600">
+            {new Date().toLocaleDateString('fr-FR')}
+          </span>
+          {userData.role === "admin" && (
+          <div className="flex gap-4 mt-4 responsive_buttons">
+            <button className="px-4 py-2 button_dashboard button_tertiary" onClick={() => router.push("/analytics")}>
+                Vue utilisateur
+            </button>
+            <button className="px-4 py-2 button_dashboard button_secondary" onClick={() => router.push("/admin_dashboard")}>
+              Vue admin
+            </button>
+          </div>
+          )}
         </div>
       </div>
 
       {/* Filtres de date */}
       <div className="filters_container">
-        <div className="filters_container--filter">
-          <label htmlFor="startDate" className="text-gray-600">Date de début</label>
-          <input
-            type="date"
-            id="startDate"
-            className="border rounded p-2"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
+        <div className="filters_input">
+          <div className="filters_container--filter">
+            <label htmlFor="startDate" className="text-gray-600">Date de début</label>
+            <input
+              type="date"
+              id="startDate"
+              className="border rounded p-2"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </div>
+          <div className="filters_container--filter">
+            <label htmlFor="endDate" className="text-gray-600">Date de fin</label>
+            <input
+              type="date"
+              id="endDate"
+              className="border rounded p-2"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </div>
         </div>
-        <div className="filters_container--filter">
-          <label htmlFor="endDate" className="text-gray-600">Date de fin</label>
-          <input
-            type="date"
-            id="endDate"
-            className="border rounded p-2"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-          />
-        </div>
-        <div className="filters_container--filter mt-2">
+        <div className="filters_container--filter filters_container--filter--button">
           <button
-            className={`bg-customOrange text-white px-4 py-2 rounded ${!isDateRangeValid || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`button_dashboard button_primary px-4 py-2 ${!isDateRangeValid || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={fetchStatsData}
             disabled={!isDateRangeValid || loading}
           >
@@ -281,39 +266,62 @@ export default function Page() {
       </div>
 
       {/* KPI */}
+      <h2 className="dashboard_h2 dashboard_h2--kpi">Quelques <span>chiffres</span>...</h2>
       <div className="analysis_content">
         <div className="analysis_content--kpis">
           <div className="analysis_content--kpis--card">
-            <h2 className="kpis_card--h2">Nombre de trajets</h2>
+            <h2 className="kpis_card--h2 text-gray-600">Trajets effectués</h2>
             <p className="kpi">{loading ? "..." : statsData?.total_routes ?? "-"}</p>
           </div>
           <div className="analysis_content--kpis--card">
-            <h2 className="kpis_card--h2">Distance moyenne des trajets</h2>
+            <h2 className="kpis_card--h2 text-gray-600">Distance moyenne</h2>
             <p className="kpi">{loading ? "..." : statsData?.average_distance_km ? `${statsData.average_distance_km} km` : "-"}</p>
             
           </div>
           <div className="analysis_content--kpis--card">
-            <h2 className="kpis_card--h2">Durée des trajets</h2>
+            <h2 className="kpis_card--h2 text-gray-600">Durée totale</h2>
             <p className="kpi">{loading ? "..." : statsData?.total_time ?? "-"}</p>
           </div>
           <div className="analysis_content--kpis--card">
-            <h2 className="kpis_card--h2">Nombre de signalements</h2>
+            <h2 className="kpis_card--h2 text-gray-600">Durée moyenne</h2>
+            <p className="kpi">{loading ? "..." : statsData?.average_time ?? "-"}</p>
+          </div>
+          <div className="analysis_content--kpis--card">
+            <h2 className="kpis_card--h2 text-gray-600">Signalements</h2>
             <p className="kpi">{loading ? "..." : statsData?.total_signalements ?? "-"}</p>
           </div>
         </div>
 
+
         {/* Graphiques */}
+        <h2 className="dashboard_h2 dashboard_h2--graphiques">Vos données en <span>graphiques</span></h2>
         <div className="analysis_content--diagrams">
-          <div className="diagram_card">
-            <h2 className="kpis_card--h2">Répartition des incidents</h2>
-            <Pie data={incidentChartData} />
+          <div className="diagram_incidents--section--incidents">
+            <div className="diagram_card diagram_incidents--graph">
+              <Bar data={barIncidentsChartData(incidentCounts)} options={barIncidentsChartOptions} />
+            </div>
+            <div className="diagram card diagram_incidents--text">
+              <h3 className="dashboard_h3">Nombre de signalements par type</h3>
+              <p>
+              Le graphique ci-dessous présente la répartition des incidents signalés en fonction de leur type. Chaque barre représente un type d’incident rencontré sur les routes, parmi lesquels on retrouve les accidents, les embouteillages, les routes fermées, les contrôles de police et les barrages.
+              Ce visuel permet d’avoir un aperçu immédiat des types d’événements les plus fréquents sur la période sélectionnée.
+              </p>
+            </div>
           </div>
-          <div className="diagram_card">
-            <h2 className="kpis_card--h2">Nombre de trajets par mois</h2>
-            <Bar data={routesPerMonthChartData} />
+          <div className="diagram_trajets--section--trajets">
+            <div className="diagram_card diagram_trajets--graph">
+              <Line data={lineRoutesChartData(routesPerMonthData)} options={lineRoutesChartOptions} />
+            </div>
+            <div className="diagram card diagram_trajets--text">
+              <h3 className="dashboard_h3">Évolution mensuelle des trajets</h3>
+              <p>
+              Ce graphique en courbe met en lumière la répartition des trajets effectués au fil des mois. Chaque point représente le nombre total de trajets réalisés sur une période mensuelle, permettant d’identifier les pics d’activité ainsi que les périodes plus calmes.
+              Cette visualisation est idéale pour suivre les tendances d’utilisation, détecter les variations saisonnières, et ajuster ses prévisions ou ses ressources en conséquence.
+              </p>
           </div>
         </div>
       </div>
     </div>
+  </div>
   );
 }
