@@ -56,6 +56,64 @@ export default function Page() {
     setErrorMessage("");
   };
 
+  // const [isLocationEnabled, setIsLocationEnabled] = useState(false);
+
+  // // Point fixe par défaut (ex. : Paris)
+  // const fallbackPosition = {
+  //   latitude: 48.8566,
+  //   longitude: 2.3522,
+  // };
+
+  // useEffect(() => {
+  //   // Vérifie si l'autorisation a déjà été donnée
+  //   if (!navigator.geolocation) {
+  //     console.log("Géolocalisation non supportée.");
+  //     setIsLocationEnabled(false);
+  //     console.log("Position par défaut :", fallbackPosition);
+  //     return;
+  //   }
+
+  //   navigator.permissions?.query({ name: "geolocation" }).then((result) => {
+  //     if (result.state === "granted") {
+  //       navigator.geolocation.getCurrentPosition((position) => {
+  //         console.log("Position automatique :", position.coords);
+  //         setIsLocationEnabled(true);
+  //       });
+  //     } else {
+  //       console.log("Permission pas encore accordée ou refusée.");
+  //       setIsLocationEnabled(false);
+  //       console.log("Position par défaut :", fallbackPosition);
+  //     }
+  //   });
+  // }, []);
+
+  // const handleLocationToggle = () => {
+  //   if (!isLocationEnabled) {
+  //     if (!navigator.geolocation) {
+  //       alert("La géolocalisation n'est pas supportée.");
+  //       return;
+  //     }
+
+  //     navigator.geolocation.getCurrentPosition(
+  //       (position) => {
+  //         const { latitude, longitude } = position.coords;
+  //         console.log("Position partagée :", latitude, longitude);
+  //         setIsLocationEnabled(true);
+  //       },
+  //       (error) => {
+  //         console.warn("Erreur de géolocalisation :", error.message);
+  //         setIsLocationEnabled(false);
+  //         console.log("Position par défaut :", fallbackPosition);
+  //       }
+  //     );
+  //   } else {
+  //     console.log("Partage de position désactivé.");
+  //     setIsLocationEnabled(false);
+  //   }
+  // };
+
+
+
   const handleSave = async () => {
     try {
       let updateData: Record<string, unknown> = {};
@@ -81,9 +139,14 @@ export default function Page() {
         body: JSON.stringify(updateData),
       });
 
-      if (!response.ok) throw new Error("Échec de la mise à jour");
-
       const updatedData = await response.json();
+      console.log("Données mises à jour :", updatedData);
+
+      if (!response.ok) {
+        const apiErrorMessage = updatedData?.message || "Erreur lors de la création de l'itinéraire.";
+        throw new Error(apiErrorMessage);
+      }
+
       setUserData({
         email: updatedData.email,
         username: updatedData.name,
@@ -92,9 +155,15 @@ export default function Page() {
 
       setIsModalOpen(false);
       window.location.href = "/";
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour :", error);
-      setErrorMessage("Une erreur est survenue lors de la mise à jour.");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Erreur lors de la mise à jour :", error);
+        setErrorMessage(error.message || "Une erreur est survenue lors de la mise à jour.");
+      }
+      else {
+        console.error("Erreur inconnue", error);
+        setErrorMessage("Une erreur inattendue est survenue lors de la mise à jour.");
+      }
     }
   };
 
@@ -180,26 +249,26 @@ export default function Page() {
       </div>
 
       {/* Paramètres de navigation */}
-      <div className="bg-white p-5 rounded-lg shadow-md mb-5">
+      {/* <div className="bg-white p-5 rounded-lg shadow-md mb-5">
         <h2 className="text-customOrange text-lg border-customOrange border-b-2 pb-2 mb-5" style={{ textIndent: "10px" }}>
           Paramètres de navigation
         </h2>
-        <div className="space-y-4 pl-4">
-          {["Partager sa position", "Éviter les péages", "Éviter les autoroutes", "Garder la carte orientée vers le nord"].map(
-            (label, index) => (
-              <div key={index} className="flex items-center py-2">
-                <span className="text-gray-800 mr-5">{label}</span>
-                <label className="relative inline-block w-12 h-6">
-                  <input type="checkbox" className="opacity-0 w-0 h-0" />
-                  <span className="relative inline-block w-12 h-6 bg-gray-300 rounded-full cursor-pointer transition-colors duration-300 ease-in-out">
-                    <span className="block w-4 h-4 bg-white rounded-full absolute top-[4px] left-[3px] peer-checked:left-[calc(100%-19px)] transition-all duration-300 ease-in-out"></span>
-                  </span>
-                </label>
-              </div>
-            )
-          )}
+        <div className="pl-4 py-4">
+          <label className="inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={isLocationEnabled}
+              onChange={handleLocationToggle}
+            />
+            <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-customOrange dark:peer-focus:ring-customOrange rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-customPurple dark:peer-checked:bg-customPurple"></div>
+            <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-900">
+              Partager ma position
+            </span>
+          </label>
         </div>
-      </div>
+
+      </div> */}
 
       {/* Modal */}
       {isModalOpen && (

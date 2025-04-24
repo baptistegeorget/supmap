@@ -15,6 +15,8 @@ const RouteForm = ({
   isPreviewed,
   errorMessage,
   swapFields,
+  avoidTolls,
+  setAvoidTolls,
 }: {
   from: string;
   to: string;
@@ -29,6 +31,9 @@ const RouteForm = ({
   isPreviewed: boolean;
   errorMessage: string;
   swapFields: () => void;
+  avoidTolls: boolean;
+  setAvoidTolls: (val: boolean) => void;
+
 }) => {
   const fromInputRef = useRef<HTMLInputElement>(null);
   const toInputRef = useRef<HTMLInputElement>(null);
@@ -151,6 +156,19 @@ const RouteForm = ({
           Envoyer vers mobile <DevicePhoneMobileIcon className="w-6" />
         </button>
       )}
+
+      <div className="w-full mt-4 flex flex-col items-start space-y-4">
+        <label className="inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            className="sr-only peer"
+            checked={avoidTolls}
+            onChange={() => setAvoidTolls(!avoidTolls)}
+          />
+          <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-customOrange rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-customPurple"></div>
+          <span className="ml-3 text-sm font-medium text-gray-900">Eviter les péages</span>
+        </label>
+      </div>
     </div>
   );
 };
