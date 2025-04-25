@@ -1,23 +1,31 @@
 import { ChartOptions } from "chart.js";
 
-export const lineRoutesChartData = (monthlyCounts: number[]) => ({
-  labels: [
+export const lineRoutesChartData = (monthlyCounts: number[]) => {
+  const monthLabels = [
     'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
     'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
-  ],
-  datasets: [
-    {
-      label: 'Nombre de trajets',
-      data: monthlyCounts,
-      borderColor: '#F15B4E',
-      backgroundColor: '#F15B4E',
-      fill: true,
-      tension: 0.3,
-      pointRadius: 4,
-      pointHoverRadius: 6,
-    },
-  ],
-});
+  ];
+
+  const currentMonthIndex = new Date().getMonth();
+  const filteredLabels = monthLabels.slice(0, currentMonthIndex + 1);
+  const filteredCounts = monthlyCounts.slice(0, currentMonthIndex + 1);
+
+  return {
+    labels: filteredLabels,
+    datasets: [
+      {
+        label: 'Nombre de trajets',
+        data: filteredCounts,
+        borderColor: '#F15B4E',
+        backgroundColor: '#F15B4E',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+      },
+    ],
+  };
+};
 
 export const lineRoutesChartOptions: ChartOptions<'line'> = {
   responsive: true,
