@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Cookie from "js-cookie";
-import { Pie, Bar, Scatter, Line } from 'react-chartjs-2';
+import { Bar, Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -15,7 +15,6 @@ import {
   BarElement,
   PointElement,
   Title,
-  ChartOptions
 } from 'chart.js';
 import { lineRoutesChartData, lineRoutesChartOptions } from "@/charts/lineRoutesChart";
 import { barIncidentsChartData, barIncidentsChartOptions } from "@/charts/barIncidentsChart";
