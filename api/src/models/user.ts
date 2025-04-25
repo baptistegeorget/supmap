@@ -141,19 +141,33 @@ export class UserModel {
   async getStats(start: Date, end: Date): Promise<Stats> {
     try {
       const query = `
-        SELECT 
-          (SELECT COUNT(*) FROM "route" WHERE "created_on" BETWEEN $1 AND $2) AS total_routes,
-          (SELECT ROUND(COALESCE(AVG((graphhopper_response->'paths'->0->>'distance')::FLOAT / 1000), 0)::NUMERIC, 2) FROM "route" WHERE "created_on" BETWEEN $1 AND $2) AS average_distance_km,
-          (SELECT ROUND(COALESCE(SUM((graphhopper_response->'paths'->0->>'distance')::FLOAT / 1000), 0)::NUMERIC, 2) FROM "route" WHERE "created_on" BETWEEN $1 AND $2) AS total_distance_km
-          (SELECT CONCAT(FLOOR(total_ms / 1000 / 3600), 'h', FLOOR((total_ms / 1000 % 3600) / 60), 'mn') FROM (SELECT COALESCE(SUM((graphhopper_response->'paths'->2->>'time')::INTEGER), 0) AS total_ms FROM "route" WHERE "created_on" BETWEEN $1 AND $2) AS subquery) AS total_time,
-          (SELECT CONCAT(FLOOR(avg_ms / 1000 / 3600), 'h', FLOOR((avg_ms / 1000 % 3600) / 60), 'mn') FROM (SELECT COALESCE(AVG((graphhopper_response->'paths'->2->>'time')::INTEGER), 0) AS avg_ms FROM "route" WHERE "created_on" BETWEEN $1 AND $2) AS subquery) AS average_time,
-          (SELECT COUNT(*) FROM "incident" WHERE "created_on" BETWEEN $1 AND $2) AS total_signalements,
-          (SELECT COUNT(*) FROM "incident" WHERE "type" = 'accident' AND "created_on" BETWEEN $1 AND $2) AS total_accidents,
-          (SELECT COUNT(*) FROM "incident" WHERE "type" = 'traffic_jam' AND "created_on" BETWEEN $1 AND $2) AS total_traffic_jams,
-          (SELECT COUNT(*) FROM "incident" WHERE "type" = 'road_closed' AND "created_on" BETWEEN $1 AND $2) AS total_road_closed,
-          (SELECT COUNT(*) FROM "incident" WHERE "type" = 'police_control' AND "created_on" BETWEEN $1 AND $2) AS total_police_control,
-          (SELECT COUNT(*) FROM "incident" WHERE "type" = 'roadblock' AND "created_on" BETWEEN $1 AND $2) AS total_roadblock
-      `;
+          SELECT
+            (SELECT COUNT(*) FROM "user" WHERE "created_on" BETWEEN $1 AND $2) AS total_users,
+            (SELECT COUNT(*) FROM "route" WHERE "created_on" BETWEEN $1 AND $2) AS total_routes,
+            (SELECT ROUND(COALESCE(AVG((graphhopper_response->'paths'->0->>'distance')::FLOAT / 1000), 0)::NUMERIC, 2) FROM "route" WHERE "created_on" BETWEEN $1 AND $2) AS average_distance_km,
+            (SELECT ROUND(COALESCE(SUM((graphhopper_response->'paths'->0->>'distance')::FLOAT / 1000), 0)::NUMERIC, 2) FROM "route" WHERE "created_on" BETWEEN $1 AND $2) AS total_distance_km,
+
+            (SELECT CONCAT(
+              FLOOR(COALESCE(SUM((graphhopper_response->'paths'->2->>'time')::INTEGER), 0) / 1000 / 3600)::INT, 'h',
+              FLOOR((COALESCE(SUM((graphhopper_response->'paths'->2->>'time')::INTEGER), 0) / 1000 % 3600) / 60)::INT, 'mn'
+            )
+            FROM "route"
+            WHERE "created_on" BETWEEN $1 AND $2) AS total_time,
+
+            (SELECT CONCAT(
+              FLOOR(COALESCE(AVG((graphhopper_response->'paths'->2->>'time')::INTEGER), 0) / 1000 / 3600)::INT, 'h',
+              FLOOR((COALESCE(AVG((graphhopper_response->'paths'->2->>'time')::INTEGER), 0) / 1000 % 3600) / 60)::INT, 'mn'
+            )
+            FROM "route"
+            WHERE "created_on" BETWEEN $1 AND $2) AS average_time,
+
+            (SELECT COUNT(*) FROM "incident" WHERE "created_on" BETWEEN $1 AND $2) AS total_signalements,
+            (SELECT COUNT(*) FROM "incident" WHERE "type" = 'accident' AND "created_on" BETWEEN $1 AND $2) AS total_accidents,
+            (SELECT COUNT(*) FROM "incident" WHERE "type" = 'traffic_jam' AND "created_on" BETWEEN $1 AND $2) AS total_traffic_jams,
+            (SELECT COUNT(*) FROM "incident" WHERE "type" = 'road_closed' AND "created_on" BETWEEN $1 AND $2) AS total_road_closed,
+            (SELECT COUNT(*) FROM "incident" WHERE "type" = 'police_control' AND "created_on" BETWEEN $1 AND $2) AS total_police_control,
+            (SELECT COUNT(*) FROM "incident" WHERE "type" = 'roadblock' AND "created_on" BETWEEN $1 AND $2) AS total_roadblock;
+          `;
 
       const values = [start, end];
 
@@ -173,8 +187,8 @@ export class UserModel {
           (SELECT COUNT(*) FROM "route" WHERE "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS total_routes,
           (SELECT ROUND(COALESCE(AVG((graphhopper_response->'paths'->0->>'distance')::FLOAT / 1000), 0)::NUMERIC, 2) FROM "route" WHERE "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS average_distance_km,
           (SELECT ROUND(COALESCE(SUM((graphhopper_response->'paths'->0->>'distance')::FLOAT / 1000), 0)::NUMERIC, 2) FROM "route" WHERE "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS total_distance_km,
-          (SELECT CONCAT(FLOOR(total_ms / 1000 / 60 / 60), 'h', FLOOR((total_ms / 1000 / 60) % 60), 'mn') FROM (SELECT COALESCE(SUM((graphhopper_response->'paths'->0->>'time')::INTEGER), 0) AS total_ms FROM "route" WHERE "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS subquery) AS total_time,
-          (SELECT CONCAT(FLOOR(avg_ms / 1000 / 60 / 60), 'h', FLOOR((avg_ms / 1000 / 60) % 60), 'mn') FROM (SELECT COALESCE(AVG((graphhopper_response->'paths'->0->>'time')::INTEGER), 0) AS avg_ms FROM "route" WHERE "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS subquery) AS average_time,
+          (SELECT CONCAT(FLOOR(total_ms / 1000 / 3600), 'h', FLOOR((total_ms / 1000 % 3600) / 60), 'mn') FROM (SELECT COALESCE(SUM((graphhopper_response->'paths'->2->>'time')::INTEGER), 0) AS total_ms FROM "route" WHERE "created_on" BETWEEN $1 AND $2) AS subquery) AS total_time,
+          (SELECT CONCAT(FLOOR(avg_ms / 1000 / 3600), 'h', FLOOR((avg_ms / 1000 % 3600) / 60), 'mn') FROM (SELECT COALESCE(AVG((graphhopper_response->'paths'->2->>'time')::INTEGER), 0) AS avg_ms FROM "route" WHERE "created_on" BETWEEN $1 AND $2) AS subquery) AS average_time,
           (SELECT COUNT(*) FROM "incident" WHERE "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS total_signalements,
           (SELECT COUNT(*) FROM "incident" WHERE "type" = 'accident' AND "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS total_accidents,
           (SELECT COUNT(*) FROM "incident" WHERE "type" = 'traffic_jam' AND "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS total_traffic_jams,

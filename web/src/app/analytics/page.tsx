@@ -138,7 +138,7 @@ export default function Page() {
     const counts = Array(12).fill(0);
     routes.forEach((route) => {
       const date = new Date(route.created_on);
-      const month = date.getMonth();
+      const month = date.getUTCMonth();
       counts[month]++;
     });
     return counts;
