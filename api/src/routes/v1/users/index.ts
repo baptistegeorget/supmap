@@ -12,7 +12,7 @@ const router = Router();
 router.get("/users/stats", auth, async (req, res) => {
   try {
     const authUser = res.locals.authUser as User;
-    
+
     const {
       start,
       end
@@ -342,24 +342,26 @@ router.patch("/users/:userId", auth, async (req, res) => {
         return;
       }
 
-      if (!currentPassword) {
-        res.status(400).json(
-          {
-            message: "Current password is required to modified password."
-          }
-        );
+      if (authUser.role !== "admin") {
+        if (!currentPassword) {
+          res.status(400).json(
+            {
+              message: "Current password is required to modified password."
+            }
+          );
 
-        return;
-      }
+          return;
+        }
 
-      if (!(await verify(currentPassword, user.password))) {
-        res.status(401).json(
-          {
-            message: "Invalid current password."
-          }
-        );
+        if (!(await verify(currentPassword, user.password))) {
+          res.status(401).json(
+            {
+              message: "Invalid current password."
+            }
+          );
 
-        return;
+          return;
+        }
       }
     }
 
