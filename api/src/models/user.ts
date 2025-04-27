@@ -146,21 +146,19 @@ export class UserModel {
             (SELECT COUNT(*) FROM "route" WHERE "created_on" BETWEEN $1 AND $2) AS total_routes,
             (SELECT ROUND(COALESCE(AVG((graphhopper_response->'paths'->0->>'distance')::FLOAT / 1000), 0)::NUMERIC, 2) FROM "route" WHERE "created_on" BETWEEN $1 AND $2) AS average_distance_km,
             (SELECT ROUND(COALESCE(SUM((graphhopper_response->'paths'->0->>'distance')::FLOAT / 1000), 0)::NUMERIC, 2) FROM "route" WHERE "created_on" BETWEEN $1 AND $2) AS total_distance_km,
-
+            (SELECT json_agg(sub) FROM (SELECT EXTRACT(MONTH FROM "created_on")::INTEGER AS month, COUNT(*) AS user_count FROM "user" WHERE "created_on" BETWEEN $1 AND $2 GROUP BY month ORDER BY month) sub) AS monthly_users,
             (SELECT CONCAT(
               FLOOR(COALESCE(SUM((graphhopper_response->'paths'->2->>'time')::INTEGER), 0) / 1000 / 3600)::INT, 'h',
               FLOOR((COALESCE(SUM((graphhopper_response->'paths'->2->>'time')::INTEGER), 0) / 1000 % 3600) / 60)::INT, 'mn'
             )
             FROM "route"
             WHERE "created_on" BETWEEN $1 AND $2) AS total_time,
-
             (SELECT CONCAT(
               FLOOR(COALESCE(AVG((graphhopper_response->'paths'->2->>'time')::INTEGER), 0) / 1000 / 3600)::INT, 'h',
               FLOOR((COALESCE(AVG((graphhopper_response->'paths'->2->>'time')::INTEGER), 0) / 1000 % 3600) / 60)::INT, 'mn'
             )
             FROM "route"
             WHERE "created_on" BETWEEN $1 AND $2) AS average_time,
-
             (SELECT COUNT(*) FROM "incident" WHERE "created_on" BETWEEN $1 AND $2) AS total_signalements,
             (SELECT COUNT(*) FROM "incident" WHERE "type" = 'accident' AND "created_on" BETWEEN $1 AND $2) AS total_accidents,
             (SELECT COUNT(*) FROM "incident" WHERE "type" = 'traffic_jam' AND "created_on" BETWEEN $1 AND $2) AS total_traffic_jams,
