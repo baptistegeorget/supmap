@@ -318,11 +318,11 @@
 }
 
 
-/* DIAGRAMS */
+/* DIAGRAMS SECTION */
 
-.diagram_card{
+/* .diagram_card{
     max-height: 20rem;
-}
+} */
 
 
 .analysis_content--diagrams {
@@ -332,26 +332,20 @@
     margin-bottom: 4rem;
 }
 
-/* DIAGRAMS INCIDENTS */
-.diagram_incidents--section--incidents {
+/* DIAGRAMS */
+.diagram_row {
+    max-height: 20rem;
     display: flex;
     justify-content: space-between;
     margin-top: 1rem;
     gap: 3.5rem;
     position: relative;
-    
 }
-@media screen and (max-width: 1180px) {
-    .diagram_incidents--section--incidents {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-}
-.diagram_incidents--graph {
+
+.diagram_graph {
     width: 60%;
 }
-.diagram_incidents--text{
+.diagram_text{
     width: 40%;
     padding: 1rem 0.8rem;
     border-radius: 0.8rem;
@@ -360,11 +354,11 @@
    
 }
 
-.diagram_incidents--text h3{
+.diagram_text h3{
     position: relative;
     width: fit-content;
 }
-.diagram_incidents--text h3::before{
+.diagram_text h3::before{
     content: '';
     position: absolute;
     display: block;
@@ -375,26 +369,25 @@
     background-color: #F15B4E;
 }
 
-
-/* TRAJETS */
-.diagram_trajets--section--trajets {
+.diagram_row--reverse {
+    max-height: 20rem;
     display: flex;
     flex-direction: row-reverse;
     justify-content: space-between;
-    margin-top: 6rem;
+    margin: 6rem 0;
     gap: 3.5rem
 }
-.diagram_trajets--graph {
+/* .diagram_graph {
     width: 60%;
 }
-.diagram_trajets--text{
+.diagram_text{
     width: 40%;
     padding: 1rem 0.8rem;
     border-radius: 0.8rem;
     background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
     box-shadow: 0 1px 3px rgb(0 0 0 / 0.1), 0 1px 2px rgb(0 0 0 / 0.06);
 }
-.diagram_trajets--text h3{
+.diagram_text h3{
     position: relative;
     width: fit-content;
 }
@@ -407,36 +400,32 @@
     bottom: -6px;
     right: 0;
     background-color: #F15B4E;
-}
+} */
 
 
 @media screen and (max-width: 1180px) {
-    .diagram_incidents--section--incidents {
-        flex-direction: column-reverse;
-        align-items: center;
-    }
-    .diagram_incidents--graph {
-        width: 100%;
-    }
-    .diagram_incidents--text{
-        width: 100%;
-       
+    .analysis_content--diagrams{
+        margin-top: 12rem;
     }
 
-    .diagram_trajets--section--trajets {
+    .diagram_row {
         flex-direction: column-reverse;
         align-items: center;
-    }
-    .diagram_trajets--graph {
-        width: 100%;
-    }
-    .diagram_trajets--text{
-        width: 100%;
-    }
-
-    .diagram_card{
         max-height: 25rem;
         height: 20rem;
+    }
+    .diagram_row--reverse {
+        flex-direction: column-reverse;
+        align-items: center;
+        max-height: 25rem;
+        height: 20rem;
+    }
+    .diagram_graph {
+        width: 100%;
+    }
+    .diagram_text{
+        width: 100%;
+       
     }
     
 }

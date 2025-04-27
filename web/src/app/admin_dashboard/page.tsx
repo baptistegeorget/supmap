@@ -222,11 +222,12 @@ export default function AdminDashboard() {
         {/* Graphiques */}
         <h2 className="dashboard_h2 dashboard_h2--graphiques">Vos données en <span>graphiques</span></h2>
         <div className="analysis_content--diagrams">
-          <div className="diagram_incidents--section--incidents">
-            <div className="diagram_card diagram_incidents--graph">
+
+          <div className="diagram_row">
+            <div className="diagram_graph">
               <Line data={lineUsersChartData(monthlyUsersData)} options={lineUsersChartOptions} />
             </div>
-            <div className="diagram card diagram_incidents--text">
+            <div className="diagram_text">
               <h3 className="dashboard_h3">Évolution du nombre d'utilisateurs</h3>
               <p>
               {"Le graphique ci-dessous montre l'évolution du nombre de nouveaux utilisateurs enregistrés chaque mois sur la plateforme."}
@@ -234,11 +235,12 @@ export default function AdminDashboard() {
               </p>
             </div>
           </div>
-          <div className="diagram_trajets--section--top5days">
-            <div className="diagram_card diagram_trajets--graph">
+
+          <div className="diagram_row--reverse">
+            <div className="diagram_graph">
               <Bar data={barTopDaysRoutesChartData(top5DaysRoutes)} options={barTopDaysRoutesChartOptions} />
             </div>
-            <div className="diagram card diagram_trajets--text">
+            <div className="diagram_text">
               <h3 className="dashboard_h3">Top 5 des jours avec le plus de trajets</h3>
               <p>
                 {"Le graphique ci-dessus met en avant les journées où le plus grand nombre de trajets ont été réalisés. Chaque barre représente le nombre total de trajets enregistrés pour un jour spécifique."}
@@ -246,11 +248,12 @@ export default function AdminDashboard() {
               </p>
             </div>
           </div>
-          <div className="diagram_trajets--section--top5hours">
-            <div className="diagram_card diagram_trajets--graph">
+
+          <div className="diagram_row">
+            <div className="diagram_graph">
             <Bar data={barHoursChartData(top5HoursData)} options={barHoursChartOptions} />
             </div>
-            <div className="diagram card diagram_trajets--text">
+            <div className="diagram_text">
               <h3 className="dashboard_h3">Top 5 des heures avec le plus de trajets</h3>
               <p>
                 {"Ce graphique présente les heures de la journée où le nombre de trajets est le plus élevé. Chaque barre représente une heure spécifique et le total de trajets associés."}
@@ -258,11 +261,12 @@ export default function AdminDashboard() {
               </p>
             </div>
           </div>
-          <div className="diagram_incidents--section--incidents">
-            <div className="diagram_card diagram_trajets--graph">
+
+          <div className="diagram_row--reverse">
+            <div className="diagram_graph">
               <Line data={lineIncidentsChartData(monthlyIncidentsData)} options={lineIncidentsChartOptions} />
             </div>
-            <div className="diagram card diagram_trajets--text">
+            <div className="diagram_text">
               <h3 className="dashboard_h3">Incidents par mois</h3>
               <p>
                 {"Ce graphique montre l'évolution mensuelle du nombre d'incidents enregistrés par les utilisateurs. Il permet de détecter les périodes plus sensibles et de suivre l'évolution générale de la sécurité routière au fil du temps."}

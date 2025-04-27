@@ -1,6 +1,6 @@
 import './globals.css';
 import './analytics/analytics.css';
-import './admin_dashboard/admin_analytics.css';
+
 
 import SideNav from './ui/components/sidenav';
 
