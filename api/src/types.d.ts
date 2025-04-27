@@ -64,6 +64,10 @@ interface Top5HourRoute{
   hour: number,
   total_routes: number
 }
+ interface MonthlyIncidents {
+  month: number,
+  total_incidents: number
+ }
 
 interface Stats {
   total_users: number,
@@ -81,6 +85,7 @@ interface Stats {
   total_roadblock: number,
   top5_days_routes: Top5DayRoute[],
   top5_hours_routes: Top5HourRoute[],
+  monthly_incidents: MonthlyIncidents[],
 }
 
 interface UserInfo {

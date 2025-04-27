@@ -1,27 +1,31 @@
 import { ChartOptions } from "chart.js";
 
-export const barTopHoursRoutesChartData = (top5Hours: { hour: number; total_routes: number }[]) => ({
-  labels: top5Hours.map(d => `${d.hour}h`),
+export const barHoursChartData = (top5HoursData: { hour: string; total_routes: number }[]) => ({
+  labels: top5HoursData.map((item) => `${item.hour}h`),
   datasets: [
     {
-      label: "Nombre de trajets",
-      data: top5Hours.map(d => d.total_routes),
-      backgroundColor: "rgba(16, 185, 129, 0.5)", // vert émeraude
-      borderColor: "rgb(16, 185, 129)",
+      label: "Trajets",
+      data: top5HoursData.map((item) => item.total_routes),
+      backgroundColor: "#3B82F6",
+      borderColor: "#1D4ED8",
       borderWidth: 1,
     },
   ],
 });
 
-export const barTopHoursRoutesChartOptions: ChartOptions<"bar"> = {
+export const barHoursChartOptions: ChartOptions<"bar"> = {
+  indexAxis: "y", // ← rend le graphique horizontal
   responsive: true,
   maintainAspectRatio: false,
   scales: {
-    y: {
+    x: {
       beginAtZero: true,
+      ticks: {
+        precision: 0,
+      },
       grid: { display: false },
     },
-    x: {
+    y: {
       grid: { display: false },
     },
   },
@@ -37,7 +41,10 @@ export const barTopHoursRoutesChartOptions: ChartOptions<"bar"> = {
     },
   },
   animation: {
-    duration: 1000,
-    easing: "easeOutBounce",
+    duration: 1200,
+    delay(ctx) {
+      return ctx.dataIndex * 150; 
+    },
+    easing: "easeInOutQuart", 
   },
 };

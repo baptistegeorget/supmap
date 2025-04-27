@@ -194,18 +194,32 @@ export class UserModel {
           total_routes DESC
         LIMIT 5;
       `;
-      const values = [start, end];
+      const monthlyIncidentsQuery = `
+        SELECT
+          EXTRACT(MONTH FROM created_on)::INTEGER AS month,
+          COUNT(*) AS incident_count
+        FROM
+          "incident"
+        WHERE
+          created_on BETWEEN $1 AND $2
+        GROUP BY
+          month
+        ORDER BY
+          month;
+      `;
 
+      const values = [start, end];
       const client = await pool.connect();
       const result = await client.query<Stats>(query, values);
       const top5DaysResult = await client.query(top5DaysQuery, [start, end]);
       const top5HoursResult = await client.query(top5HoursQuery, values);
-
+      const monthlyIncidentsResult = await client.query(monthlyIncidentsQuery, [start, end]);
       client.release();
       return {
         ...result.rows[0],
         top5_days_routes: top5DaysResult.rows,
         top5_hours_routes: top5HoursResult.rows,
+        monthly_incidents: monthlyIncidentsResult.rows,
       } 
     } catch (error) {
       throw error;

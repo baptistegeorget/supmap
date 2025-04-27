@@ -16,11 +16,11 @@ import {
   PointElement,
   Title,
 } from "chart.js";
-import { lineRoutesChartData, lineRoutesChartOptions } from "@/charts/lineRoutesChart";
-import { barIncidentsChartData, barIncidentsChartOptions } from "@/charts/barIncidentsChart";
 import { lineUsersChartData, lineUsersChartOptions } from "@/charts/lineUsersChart";
 import { barTopDaysRoutesChartData, barTopDaysRoutesChartOptions } from "@/charts/barTopDaysRoutesChart";
-import { barTopHoursRoutesChartData, barTopHoursRoutesChartOptions } from "@/charts/barTopHoursRoutesChart";
+import { barHoursChartData, barHoursChartOptions } from "@/charts/barTopHoursRoutesChart";
+import { lineIncidentsChartData, lineIncidentsChartOptions } from "@/charts/lineIncidentsChart";
+
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -56,19 +56,11 @@ export default function AdminDashboard() {
   const [endDate, setEndDate] = useState("2025-12-31");
   const [monthlyUsersData, setMonthlyUsersData] = useState<number[]>(Array(12).fill(0));
   const [top5DaysRoutes, setTop5DaysRoutes] = useState<{ day: string; total_routes: number }[]>([]);
-  const [top5HoursRoutes, setTop5HoursRoutes] = useState<{ hour: number; total_routes: number }[]>([]);
-
+  const [top5HoursData, setTop5HoursData] = useState<{ hour: string; total_routes: number }[]>([]);
+  const [monthlyIncidentsData, setMonthlyIncidentsData] = useState<number[]>(Array(12).fill(0));
 
   const [statsData, setStatsData] = useState<StatsData | null>(null);
-  const [routesPerMonthData, setRoutesPerMonthData] = useState<number[]>(Array(12).fill(0));
-  const [incidentCounts, setIncidentCounts] = useState({
-    signalements: 0,
-    accidents: 0,
-    trafficJams: 0,
-    roadClosed: 0,
-    policeControl: 0,
-    roadblock: 0,
-  });
+
 
   const isDateRangeValid = new Date(startDate) <= new Date(endDate);
   const router = useRouter();
@@ -105,18 +97,19 @@ export default function AdminDashboard() {
         });
       }
       setMonthlyUsersData(monthlyUsersArray);
-      setTop5DaysRoutes(data.top5_days_routes || []);
-      setTop5HoursRoutes(data.top5_hours_routes || []);
-      setStatsData(data);
-      setIncidentCounts({
-        signalements: data?.total_signalements || 0,
-        accidents: data?.total_accidents || 0,
-        trafficJams: data?.total_traffic_jams || 0,
-        roadClosed: data?.total_road_closed || 0,
-        policeControl: data?.total_police_control || 0,
-        roadblock: data?.total_roadblock || 0,
+      setMonthlyIncidentsData(() => {
+        const dataArray = Array(12).fill(0);
+        if (data.monthly_incidents) {
+          data.monthly_incidents.forEach((item: { month: number; incident_count: number }) => {
+            dataArray[item.month - 1] = item.incident_count;
+          });
+        }
+        return dataArray;
       });
-      setRoutesPerMonthData(data?.monthly_routes || []);
+      setTop5DaysRoutes(data.top5_days_routes || []);
+      setTop5HoursData(data.top5_hours_routes || []);
+
+      setStatsData(data);
     } catch (error) {
       console.error("Erreur admin stats:", error);
     } finally {
@@ -231,30 +224,6 @@ export default function AdminDashboard() {
         <div className="analysis_content--diagrams">
           <div className="diagram_incidents--section--incidents">
             <div className="diagram_card diagram_incidents--graph">
-              <Bar data={barIncidentsChartData(incidentCounts)} options={barIncidentsChartOptions} />
-            </div>
-            <div className="diagram card diagram_incidents--text">
-              <h3 className="dashboard_h3">Nombre de signalements par type</h3>
-              <p>
-              {"Le graphique ci-dessous présente la répartition des incidents signalés en fonction de leur type. Chaque barre représente un type d'incident rencontré sur les routes, parmi lesquels on retrouve les accidents, les embouteillages, les routes fermées, les contrôles de police et les barrages."}
-              {"Ce visuel permet d'avoir un aperçu immédiat des types d'événements les plus fréquents sur la période sélectionnée."}
-              </p>
-            </div>
-          </div>
-          <div className="diagram_trajets--section--trajets">
-            <div className="diagram_card diagram_trajets--graph">
-              <Line data={lineRoutesChartData(routesPerMonthData)} options={lineRoutesChartOptions} />
-            </div>
-            <div className="diagram card diagram_trajets--text">
-              <h3 className="dashboard_h3">Évolution mensuelle des trajets</h3>
-              <p>
-              {"Le graphique ci-dessus illustre l'évolution mensuelle du nombre de trajets effectués. Chaque point sur la courbe représente le total des trajets réalisés au cours d'un mois donné."}
-              {"Cette représentation permet d'identifier les tendances saisonnières, les pics d'activité et les périodes plus calmes."}
-              </p>
-            </div>
-          </div>
-          <div className="diagram_incidents--section--incidents">
-            <div className="diagram_card diagram_incidents--graph">
               <Line data={lineUsersChartData(monthlyUsersData)} options={lineUsersChartOptions} />
             </div>
             <div className="diagram card diagram_incidents--text">
@@ -279,13 +248,24 @@ export default function AdminDashboard() {
           </div>
           <div className="diagram_trajets--section--top5hours">
             <div className="diagram_card diagram_trajets--graph">
-              <Bar data={barTopHoursRoutesChartData(top5HoursRoutes)} options={barTopHoursRoutesChartOptions} />
+            <Bar data={barHoursChartData(top5HoursData)} options={barHoursChartOptions} />
             </div>
             <div className="diagram card diagram_trajets--text">
               <h3 className="dashboard_h3">Top 5 des heures avec le plus de trajets</h3>
               <p>
                 {"Ce graphique présente les heures de la journée où le nombre de trajets est le plus élevé. Chaque barre représente une heure spécifique et le total de trajets associés."}
                 {"Cela permet de mieux comprendre les pics d'activité tout au long de la journée."}
+              </p>
+            </div>
+          </div>
+          <div className="diagram_incidents--section--incidents">
+            <div className="diagram_card diagram_trajets--graph">
+              <Line data={lineIncidentsChartData(monthlyIncidentsData)} options={lineIncidentsChartOptions} />
+            </div>
+            <div className="diagram card diagram_trajets--text">
+              <h3 className="dashboard_h3">Incidents par mois</h3>
+              <p>
+                {"Ce graphique montre l'évolution mensuelle du nombre d'incidents enregistrés par les utilisateurs. Il permet de détecter les périodes plus sensibles et de suivre l'évolution générale de la sécurité routière au fil du temps."}
               </p>
             </div>
           </div>

@@ -58,6 +58,9 @@ export const lineUsersChartOptions: ChartOptions<"line"> = {
   },
   animation: {
     duration: 1000,
+    delay(ctx) {
+      return ctx.dataIndex * 150;
+    },
     easing: "easeInOutQuart",
   },
 };

@@ -46,6 +46,9 @@ export const barTopDaysRoutesChartOptions: ChartOptions<"bar"> = {
   },
   animation: {
     duration: 1000,
+    delay(ctx) {
+      return ctx.dataIndex * 150;
+    },
     easing: "easeInOutQuart",
   },
 };
