@@ -20,6 +20,7 @@ import { lineRoutesChartData, lineRoutesChartOptions } from "@/charts/lineRoutes
 import { barIncidentsChartData, barIncidentsChartOptions } from "@/charts/barIncidentsChart";
 import { lineUsersChartData, lineUsersChartOptions } from "@/charts/lineUsersChart";
 import { barTopDaysRoutesChartData, barTopDaysRoutesChartOptions } from "@/charts/barTopDaysRoutesChart";
+import { barTopHoursRoutesChartData, barTopHoursRoutesChartOptions } from "@/charts/barTopHoursRoutesChart";
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -55,6 +56,7 @@ export default function AdminDashboard() {
   const [endDate, setEndDate] = useState("2025-12-31");
   const [monthlyUsersData, setMonthlyUsersData] = useState<number[]>(Array(12).fill(0));
   const [top5DaysRoutes, setTop5DaysRoutes] = useState<{ day: string; total_routes: number }[]>([]);
+  const [top5HoursRoutes, setTop5HoursRoutes] = useState<{ hour: number; total_routes: number }[]>([]);
 
 
   const [statsData, setStatsData] = useState<StatsData | null>(null);
@@ -104,6 +106,7 @@ export default function AdminDashboard() {
       }
       setMonthlyUsersData(monthlyUsersArray);
       setTop5DaysRoutes(data.top5_days_routes || []);
+      setTop5HoursRoutes(data.top5_hours_routes || []);
       setStatsData(data);
       setIncidentCounts({
         signalements: data?.total_signalements || 0,
@@ -271,6 +274,18 @@ export default function AdminDashboard() {
               <p>
                 {"Le graphique ci-dessus met en avant les journées où le plus grand nombre de trajets ont été réalisés. Chaque barre représente le nombre total de trajets enregistrés pour un jour spécifique."}
                 {"Cela permet d'identifier les dates les plus actives et d'analyser les pics d'utilisation."}
+              </p>
+            </div>
+          </div>
+          <div className="diagram_trajets--section--top5hours">
+            <div className="diagram_card diagram_trajets--graph">
+              <Bar data={barTopHoursRoutesChartData(top5HoursRoutes)} options={barTopHoursRoutesChartOptions} />
+            </div>
+            <div className="diagram card diagram_trajets--text">
+              <h3 className="dashboard_h3">Top 5 des heures avec le plus de trajets</h3>
+              <p>
+                {"Ce graphique présente les heures de la journée où le nombre de trajets est le plus élevé. Chaque barre représente une heure spécifique et le total de trajets associés."}
+                {"Cela permet de mieux comprendre les pics d'activité tout au long de la journée."}
               </p>
             </div>
           </div>

@@ -60,6 +60,11 @@ interface Top5DayRoute {
   total_routes: number
 }
 
+interface Top5HourRoute{
+  hour: number,
+  total_routes: number
+}
+
 interface Stats {
   total_users: number,
   total_routes: number,
@@ -75,6 +80,7 @@ interface Stats {
   total_police_control: number,
   total_roadblock: number,
   top5_days_routes: Top5DayRoute[],
+  top5_hours_routes: Top5HourRoute[],
 }
 
 interface UserInfo {

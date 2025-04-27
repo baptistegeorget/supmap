@@ -180,16 +180,32 @@ export class UserModel {
           total_routes DESC
         LIMIT 5;
       `;
+      const top5HoursQuery = `
+        SELECT
+          EXTRACT(HOUR FROM created_on)::INTEGER AS hour,
+          COUNT(*) AS total_routes
+        FROM
+          "route"
+        WHERE
+          created_on BETWEEN $1 AND $2
+        GROUP BY
+          hour
+        ORDER BY
+          total_routes DESC
+        LIMIT 5;
+      `;
       const values = [start, end];
 
       const client = await pool.connect();
       const result = await client.query<Stats>(query, values);
       const top5DaysResult = await client.query(top5DaysQuery, [start, end]);
-      
+      const top5HoursResult = await client.query(top5HoursQuery, values);
+
       client.release();
       return {
         ...result.rows[0],
         top5_days_routes: top5DaysResult.rows,
+        top5_hours_routes: top5HoursResult.rows,
       } 
     } catch (error) {
       throw error;
