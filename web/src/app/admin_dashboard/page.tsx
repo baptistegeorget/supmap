@@ -19,6 +19,7 @@ import {
 import { lineRoutesChartData, lineRoutesChartOptions } from "@/charts/lineRoutesChart";
 import { barIncidentsChartData, barIncidentsChartOptions } from "@/charts/barIncidentsChart";
 import { lineUsersChartData, lineUsersChartOptions } from "@/charts/lineUsersChart";
+import { barTopDaysRoutesChartData, barTopDaysRoutesChartOptions } from "@/charts/barTopDaysRoutesChart";
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -53,6 +54,8 @@ export default function AdminDashboard() {
   const [startDate, setStartDate] = useState("2025-01-01");
   const [endDate, setEndDate] = useState("2025-12-31");
   const [monthlyUsersData, setMonthlyUsersData] = useState<number[]>(Array(12).fill(0));
+  const [top5DaysRoutes, setTop5DaysRoutes] = useState<{ day: string; total_routes: number }[]>([]);
+
 
   const [statsData, setStatsData] = useState<StatsData | null>(null);
   const [routesPerMonthData, setRoutesPerMonthData] = useState<number[]>(Array(12).fill(0));
@@ -100,6 +103,7 @@ export default function AdminDashboard() {
         });
       }
       setMonthlyUsersData(monthlyUsersArray);
+      setTop5DaysRoutes(data.top5_days_routes || []);
       setStatsData(data);
       setIncidentCounts({
         signalements: data?.total_signalements || 0,
@@ -255,6 +259,18 @@ export default function AdminDashboard() {
               <p>
               {"Le graphique ci-dessous montre l'évolution du nombre de nouveaux utilisateurs enregistrés chaque mois sur la plateforme."}
               {"Cette visualisation permet d'analyser la croissance de la base d'utilisateurs et de repérer les périodes d'augmentation ou de ralentissement."}
+              </p>
+            </div>
+          </div>
+          <div className="diagram_trajets--section--top5days">
+            <div className="diagram_card diagram_trajets--graph">
+              <Bar data={barTopDaysRoutesChartData(top5DaysRoutes)} options={barTopDaysRoutesChartOptions} />
+            </div>
+            <div className="diagram card diagram_trajets--text">
+              <h3 className="dashboard_h3">Top 5 des jours avec le plus de trajets</h3>
+              <p>
+                {"Le graphique ci-dessus met en avant les journées où le plus grand nombre de trajets ont été réalisés. Chaque barre représente le nombre total de trajets enregistrés pour un jour spécifique."}
+                {"Cela permet d'identifier les dates les plus actives et d'analyser les pics d'utilisation."}
               </p>
             </div>
           </div>

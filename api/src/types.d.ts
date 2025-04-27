@@ -55,6 +55,11 @@ interface FeatureCollection {
   }
 }
 
+interface Top5DayRoute {
+  day: string,
+  total_routes: number
+}
+
 interface Stats {
   total_users: number,
   total_routes: number,
@@ -68,7 +73,8 @@ interface Stats {
   total_traffic_jams: number,
   total_road_closed: number,
   total_police_control: number,
-  total_roadblock: number
+  total_roadblock: number,
+  top5_days_routes: Top5DayRoute[],
 }
 
 interface UserInfo {

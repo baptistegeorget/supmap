@@ -166,13 +166,31 @@ export class UserModel {
             (SELECT COUNT(*) FROM "incident" WHERE "type" = 'police_control' AND "created_on" BETWEEN $1 AND $2) AS total_police_control,
             (SELECT COUNT(*) FROM "incident" WHERE "type" = 'roadblock' AND "created_on" BETWEEN $1 AND $2) AS total_roadblock;
           `;
-
+      const top5DaysQuery = `
+        SELECT
+          TO_CHAR(created_on, 'YYYY-MM-DD') AS day,
+          COUNT(*) AS total_routes
+        FROM
+          "route"
+        WHERE
+          created_on BETWEEN $1 AND $2
+        GROUP BY
+          day
+        ORDER BY
+          total_routes DESC
+        LIMIT 5;
+      `;
       const values = [start, end];
 
       const client = await pool.connect();
       const result = await client.query<Stats>(query, values);
+      const top5DaysResult = await client.query(top5DaysQuery, [start, end]);
+      
       client.release();
-      return result.rows[0];
+      return {
+        ...result.rows[0],
+        top5_days_routes: top5DaysResult.rows,
+      } 
     } catch (error) {
       throw error;
     }
