@@ -124,7 +124,7 @@ export default function AdminDashboard() {
           <h1 className="text-2xl font-bold">
             Vue <span className="text-customOrange">administrateur</span>
           </h1>
-          <p className="text-gray-600">Cette page vous permet de visualiser les données de l'ensemble de vos utilisateurs</p>
+          <p className="text-gray-600">{"Cette page vous permet de visualiser les données de l'ensemble de vos utilisateurs"}</p>
         </div>
         <div className="analyse_header--date analyse_header--date--desktop">
           <span className="date text-gray-600">
@@ -228,7 +228,7 @@ export default function AdminDashboard() {
               <Line data={lineUsersChartData(monthlyUsersData)} options={lineUsersChartOptions} />
             </div>
             <div className="diagram_text">
-              <h3 className="dashboard_h3">Évolution du nombre d'utilisateurs</h3>
+              <h3 className="dashboard_h3">{"Évolution du nombre d'utilisateurs"}</h3>
               <p>
               {"Le graphique ci-dessous montre l'évolution du nombre de nouveaux utilisateurs enregistrés chaque mois sur la plateforme."}
               {"Cette visualisation permet d'analyser la croissance de la base d'utilisateurs et de repérer les périodes d'augmentation ou de ralentissement."}
