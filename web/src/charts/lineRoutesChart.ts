@@ -6,7 +6,7 @@ export const lineRoutesChartData = (monthlyCounts: number[]) => {
     'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
   ];
 
-  const currentMonthIndex = new Date().getMonth();
+  const currentMonthIndex = new Date().getUTCMonth();
   const filteredLabels = monthLabels.slice(0, currentMonthIndex + 1);
   const filteredCounts = monthlyCounts.slice(0, currentMonthIndex + 1);
 
@@ -62,6 +62,9 @@ export const lineRoutesChartOptions: ChartOptions<'line'> = {
   },
   animation: {
     duration: 1000,
+    delay(ctx) {
+      return ctx.dataIndex * 150; 
+    },
     easing: "easeInOutCirc",
   },
 };

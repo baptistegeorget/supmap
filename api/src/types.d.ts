@@ -55,18 +55,37 @@ interface FeatureCollection {
   }
 }
 
+interface Top5DayRoute {
+  day: string,
+  total_routes: number
+}
+
+interface Top5HourRoute{
+  hour: number,
+  total_routes: number
+}
+ interface MonthlyIncidents {
+  month: number,
+  total_incidents: number
+ }
+
 interface Stats {
+  total_users: number,
   total_routes: number,
   average_distance_km: number,
   total_distance_km: number,
   total_time: number,
+  monthly_routes: number,
   average_time: number,
   total_signalements: number,
   total_accidents: number,
   total_traffic_jams: number,
   total_road_closed: number,
   total_police_control: number,
-  total_roadblock: number
+  total_roadblock: number,
+  top5_days_routes: Top5DayRoute[],
+  top5_hours_routes: Top5HourRoute[],
+  monthly_incidents: MonthlyIncidents[],
 }
 
 interface UserInfo {

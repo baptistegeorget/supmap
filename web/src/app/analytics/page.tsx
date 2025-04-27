@@ -138,7 +138,7 @@ export default function Page() {
     const counts = Array(12).fill(0);
     routes.forEach((route) => {
       const date = new Date(route.created_on);
-      const month = date.getMonth();
+      const month = date.getUTCMonth();
       counts[month]++;
     });
     return counts;
@@ -295,30 +295,33 @@ export default function Page() {
         {/* Graphiques */}
         <h2 className="dashboard_h2 dashboard_h2--graphiques">Vos données en <span>graphiques</span></h2>
         <div className="analysis_content--diagrams">
-          <div className="diagram_incidents--section--incidents">
-            <div className="diagram_card diagram_incidents--graph">
+
+          <div className="diagram_row">
+            <div className="diagram_graph">
               <Bar data={barIncidentsChartData(incidentCounts)} options={barIncidentsChartOptions} />
             </div>
-            <div className="diagram card diagram_incidents--text">
+            <div className="diagram_text">
               <h3 className="dashboard_h3">Nombre de signalements par type</h3>
               <p>
-              Le graphique ci-dessous présente la répartition des incidents signalés en fonction de leur type. Chaque barre représente un type d’incident rencontré sur les routes, parmi lesquels on retrouve les accidents, les embouteillages, les routes fermées, les contrôles de police et les barrages.
-              Ce visuel permet d’avoir un aperçu immédiat des types d’événements les plus fréquents sur la période sélectionnée.
+              {"Le graphique ci-dessous présente la répartition des incidents signalés en fonction de leur type. Chaque barre représente un type d'incident rencontré sur les routes, parmi lesquels on retrouve les accidents, les embouteillages, les routes fermées, les contrôles de police et les barrages."}
+              {"Ce visuel permet d'avoir un aperçu immédiat des types d'événements les plus fréquents sur la période sélectionnée."}
               </p>
             </div>
           </div>
-          <div className="diagram_trajets--section--trajets">
-            <div className="diagram_card diagram_trajets--graph">
+
+          <div className="diagram_row--reverse">
+            <div className="diagram_graph">
               <Line data={lineRoutesChartData(routesPerMonthData)} options={lineRoutesChartOptions} />
             </div>
-            <div className="diagram card diagram_trajets--text">
+            <div className="diagram_text">
               <h3 className="dashboard_h3">Évolution mensuelle des trajets</h3>
               <p>
-              Ce graphique en courbe met en lumière la répartition des trajets effectués au fil des mois. Chaque point représente le nombre total de trajets réalisés sur une période mensuelle, permettant d’identifier les pics d’activité ainsi que les périodes plus calmes.
-              Cette visualisation est idéale pour suivre les tendances d’utilisation, détecter les variations saisonnières, et ajuster ses prévisions ou ses ressources en conséquence.
+              {"Ce graphique en courbe met en lumière la répartition des trajets effectués au fil des mois. Chaque point représente le nombre total de trajets réalisés sur une période mensuelle, permettant d'identifier les pics d'activité ainsi que les périodes plus calmes."}
+              {"Cette visualisation est idéale pour suivre les tendances d'utilisation, détecter les variations saisonnières, et ajuster ses prévisions ou ses ressources en conséquence."}
               </p>
-          </div>
+            </div>
         </div>
+
       </div>
     </div>
   </div>

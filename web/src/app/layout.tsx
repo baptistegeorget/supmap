@@ -1,6 +1,7 @@
 import './globals.css';
 import './analytics/analytics.css';
 
+
 import SideNav from './ui/components/sidenav';
 
 export const metadata = {
