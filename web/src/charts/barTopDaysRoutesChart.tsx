@@ -1,6 +1,8 @@
 import { ChartOptions } from "chart.js";
 
 export const barTopDaysRoutesChartData = (top5Days: { day: string; total_routes: number }[]) => ({
+
+  
   labels: top5Days.map(d => d.day),
   datasets: [
     {
