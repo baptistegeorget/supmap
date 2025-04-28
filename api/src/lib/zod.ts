@@ -82,38 +82,28 @@ export const idSchema = zodString(
   }
 );
 
-export const limitSchema = zodNumber(
+export const limitSchema = zodString(
   {
     required_error: "Limit is required."
   }
-).int(
+).refine(
+  value => !isNaN(Number(value)) && Number(value) > 0,
   {
-    message: "Limit must be an integer."
+    message: "Limit must be a positive number."
   }
-).positive(
-  {
-    message: "Limit must be positive."
-  }
-).max(
-  100,
-  {
-    message: "Limit must be at most 100."
-  }
-).optional();
+).transform(value => Number(value)).optional();
 
-export const offsetSchema = zodNumber(
+export const offsetSchema = zodString(
   {
     required_error: "Offset is required."
   }
-).int(
+).refine(
+  value => !isNaN(Number(value)) && Number(value) >= 0,
   {
-    message: "Offset must be an integer."
+    message: "Offset must be a non-negative number."
   }
-).nonnegative(
-  {
-    message: "Offset must be non-negative."
-  }
-).optional();
+).transform(value => Number(value))
+.optional();
 
 export const routingProfileSchema = zodEnum(
   [

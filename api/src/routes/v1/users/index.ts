@@ -123,9 +123,9 @@ router.get("/users/:userId/stats", auth, async (req, res) => {
 
 router.get("/users", auth, async (req, res) => {
   try {
-    const limit = limitSchema.parse(parseInt(req.query.limit as string, 10));
+    const limit = limitSchema.parse(req.query.limit);
     
-    const offset = offsetSchema.parse(parseInt(req.query.offset as string, 10));
+    const offset = offsetSchema.parse(req.query.offset);
 
 
     const userModel = new UserModel();
