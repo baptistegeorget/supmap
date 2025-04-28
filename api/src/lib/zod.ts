@@ -190,6 +190,15 @@ export const patchUserSchema = zodObject(
     email: emailSchema.optional(),
     password: passwordSchema.optional(),
     picture: pictureSchema.optional(),
+    role: zodEnum(
+      [
+        "user",
+        "admin"
+      ],
+      {
+        required_error: "Role is required."
+      }
+    ).optional(),
     currentPassword: passwordSchema.optional()
   }
 );

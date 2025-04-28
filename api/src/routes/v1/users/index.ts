@@ -127,7 +127,6 @@ router.get("/users", auth, async (req, res) => {
     
     const offset = offsetSchema.parse(req.query.offset);
 
-
     const userModel = new UserModel();
 
     let users = await userModel.getAll(limit, offset);
@@ -291,6 +290,7 @@ router.patch("/users/:userId", auth, async (req, res) => {
       email,
       password,
       picture,
+      role,
       currentPassword
     } = patchUserSchema.parse(req.body);
 
@@ -366,13 +366,24 @@ router.patch("/users/:userId", auth, async (req, res) => {
       }
     }
 
+    if (role && authUser.role !== "admin") {
+      res.status(403).json(
+        {
+          message: "You don't have permission to modify this user's role."
+        }
+      );
+
+      return;
+    }
+
     user = await userModel.update(
       userId,
       {
         email: email ? encrypt(email) : user.email,
         name: name ? encrypt(name) : user.name,
         password: password ? await hash(password) : user.password,
-        picture: picture ? encrypt(picture) : user.picture
+        picture: picture ? encrypt(picture) : user.picture,
+        role: role || user.role
       }
     );
 

@@ -254,7 +254,7 @@ export class UserModel {
     }
   }
 
-  async update(id: string, user: Omit<User, "id" | "role" | "created_on" | "modified_on">): Promise<User> {
+  async update(id: string, user: Omit<User, "id" | "created_on" | "modified_on">): Promise<User> {
     try {
       const query = `
         UPDATE "user" SET 
@@ -262,6 +262,7 @@ export class UserModel {
           "name" = $3, 
           "password" = $4, 
           "picture" = $5,
+          "role" = $6,
           "modified_on" = NOW() 
         WHERE "id" = $1 
         RETURNING
@@ -280,7 +281,8 @@ export class UserModel {
         user.email,
         user.name,
         user.password,
-        user.picture
+        user.picture,
+        user.role
       ];
 
       const client = await pool.connect();
