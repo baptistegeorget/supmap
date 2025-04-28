@@ -39,6 +39,12 @@ export const barHoursChartOptions: ChartOptions<"bar"> = {
       title: {
         display: false,
       },
+      ticks: {
+        callback: function (value, index, ticks) {
+          const label = this.getLabelForValue(value as number);
+          return `${label}h`;
+        }
+      },  
     },
   },
   plugins: {
