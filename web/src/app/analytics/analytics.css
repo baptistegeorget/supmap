@@ -340,6 +340,7 @@
     margin-top: 1rem;
     gap: 3.5rem;
     position: relative;
+    width: 100%;
 }
 
 .diagram_graph {
@@ -375,37 +376,13 @@
     flex-direction: row-reverse;
     justify-content: space-between;
     margin: 6rem 0;
-    gap: 3.5rem
+    gap: 3.5rem;
+    width: 100%;
 }
-/* .diagram_graph {
-    width: 60%;
-}
-.diagram_text{
-    width: 40%;
-    padding: 1rem 0.8rem;
-    border-radius: 0.8rem;
-    background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
-    box-shadow: 0 1px 3px rgb(0 0 0 / 0.1), 0 1px 2px rgb(0 0 0 / 0.06);
-}
-.diagram_text h3{
-    position: relative;
-    width: fit-content;
-}
-.diagram_trajets--text h3::before{
-    content: '';
-    position: absolute;
-    display: block;
-    width: 25%;
-    height: .3rem;
-    bottom: -6px;
-    right: 0;
-    background-color: #F15B4E;
-} */
-
 
 @media screen and (max-width: 1180px) {
     .analysis_content--diagrams{
-        margin-top: 12rem;
+        margin-top: 5rem;
     }
 
     .diagram_row {
