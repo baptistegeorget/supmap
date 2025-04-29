@@ -40,7 +40,7 @@ export const barHoursChartOptions: ChartOptions<"bar"> = {
         display: false,
       },
       ticks: {
-        callback: function (value, index, ticks) {
+        callback: function (value) {
           const label = this.getLabelForValue(value as number);
           return `${label}h`;
         }

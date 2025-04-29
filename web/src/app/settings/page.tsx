@@ -3,6 +3,15 @@
 import { useState, useEffect } from "react";
 import Cookie from "js-cookie";
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  picture?: string;
+  role?: string;
+}
+
+
 export default function Page() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editableValue, setEditableValue] = useState("");
@@ -12,36 +21,56 @@ export default function Page() {
   const [errorMessage, setErrorMessage] = useState("");
   const [valueKey, setValueKey] = useState("");
   const [userId, setUserId] = useState("");
-
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null); 
   const [userData, setUserData] = useState({ email: "", username: "", picture: "" });
-
   const [token, setToken] = useState<string | undefined>(undefined);
+  const [offset, setOffset] = useState(0);
+  const limit = 10;
+  const [isAdmin, setIsAdmin] = useState(false);
+
+
+  async function fetchUserData(offsetValue = 0) {
+    if (token) {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!response.ok) throw new Error("Impossible de récupérer les données");
+
+        const data = await response.json();
+        setUserId(data.id);
+        setUserData({ email: data.email, username: data.name, picture: data.picture || "" });
+
+        if (data.role === "admin") {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users?limit=${Number(limit)}&offset=${Number(offsetValue)}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const usersData = await response.json();
+          console.log("Données des utilisateurs :", usersData);
+          setAllUsers(usersData); // <- stocke les users
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération des informations :", error);
+      }
+    }
+  }
 
   useEffect(() => {
     const localToken = typeof window !== "undefined" ? localStorage.getItem("token") : null;
     const cookieToken = Cookie.get("auth_token");
     setToken(localToken || cookieToken);
   }, []);
+
+  useEffect(() => {
+    if (selectedUser) {
+      // Si le user est admin ou pas
+      setIsAdmin(selectedUser.role === "admin");
+    }
+  }, [selectedUser]);
   
   useEffect(() => {
-    async function fetchUserData() {
-      if (token) {
-        try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/me`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-
-          if (!response.ok) throw new Error("Impossible de récupérer les données");
-
-          const data = await response.json();
-          setUserId(data.id);
-          setUserData({ email: data.email, username: data.name, picture: data.picture || "" });
-        } catch (error) {
-          console.error("Erreur lors de la récupération des informations :", error);
-        }
-      }
-    }
-
     fetchUserData();
   }, [token]);
 
@@ -54,115 +83,103 @@ export default function Page() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setErrorMessage("");
+    setSelectedUser(null); // Réinitialise l'utilisateur sélectionné
   };
-
-  // const [isLocationEnabled, setIsLocationEnabled] = useState(false);
-
-  // // Point fixe par défaut (ex. : Paris)
-  // const fallbackPosition = {
-  //   latitude: 48.8566,
-  //   longitude: 2.3522,
-  // };
-
-  // useEffect(() => {
-  //   // Vérifie si l'autorisation a déjà été donnée
-  //   if (!navigator.geolocation) {
-  //     console.log("Géolocalisation non supportée.");
-  //     setIsLocationEnabled(false);
-  //     console.log("Position par défaut :", fallbackPosition);
-  //     return;
-  //   }
-
-  //   navigator.permissions?.query({ name: "geolocation" }).then((result) => {
-  //     if (result.state === "granted") {
-  //       navigator.geolocation.getCurrentPosition((position) => {
-  //         console.log("Position automatique :", position.coords);
-  //         setIsLocationEnabled(true);
-  //       });
-  //     } else {
-  //       console.log("Permission pas encore accordée ou refusée.");
-  //       setIsLocationEnabled(false);
-  //       console.log("Position par défaut :", fallbackPosition);
-  //     }
-  //   });
-  // }, []);
-
-  // const handleLocationToggle = () => {
-  //   if (!isLocationEnabled) {
-  //     if (!navigator.geolocation) {
-  //       alert("La géolocalisation n'est pas supportée.");
-  //       return;
-  //     }
-
-  //     navigator.geolocation.getCurrentPosition(
-  //       (position) => {
-  //         const { latitude, longitude } = position.coords;
-  //         console.log("Position partagée :", latitude, longitude);
-  //         setIsLocationEnabled(true);
-  //       },
-  //       (error) => {
-  //         console.warn("Erreur de géolocalisation :", error.message);
-  //         setIsLocationEnabled(false);
-  //         console.log("Position par défaut :", fallbackPosition);
-  //       }
-  //     );
-  //   } else {
-  //     console.log("Partage de position désactivé.");
-  //     setIsLocationEnabled(false);
-  //   }
-  // };
-
 
 
   const handleSave = async () => {
-    try {
-      let updateData: Record<string, unknown> = {};
-
-      if (valueKey === "mot de passe") {
-        if (newPassword !== confirmPassword) {
-          setErrorMessage("Les nouveaux mots de passe ne correspondent pas.");
-          return;
+    if (selectedUser) {
+      // Admin modifie un autre utilisateur
+      if (newPassword !== confirmPassword) {
+        setErrorMessage("Les mots de passe ne correspondent pas.");
+        return;
+      }
+  
+      const updatePayload: Record<string, string> = {
+        name: selectedUser.name,
+        email: selectedUser.email,
+        role: isAdmin ? "admin" : "user",
+      };
+      if (newPassword.trim()) {
+        updatePayload.password = newPassword;
+      }
+  
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/${selectedUser.id}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(updatePayload),
+        });
+  
+        const result = await res.json();
+        if (!res.ok) throw new Error(result?.message || "Erreur lors de la mise à jour");
+        console.log("Utilisateur mis à jour :", result);
+        setIsModalOpen(false);
+        setSelectedUser(null);
+        window.location.reload();
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          console.error(err);
+          setErrorMessage(err.message);
+        } else {
+          setErrorMessage("Une erreur inconnue est survenue");
         }
-        updateData = { password: newPassword, currentPassword: oldPassword };
-      } else if (valueKey === "email") {
-        updateData = { email: editableValue };
-      } else if (valueKey === "nom d'utilisateur") {
-        updateData = { name: editableValue };
       }
+    } else {
+  
+      try {
+        let updateData: Record<string, unknown> = {};
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/${userId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(updateData),
-      });
+        if (valueKey === "mot de passe") {
+          if (newPassword !== confirmPassword) {
+            setErrorMessage("Les nouveaux mots de passe ne correspondent pas.");
+            return;
+          }
+          updateData = { password: newPassword, currentPassword: oldPassword };
+        } else if (valueKey === "email") {
+          updateData = { email: editableValue };
+        } else if (valueKey === "nom d'utilisateur") {
+          updateData = { name: editableValue };
+        }
 
-      const updatedData = await response.json();
-      console.log("Données mises à jour :", updatedData);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/${userId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(updateData),
+        });
 
-      if (!response.ok) {
-        const apiErrorMessage = updatedData?.message || "Erreur lors de la création de l'itinéraire.";
-        throw new Error(apiErrorMessage);
-      }
+        const updatedData = await response.json();
+        console.log("Données mises à jour :", updatedData);
 
-      setUserData({
-        email: updatedData.email,
-        username: updatedData.name,
-        picture: updatedData.picture || "",
-      });
+        if (!response.ok) {
+          const apiErrorMessage = updatedData?.message || "Erreur lors de la création de l'itinéraire.";
+          throw new Error(apiErrorMessage);
+        }
 
-      setIsModalOpen(false);
-      window.location.href = "/";
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error("Erreur lors de la mise à jour :", error);
-        setErrorMessage(error.message || "Une erreur est survenue lors de la mise à jour.");
-      }
-      else {
-        console.error("Erreur inconnue", error);
-        setErrorMessage("Une erreur inattendue est survenue lors de la mise à jour.");
+        setUserData({
+          email: updatedData.email,
+          username: updatedData.name,
+          picture: updatedData.picture || "",
+        });
+
+        setIsModalOpen(false);
+        setSelectedUser(null);
+        window.location.href = "/";
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          console.error("Erreur lors de la mise à jour :", error);
+          setErrorMessage(error.message || "Une erreur est survenue lors de la mise à jour.");
+        }
+        else {
+          console.error("Erreur inconnue", error);
+          setErrorMessage("Une erreur inattendue est survenue lors de la mise à jour.");
+        }
       }
     }
   };
@@ -248,30 +265,152 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Paramètres de navigation */}
-      {/* <div className="bg-white p-5 rounded-lg shadow-md mb-5">
-        <h2 className="text-customOrange text-lg border-customOrange border-b-2 pb-2 mb-5" style={{ textIndent: "10px" }}>
-          Paramètres de navigation
-        </h2>
-        <div className="pl-4 py-4">
-          <label className="inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              className="sr-only peer"
-              checked={isLocationEnabled}
-              onChange={handleLocationToggle}
-            />
-            <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-customOrange dark:peer-focus:ring-customOrange rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-customPurple dark:peer-checked:bg-customPurple"></div>
-            <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-900">
-              Partager ma position
-            </span>
-          </label>
-        </div>
+      {/* Paramètres admin */}
+      {allUsers.length > 0 && (
+          <div className="bg-white p-5 rounded-lg shadow-md mb-5">
+            <h2 className="text-customOrange text-lg border-customOrange border-b-2 pb-2 mb-5" style={{ textIndent: "10px" }}>
+              Utilisateurs
+            </h2>
+            <div className="space-y-4 pl-4">
+              {allUsers
+                .filter((user) => user.id !== userId)
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((user) => (
+                <div key={user.id} className="p-4 bg-gray-100 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-bold">{user.name}</p>
+                      <p className="text-gray-600">{user.email}</p>
+                    </div>
+                    <button
+                      className="bg-customPurple text-white px-4 py-1 rounded hover:bg-customOrange"
+                      onClick={() => {
+                        setSelectedUser(user); // on garde l'user sélectionné
+                        setValueKey("admin"); // ou une autre clé si tu veux personnaliser
+                        setEditableValue(user.name); // ou email par défaut
+                        setIsModalOpen(true);
+                      }}
+                    >
+                      Modifier
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-center mt-4 space-x-4">
+              <button
+                className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
+                onClick={() => {
+                  const newOffset = Math.max(0, offset - limit);
+                  setOffset(newOffset);
+                  fetchUserData(newOffset);
+                }}
+                disabled={offset === 0} // Désactive si déjà à la première page
+              >
+                Précédent
+              </button>
 
-      </div> */}
+              {/* Numéro de page */}
+              <span className="text-gray-700 font-semibold">
+                Page {Math.floor(offset / limit) + 1}
+              </span>
+
+              <button
+                className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
+                onClick={() => {
+                  const newOffset = offset + limit;
+                  setOffset(newOffset);
+                  fetchUserData(newOffset);
+                }}
+                disabled={allUsers.length < limit} // Désactive si moins d'éléments que le limit (fin)
+              >
+                Suivant
+              </button>
+            </div>
+
+          </div>
+        )}
+
+
+      {isModalOpen && selectedUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-10 rounded-lg text-center w-[550px]">
+            <h2 className="font-bold text-xl mb-6">Modifier l&apos;utilisateur</h2>
+
+            <div className="mb-4">
+              <input
+                type="text"
+                value={selectedUser.name}
+                onChange={(e) =>
+                  setSelectedUser((prev) => ({ ...prev!, name: e.target.value }))
+                }
+                placeholder="Nom"
+                className="w-4/5 p-2 border-b-2 border-[#3D2683] focus:outline-none"
+              />
+            </div>
+            <div className="mb-4">
+              <input
+                type="email"
+                value={selectedUser.email}
+                onChange={(e) =>
+                  setSelectedUser((prev) => ({ ...prev!, email: e.target.value }))
+                }
+                placeholder="Email"
+                className="w-4/5 p-2 border-b-2 border-[#3D2683] focus:outline-none"
+              />
+            </div>
+            <div className="mb-4">
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Nouveau mot de passe"
+                className="w-4/5 p-2 border-b-2 border-[#3D2683] focus:outline-none"
+              />
+            </div>
+            <div className="mb-4">
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirmer le mot de passe"
+                className="w-4/5 p-2 border-b-2 border-[#3D2683] focus:outline-none"
+              />
+            </div>
+            <div className="mb-2">
+              <label className="inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="sr-only peer"
+                  checked={isAdmin}
+                  onChange={() => setIsAdmin(!isAdmin)}
+                />
+                <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-customOrange rounded-full peer dark:bg-gray-500 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-customPurple"></div>
+                <span className="ml-3 text-sm font-medium text-gray-900">Administrateur</span>
+              </label>
+            </div>
+
+
+            {errorMessage && <div className="text-red-500 mb-4">{errorMessage}</div>}
+
+            <button
+              className="w-[210px] py-2 mt-4 mx-2 bg-[#F15B4E] text-white rounded-md hover:opacity-80"
+              onClick={handleCloseModal}
+            >
+              Annuler
+            </button>
+            <button
+              className="w-[210px] py-2 mt-4 mx-2 bg-[#3D2683] text-white rounded-md hover:opacity-80"
+              onClick={handleSave}
+            >
+              Sauvegarder
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modal */}
-      {isModalOpen && (
+      {isModalOpen && !selectedUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-10 rounded-lg text-center w-[550px]">
             <h2 className="font-bold text-xl mb-6">Modifier {valueKey}</h2>
