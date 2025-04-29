@@ -240,15 +240,37 @@ export class UserModel {
           (SELECT COUNT(*) FROM "incident" WHERE "type" = 'traffic_jam' AND "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS total_traffic_jams,
           (SELECT COUNT(*) FROM "incident" WHERE "type" = 'road_closed' AND "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS total_road_closed,
           (SELECT COUNT(*) FROM "incident" WHERE "type" = 'police_control' AND "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS total_police_control,
-          (SELECT COUNT(*) FROM "incident" WHERE "type" = 'roadblock' AND "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS total_roadblock
-      `;
+          (SELECT COUNT(*) FROM "incident" WHERE "type" = 'roadblock' AND "created_on" BETWEEN $1 AND $2 AND "created_by" = $3) AS total_roadblock,
+          (SELECT json_agg(sub)
+            FROM (
+              SELECT 
+                CASE
+                  WHEN EXTRACT(MINUTE FROM created_on) < 15 THEN CONCAT(LPAD(EXTRACT(HOUR FROM created_on)::TEXT, 2, '0'), ':00')
+                  WHEN EXTRACT(MINUTE FROM created_on) < 30 THEN CONCAT(LPAD(EXTRACT(HOUR FROM created_on)::TEXT, 2, '0'), ':15')
+                  WHEN EXTRACT(MINUTE FROM created_on) < 45 THEN CONCAT(LPAD(EXTRACT(HOUR FROM created_on)::TEXT, 2, '0'), ':30')
+                  ELSE CONCAT(LPAD(((EXTRACT(HOUR FROM created_on)::INTEGER + 1) % 24)::TEXT, 2, '0'), ':00')
+                END AS quarter_hour,
+                COUNT(*) AS traffic_jams
+              FROM "incident"
+              WHERE "type" = 'traffic_jam'
+                AND "created_on" BETWEEN $1 AND $2
+                AND "created_by" = $3
+              GROUP BY quarter_hour
+              ORDER BY traffic_jams DESC
+              LIMIT 3
+            ) sub
+          ) AS recommended_hours
+        `;
 
       const values = [start, end, id];
 
       const client = await pool.connect();
       const result = await client.query<Stats>(query, values);
+      
+
       client.release();
-      return result.rows[0];
+      return result.rows[0]
+        
     } catch (error) {
       throw error;
     }

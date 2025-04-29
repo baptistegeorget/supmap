@@ -69,6 +69,11 @@ interface Top5HourRoute{
   total_incidents: number
  }
 
+ interface RecommendedHour {
+  quarter_hour: string;
+  traffic_jams: number;
+}
+
 interface Stats {
   total_users: number,
   total_routes: number,
@@ -86,6 +91,7 @@ interface Stats {
   top5_days_routes: Top5DayRoute[],
   top5_hours_routes: Top5HourRoute[],
   monthly_incidents: MonthlyIncidents[],
+  recommended_hours: RecommendedHour[],
 }
 
 interface UserInfo {

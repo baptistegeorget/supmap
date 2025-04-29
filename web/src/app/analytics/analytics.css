@@ -383,6 +383,7 @@
 @media screen and (max-width: 1180px) {
     .analysis_content--diagrams{
         margin-top: 5rem;
+        gap: 3.5rem;
     }
 
     .diagram_row {
@@ -405,4 +406,15 @@
        
     }
     
+}
+
+@media screen and (max-width: 768px) {
+    .analysis_content--diagrams{
+        margin-top: 7rem;
+        
+    }
+}
+
+.circulation {
+    margin-bottom: 3rem;
 }
