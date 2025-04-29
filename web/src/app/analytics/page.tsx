@@ -19,6 +19,11 @@ import {
 import { lineRoutesChartData, lineRoutesChartOptions } from "@/charts/lineRoutesChart";
 import { barIncidentsChartData, barIncidentsChartOptions } from "@/charts/barIncidentsChart";
 
+interface RecommendedHour {
+  quarter_hour: string;
+  traffic_jams: number;
+}
+
 interface StatsData {
   total_routes: number;
   average_distance_km: number;
@@ -30,6 +35,7 @@ interface StatsData {
   total_road_closed: number;
   total_police_control: number;
   total_roadblock: number;
+  recommended_hours: RecommendedHour[];
 }
 
 interface Route {
@@ -187,7 +193,7 @@ export default function Page() {
   };
   
 
- // Affichage
+ // AFFICHAGE
   return (
     <div className="flex flex-col px-4 py-4 h-full w-full bg-gray-50 overflow-auto analyse_container">
       <div className="analyse_header">
@@ -229,7 +235,7 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Filtres de date */}
+      {/* FILTRES */}
       <div className="filters_container">
         <div className="filters_input">
           <div className="filters_container--filter">
@@ -264,6 +270,25 @@ export default function Page() {
         </div>
       </div>
 
+      {/* CIRCULATION */}
+      {statsData?.recommended_hours && statsData.recommended_hours.length > 0 && (
+      <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded circulation">
+        <h3 className="font-bold mb-2">Conseil circulation :</h3>
+        <p>
+          Évitez de prendre la route autour de 
+          {" "}
+          <strong>{statsData.recommended_hours[0].quarter_hour.replace(":", "h")}</strong>, 
+          {" "}
+          <strong>{statsData.recommended_hours[1].quarter_hour.replace(":", "h")}</strong> ou 
+          {" "}
+          <strong>{statsData.recommended_hours[2].quarter_hour.replace(":", "h")}</strong>,
+          {" "}
+          ce sont les créneaux où les embouteillages sont les plus fréquents sur la période sélectionnée.
+        </p>
+      </div>
+      )}
+
+
       {/* KPI */}
       <h2 className="dashboard_h2 dashboard_h2--kpi">Quelques <span>chiffres</span>...</h2>
       <div className="analysis_content">
@@ -292,7 +317,7 @@ export default function Page() {
         </div>
 
 
-        {/* Graphiques */}
+        {/* DATAVIZ */}
         <h2 className="dashboard_h2 dashboard_h2--graphiques">Vos données en <span>graphiques</span></h2>
         <div className="analysis_content--diagrams">
 
@@ -323,7 +348,7 @@ export default function Page() {
         </div>
 
       </div>
-    </div>
+      </div>
   </div>
   );
 }
