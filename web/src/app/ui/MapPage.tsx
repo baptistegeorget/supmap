@@ -136,26 +136,26 @@ const MapPage = () => {
     }  
   };
 
-  const sendToMobile = async () => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/sendToMobile`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ from, to }),
-      });
-      const data = await response.json();
-      if (data.success) {
-        alert("Itinéraire envoyé au mobile !");
-      } else {
-        alert("Échec de l'envoi au mobile.");
-      }
-    } catch (error) {
-      console.error("Erreur lors de l'envoi vers mobile:", error);
-      alert("Erreur lors de l'envoi vers mobile.");
-    }
-  };
+  // const sendToMobile = async () => {
+  //   try {
+  //     const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/sendToMobile`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({ from, to }),
+  //     });
+  //     const data = await response.json();
+  //     if (data.success) {
+  //       alert("Itinéraire envoyé au mobile !");
+  //     } else {
+  //       alert("Échec de l'envoi au mobile.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Erreur lors de l'envoi vers mobile:", error);
+  //     alert("Erreur lors de l'envoi vers mobile.");
+  //   }
+  // };
 
   const handlePreview = () => {
     if (from.trim() && to.trim() && fromCoords && toCoords) {
@@ -170,7 +170,7 @@ const MapPage = () => {
 
   const handleSendToMobile = () => {
     setShowQRPopup(true);
-    sendToMobile();
+    // sendToMobile();
   };
 
   const swapFieldsWithCoords = () => {
