@@ -23,11 +23,20 @@ const QRCodePopup = ({
       image: "/logo_wt.png", // Chemin vers ton logo
       dotsOptions: {
         color: "#3D2683",
-        type: "rounded",
+        type: "dots",
       },
       backgroundOptions: {
         color: "#ffffff",
       },
+      cornersSquareOptions: {
+        color: "#F15B4E", // couleur des coins extérieurs (ex: orange)
+        type: "extra-rounded",
+      },
+      cornersDotOptions: {
+        color: "#3D2683", // couleur du point central dans les coins
+        type: "dot",
+      },
+    
       imageOptions: {
         crossOrigin: "anonymous",
         imageSize: 0.1, // Taille relative du logo
@@ -47,7 +56,7 @@ const QRCodePopup = ({
           Scannez ce QR code pour accéder à votre trajet sur mobile
         </h2>
 
-        <div ref={qrRef} className="my-4" />
+        <div ref={qrRef} />
 
         <button
           className="mt-4 px-4 py-2 text-white bg-customPurple hover:bg-customOrange rounded-md shadow-md transition-all flex items-center justify-center gap-2"
