@@ -7,7 +7,7 @@ const allMonthLabels = [
 
 export const lineUsersChartData = (monthlyUserCounts: number[]) => {
   const currentMonthIndex = new Date().getMonth(); // 0 pour janvier, 1 pour février, etc.
-  
+
   return {
     labels: allMonthLabels.slice(0, currentMonthIndex + 1),
     datasets: [

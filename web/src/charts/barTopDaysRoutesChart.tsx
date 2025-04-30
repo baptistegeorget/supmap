@@ -2,13 +2,13 @@ import { ChartOptions } from "chart.js";
 
 export const barTopDaysRoutesChartData = (top5Days: { day: string; total_routes: number }[]) => ({
 
-  
+
   labels: top5Days.map(d => d.day),
   datasets: [
     {
       label: "Nombre de trajets",
       data: top5Days.map(d => d.total_routes),
-      backgroundColor: "#F15B4E", 
+      backgroundColor: "#F15B4E",
       borderColor: "#F15B4E",
       borderWidth: 1,
     },

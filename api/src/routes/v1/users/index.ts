@@ -17,7 +17,7 @@ router.get("/users/stats", auth, async (req, res) => {
       start,
       end
     } = getStatsSchema.parse(req.query);
-    console.log(authUser);
+
     if (authUser.role !== "admin") {
       res.status(403).json(
         {
@@ -124,7 +124,7 @@ router.get("/users/:userId/stats", auth, async (req, res) => {
 router.get("/users", auth, async (req, res) => {
   try {
     const limit = limitSchema.parse(req.query.limit);
-    
+
     const offset = offsetSchema.parse(req.query.offset);
 
     const userModel = new UserModel();

@@ -34,7 +34,7 @@ ChartJS.register(
 );
 
 interface StatsData {
-  total_users: number;  
+  total_users: number;
   total_routes: number;
   total_distance_km: number;
   average_distance_km: number;
@@ -128,12 +128,12 @@ export default function AdminDashboard() {
         </div>
         <div className="analyse_header--date analyse_header--date--desktop">
           <span className="date text-gray-600">
-          le {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            le {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </span>
-          
+
           <div className="flex gap-4 mt-4 desktop_buttons">
             <button className="px-4 py-2  button_dashboard button_secondary" onClick={() => router.push("/analytics")}>
-                Vue utilisateur
+              Vue utilisateur
             </button>
             <button className="px-4 py-2 button_dashboard button_tertiary" onClick={() => router.push("/admin_dashboard")}>
               Vue admin
@@ -144,16 +144,16 @@ export default function AdminDashboard() {
           <span className="date text-gray-600">
             {new Date().toLocaleDateString('fr-FR')}
           </span>
-          
+
           <div className="flex gap-4 mt-4 responsive_buttons">
             <button className="px-4 py-2 button_dashboard button_secondary" onClick={() => router.push("/analytics")}>
-                Vue utilisateur
+              Vue utilisateur
             </button>
             <button className="px-4 py-2 button_dashboard button_tertiary" onClick={() => router.push("/admin_dashboard")}>
               Vue admin
             </button>
           </div>
-          
+
         </div>
       </div>
 
@@ -230,8 +230,8 @@ export default function AdminDashboard() {
             <div className="diagram_text">
               <h3 className="dashboard_h3">{"Évolution du nombre d'utilisateurs"}</h3>
               <p>
-              {"Le graphique ci-dessous montre l'évolution du nombre de nouveaux utilisateurs enregistrés chaque mois sur la plateforme."}
-              {"Cette visualisation permet d'analyser la croissance de la base d'utilisateurs et de repérer les périodes d'augmentation ou de ralentissement."}
+                {"Le graphique ci-dessous montre l'évolution du nombre de nouveaux utilisateurs enregistrés chaque mois sur la plateforme."}
+                {"Cette visualisation permet d'analyser la croissance de la base d'utilisateurs et de repérer les périodes d'augmentation ou de ralentissement."}
               </p>
             </div>
           </div>
@@ -251,7 +251,7 @@ export default function AdminDashboard() {
 
           <div className="diagram_row">
             <div className="diagram_graph">
-            <Bar data={barHoursChartData(top5HoursData)} options={barHoursChartOptions} />
+              <Bar data={barHoursChartData(top5HoursData)} options={barHoursChartOptions} />
             </div>
             <div className="diagram_text">
               <h3 className="dashboard_h3">Top 5 des heures avec le plus de trajets</h3>

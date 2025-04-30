@@ -121,18 +121,18 @@ function SideNavContent() {
         {/* Bouton connexion/déconnexion */}
         {userName ? (
           <div className="flex h-[48px] w-full grow items-center text-customPurple justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-customPurple hover:bg-opacity-15 hover:text-customOrange md:flex-none md:justify-start md:p-2 md:px-3">
-          <UserIcon className="w-6" />
-          <div className="flex flex-col ml-2">
-            <span className="text-customPurple font-medium">{userName}</span>
-            <button
-              onClick={handleLogout}
-              className="text-sm text-gray-500 hover:text-red-500 mt-1"
-            >
-              Déconnexion
-            </button>
+            <UserIcon className="w-6" />
+            <div className="flex flex-col ml-2">
+              <span className="text-customPurple font-medium">{userName}</span>
+              <button
+                onClick={handleLogout}
+                className="text-sm text-gray-500 hover:text-red-500 mt-1"
+              >
+                Déconnexion
+              </button>
+            </div>
           </div>
-        </div>
-        
+
         ) : (
           <button
             onClick={handleLoginClick}

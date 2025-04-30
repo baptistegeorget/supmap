@@ -191,9 +191,9 @@ export default function Page() {
       }
     }
   };
-  
 
- // AFFICHAGE
+
+  // AFFICHAGE
   return (
     <div className="flex flex-col px-4 py-4 h-full w-full bg-gray-50 overflow-auto analyse_container">
       <div className="analyse_header">
@@ -205,17 +205,17 @@ export default function Page() {
         </div>
         <div className="analyse_header--date analyse_header--date--desktop">
           <span className="date text-gray-600">
-          le {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            le {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </span>
           {userData.role === "admin" && (
-          <div className="flex gap-4 mt-4 desktop_buttons">
-            <button className="px-4 py-2  button_dashboard button_tertiary" onClick={() => router.push("/analytics")}>
+            <div className="flex gap-4 mt-4 desktop_buttons">
+              <button className="px-4 py-2  button_dashboard button_tertiary" onClick={() => router.push("/analytics")}>
                 Vue utilisateur
-            </button>
-            <button className="px-4 py-2 button_dashboard button_secondary" onClick={() => router.push("/admin_dashboard")}>
-              Vue admin
-            </button>
-          </div>
+              </button>
+              <button className="px-4 py-2 button_dashboard button_secondary" onClick={() => router.push("/admin_dashboard")}>
+                Vue admin
+              </button>
+            </div>
           )}
         </div>
         <div className="analyse_header--date analyse_header--date--responsive">
@@ -223,14 +223,14 @@ export default function Page() {
             {new Date().toLocaleDateString('fr-FR')}
           </span>
           {userData.role === "admin" && (
-          <div className="flex gap-4 mt-4 responsive_buttons">
-            <button className="px-4 py-2 button_dashboard button_tertiary" onClick={() => router.push("/analytics")}>
+            <div className="flex gap-4 mt-4 responsive_buttons">
+              <button className="px-4 py-2 button_dashboard button_tertiary" onClick={() => router.push("/analytics")}>
                 Vue utilisateur
-            </button>
-            <button className="px-4 py-2 button_dashboard button_secondary" onClick={() => router.push("/admin_dashboard")}>
-              Vue admin
-            </button>
-          </div>
+              </button>
+              <button className="px-4 py-2 button_dashboard button_secondary" onClick={() => router.push("/admin_dashboard")}>
+                Vue admin
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -272,20 +272,20 @@ export default function Page() {
 
       {/* CIRCULATION */}
       {statsData?.recommended_hours && statsData.recommended_hours.length > 0 && (
-      <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded circulation">
-        <h3 className="font-bold mb-2">Conseil circulation :</h3>
-        <p>
-          Évitez de prendre la route autour de 
-          {" "}
-          <strong>{statsData.recommended_hours[0].quarter_hour.replace(":", "h")}</strong>, 
-          {" "}
-          <strong>{statsData.recommended_hours[1].quarter_hour.replace(":", "h")}</strong> ou 
-          {" "}
-          <strong>{statsData.recommended_hours[2].quarter_hour.replace(":", "h")}</strong>,
-          {" "}
-          ce sont les créneaux où les embouteillages sont les plus fréquents sur la période sélectionnée.
-        </p>
-      </div>
+        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded circulation">
+          <h3 className="font-bold mb-2">Conseil circulation :</h3>
+          <p>
+            Évitez de prendre la route autour de
+            {" "}
+            <strong>{statsData.recommended_hours[0].quarter_hour.replace(":", "h")}</strong>,
+            {" "}
+            <strong>{statsData.recommended_hours[1].quarter_hour.replace(":", "h")}</strong> ou
+            {" "}
+            <strong>{statsData.recommended_hours[2].quarter_hour.replace(":", "h")}</strong>,
+            {" "}
+            ce sont les créneaux où les embouteillages sont les plus fréquents sur la période sélectionnée.
+          </p>
+        </div>
       )}
 
 
@@ -300,7 +300,7 @@ export default function Page() {
           <div className="analysis_content--kpis--card">
             <h2 className="kpis_card--h2 text-gray-600">Distance moyenne</h2>
             <p className="kpi">{loading ? "..." : statsData?.average_distance_km ? `${statsData.average_distance_km} km` : "-"}</p>
-            
+
           </div>
           <div className="analysis_content--kpis--card">
             <h2 className="kpis_card--h2 text-gray-600">Durée totale</h2>
@@ -328,8 +328,8 @@ export default function Page() {
             <div className="diagram_text">
               <h3 className="dashboard_h3">Nombre de signalements par type</h3>
               <p>
-              {"Le graphique ci-dessous présente la répartition des incidents signalés en fonction de leur type. Chaque barre représente un type d'incident rencontré sur les routes, parmi lesquels on retrouve les accidents, les embouteillages, les routes fermées, les contrôles de police et les barrages."}
-              {"Ce visuel permet d'avoir un aperçu immédiat des types d'événements les plus fréquents sur la période sélectionnée."}
+                {"Le graphique ci-dessous présente la répartition des incidents signalés en fonction de leur type. Chaque barre représente un type d'incident rencontré sur les routes, parmi lesquels on retrouve les accidents, les embouteillages, les routes fermées, les contrôles de police et les barrages."}
+                {"Ce visuel permet d'avoir un aperçu immédiat des types d'événements les plus fréquents sur la période sélectionnée."}
               </p>
             </div>
           </div>
@@ -341,14 +341,14 @@ export default function Page() {
             <div className="diagram_text">
               <h3 className="dashboard_h3">Évolution mensuelle des trajets</h3>
               <p>
-              {"Ce graphique en courbe met en lumière la répartition des trajets effectués au fil des mois. Chaque point représente le nombre total de trajets réalisés sur une période mensuelle, permettant d'identifier les pics d'activité ainsi que les périodes plus calmes."}
-              {"Cette visualisation est idéale pour suivre les tendances d'utilisation, détecter les variations saisonnières, et ajuster ses prévisions ou ses ressources en conséquence."}
+                {"Ce graphique en courbe met en lumière la répartition des trajets effectués au fil des mois. Chaque point représente le nombre total de trajets réalisés sur une période mensuelle, permettant d'identifier les pics d'activité ainsi que les périodes plus calmes."}
+                {"Cette visualisation est idéale pour suivre les tendances d'utilisation, détecter les variations saisonnières, et ajuster ses prévisions ou ses ressources en conséquence."}
               </p>
             </div>
-        </div>
+          </div>
 
+        </div>
       </div>
-      </div>
-  </div>
+    </div>
   );
 }

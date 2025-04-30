@@ -33,7 +33,7 @@ const QRCodePopup = ({
         color: "#3D2683", // couleur du point central dans les coins
         type: "dot",
       },
-    
+
       imageOptions: {
         crossOrigin: "anonymous",
         imageSize: 0.3, // Taille relative du logo

@@ -36,7 +36,7 @@ const MapPage = () => {
   const mapRef = useRef<google.maps.Map | null>(null);
 
   const $token = localStorage.getItem("token") || Cookie.get("auth_token");
-  
+
   // Récupérer la position actuelle de l'utilisateur
   useEffect(() => {
     if (typeof window !== "undefined" && navigator.geolocation) {
@@ -61,11 +61,11 @@ const MapPage = () => {
       setPosition(null);
     }
   }, []);
-  
+
 
   // Récupérer l'itinéraire depuis l'API
   const fetchRoute = async () => {
-    setIsLoadingRoute(true); 
+    setIsLoadingRoute(true);
     try {
       if (!fromCoords || !toCoords) {
         setErrorMessage("Veuillez sélectionner des adresses valides.");
@@ -78,7 +78,7 @@ const MapPage = () => {
         profile = "car_avoid_toll";
       }
 
-      
+
 
       // Étape 1: Appeler la route /auth/me pour récupérer l'ID utilisateur
       const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/me`, {
@@ -102,7 +102,7 @@ const MapPage = () => {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${$token}`,
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           profile: profile,
           points: [
             [fromCoords.lng, fromCoords.lat],
@@ -119,8 +119,6 @@ const MapPage = () => {
         throw new Error(apiErrorMessage);
       }
 
-      console.log("Réponse de l'itinéraire:", data);
-
       // Mise à jour de l'état avec l'itinéraire et l'ID
       setIdRoute(data.id); // Enregistre l'ID de l'itinéraire
       setRoute(data.graphhopper_response); // Met à jour avec la réponse complète
@@ -133,31 +131,10 @@ const MapPage = () => {
         console.error("Erreur inconnue", error);
         setErrorMessage("Une erreur inattendue est survenue.");
       }
-    }  finally {
+    } finally {
       setIsLoadingRoute(false); // → toujours désactivé à la fin
-    }  
+    }
   };
-
-  // const sendToMobile = async () => {
-  //   try {
-  //     const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/sendToMobile`, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({ from, to }),
-  //     });
-  //     const data = await response.json();
-  //     if (data.success) {
-  //       alert("Itinéraire envoyé au mobile !");
-  //     } else {
-  //       alert("Échec de l'envoi au mobile.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Erreur lors de l'envoi vers mobile:", error);
-  //     alert("Erreur lors de l'envoi vers mobile.");
-  //   }
-  // };
 
   const handlePreview = () => {
     if (from.trim() && to.trim() && fromCoords && toCoords) {
@@ -172,7 +149,6 @@ const MapPage = () => {
 
   const handleSendToMobile = () => {
     setShowQRPopup(true);
-    // sendToMobile();
   };
 
   const swapFieldsWithCoords = () => {
@@ -207,6 +183,7 @@ const MapPage = () => {
       <LocateButton setPosition={setPosition} mapRef={mapRef} />
       <CustomZoomControl mapRef={mapRef} />
 
+      {/* Loading pendant chargement de la page */}
       {isLoadingRoute && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="flex flex-col items-center space-y-2">

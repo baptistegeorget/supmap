@@ -63,7 +63,7 @@ export const lineRoutesChartOptions: ChartOptions<'line'> = {
   animation: {
     duration: 1000,
     delay(ctx) {
-      return ctx.dataIndex * 150; 
+      return ctx.dataIndex * 150;
     },
     easing: "easeInOutCirc",
   },
