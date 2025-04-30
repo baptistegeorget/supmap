@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Cookie from "js-cookie";
 
 interface User {
@@ -29,9 +29,8 @@ export default function Page() {
   const limit = 10;
   const [isAdmin, setIsAdmin] = useState(false);
 
-
-  async function fetchUserData(offsetValue = 0) {
-    if (token) {
+  const fetchUserData = useCallback(async (offsetValue = 0) => {
+    if (token && token !== "undefined") {
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -48,13 +47,13 @@ export default function Page() {
             headers: { Authorization: `Bearer ${token}` },
           });
           const usersData = await response.json();
-          setAllUsers(usersData); // <- stocke les users
+          setAllUsers(usersData);
         }
       } catch (error) {
         console.error("Erreur lors de la récupération des informations :", error);
       }
     }
-  }
+  }, [token]);
 
   useEffect(() => {
     const localToken = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -71,7 +70,7 @@ export default function Page() {
 
   useEffect(() => {
     fetchUserData();
-  }, [token]);
+  }, [fetchUserData]);
 
   const handleButtonClick = (value: string, key: string) => {
     setEditableValue(value);
@@ -85,7 +84,7 @@ export default function Page() {
     setSelectedUser(null); // Réinitialise l'utilisateur sélectionné
   };
 
-
+  
   const handleSave = async () => {
     if (selectedUser) {
       // Admin modifie un autre utilisateur

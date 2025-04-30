@@ -18,7 +18,7 @@ function SideNavContent() {
 
   useEffect(() => {
     const token = localStorage.getItem("token") || Cookie.get("auth_token");
-    if (token) {
+    if (token && token !== "undefined") {
       fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/me`, {
         method: "GET",
         headers: {

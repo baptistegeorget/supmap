@@ -25,7 +25,7 @@ export default function NavLinks() {
   useEffect(() => {
     const token = localStorage.getItem("token") || Cookie.get("auth_token");
 
-    if (token) {
+    if (token && token !== "undefined") {
       setLinks([
         { name: 'Carte', href: '/', icon: MapIcon },
         { name: 'Analyse', href: '/analytics', icon: ChartPieIcon },

@@ -24,7 +24,7 @@ const CustomZoomControl = ({ mapRef }: CustomZoomControlProps) => {
   };
 
   return (
-    <div className="absolute top-1/2 right-3 transform -translate-y-1/2 z-50">
+    <div className="absolute top-1/2 right-3 transform -translate-y-1/2 z-30">
       <div className="flex flex-col w-9 h-20 bg-white border-2 border-gray-300 rounded-full shadow-md overflow-hidden">
         <button
           className="flex-1 flex items-center justify-center text-customPurple text-xl hover:text-customOrange hover:bg-gray-100 transition-colors"

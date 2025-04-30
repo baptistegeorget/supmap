@@ -12,6 +12,9 @@ interface MapComponentProps {
   mapRef: React.RefObject<google.maps.Map | null>;
 }
 
+// 💡 Position par défaut (Paris)
+const defaultPosition: [number, number] = [2.3522, 48.8566];
+
 const loadGoogleMaps = (callback: () => void) => {
   if (typeof window === "undefined") return;
 
@@ -51,8 +54,6 @@ const MapComponent = ({ position, route, mapRef }: MapComponentProps) => {
   const allMarkersRef = useRef<google.maps.Marker[]>([]);
   const allPopupsRef = useRef<google.maps.OverlayView[]>([]);
 
-  // 💡 Position par défaut (Paris)
-  const defaultPosition: [number, number] = [2.3522, 48.8566];
 
   useEffect(() => {
     loadGoogleMaps(() => setGoogleMapsLoaded(true));
@@ -229,7 +230,7 @@ const MapComponent = ({ position, route, mapRef }: MapComponentProps) => {
         mapRef.current.fitBounds(bounds);
       }
     }
-  }, [isGoogleMapsLoaded, route, selectedRouteIndex]);
+  }, [isGoogleMapsLoaded, route, selectedRouteIndex, mapRef]);
 
   return <div ref={mapDivRef} className="h-full w-full z-0"></div>;
 };
