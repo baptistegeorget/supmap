@@ -30,7 +30,7 @@ export default function Page() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   const fetchUserData = useCallback(async (offsetValue = 0) => {
-    if (token) {
+    if (token && token !== "undefined") {
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
