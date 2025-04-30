@@ -36,7 +36,7 @@ export const barIncidentsChartData = (incidentCounts: Record<string, number>) =>
 export const barIncidentsChartOptions: ChartOptions<'bar'> = {
   responsive: true,
   maintainAspectRatio: false,
-  indexAxis: "y", 
+  indexAxis: "y",
   scales: {
     x: {
       beginAtZero: true,

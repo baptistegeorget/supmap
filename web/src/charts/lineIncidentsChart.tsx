@@ -5,9 +5,9 @@ export const lineIncidentsChartData = (monthlyIncidentsCounts: number[]) => {
     "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
     "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
   ];
-  
+
   const currentMonthIndex = new Date().getMonth();
-  
+
   return {
     labels: monthLabels.slice(0, currentMonthIndex + 1),
     datasets: [

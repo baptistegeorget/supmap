@@ -41,7 +41,7 @@ const RouteForm = ({
   useEffect(() => {
     if (typeof window !== "undefined" && !window.google) {
       const existingScript = document.querySelector("script[src^='https://maps.googleapis.com/maps/api/js']");
-      if (existingScript && existingScript instanceof HTMLScriptElement){
+      if (existingScript && existingScript instanceof HTMLScriptElement) {
         existingScript.addEventListener("load", initAutocomplete);
       }
     } else {

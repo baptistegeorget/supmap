@@ -22,7 +22,7 @@ export default function Page() {
   const [valueKey, setValueKey] = useState("");
   const [userId, setUserId] = useState("");
   const [allUsers, setAllUsers] = useState<User[]>([]);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null); 
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [userData, setUserData] = useState({ email: "", username: "", picture: "" });
   const [token, setToken] = useState<string | undefined>(undefined);
   const [offset, setOffset] = useState(0);
@@ -48,7 +48,6 @@ export default function Page() {
             headers: { Authorization: `Bearer ${token}` },
           });
           const usersData = await response.json();
-          console.log("Données des utilisateurs :", usersData);
           setAllUsers(usersData); // <- stocke les users
         }
       } catch (error) {
@@ -69,7 +68,7 @@ export default function Page() {
       setIsAdmin(selectedUser.role === "admin");
     }
   }, [selectedUser]);
-  
+
   useEffect(() => {
     fetchUserData();
   }, [token]);
@@ -94,7 +93,7 @@ export default function Page() {
         setErrorMessage("Les mots de passe ne correspondent pas.");
         return;
       }
-  
+
       const updatePayload: Record<string, string> = {
         name: selectedUser.name,
         email: selectedUser.email,
@@ -103,7 +102,7 @@ export default function Page() {
       if (newPassword.trim()) {
         updatePayload.password = newPassword;
       }
-  
+
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/${selectedUser.id}`, {
           method: "PATCH",
@@ -113,10 +112,9 @@ export default function Page() {
           },
           body: JSON.stringify(updatePayload),
         });
-  
+
         const result = await res.json();
         if (!res.ok) throw new Error(result?.message || "Erreur lors de la mise à jour");
-        console.log("Utilisateur mis à jour :", result);
         setIsModalOpen(false);
         setSelectedUser(null);
         window.location.reload();
@@ -129,7 +127,7 @@ export default function Page() {
         }
       }
     } else {
-  
+
       try {
         let updateData: Record<string, unknown> = {};
 
@@ -155,7 +153,6 @@ export default function Page() {
         });
 
         const updatedData = await response.json();
-        console.log("Données mises à jour :", updatedData);
 
         if (!response.ok) {
           const apiErrorMessage = updatedData?.message || "Erreur lors de la création de l'itinéraire.";
@@ -267,15 +264,15 @@ export default function Page() {
 
       {/* Paramètres admin */}
       {allUsers.length > 0 && (
-          <div className="bg-white p-5 rounded-lg shadow-md mb-5">
-            <h2 className="text-customOrange text-lg border-customOrange border-b-2 pb-2 mb-5" style={{ textIndent: "10px" }}>
-              Utilisateurs
-            </h2>
-            <div className="space-y-4 pl-4">
-              {allUsers
-                .filter((user) => user.id !== userId)
-                .sort((a, b) => a.name.localeCompare(b.name))
-                .map((user) => (
+        <div className="bg-white p-5 rounded-lg shadow-md mb-5">
+          <h2 className="text-customOrange text-lg border-customOrange border-b-2 pb-2 mb-5" style={{ textIndent: "10px" }}>
+            Utilisateurs
+          </h2>
+          <div className="space-y-4 pl-4">
+            {allUsers
+              .filter((user) => user.id !== userId)
+              .sort((a, b) => a.name.localeCompare(b.name))
+              .map((user) => (
                 <div key={user.id} className="p-4 bg-gray-100 rounded-lg">
                   <div className="flex justify-between items-center">
                     <div>
@@ -296,40 +293,40 @@ export default function Page() {
                   </div>
                 </div>
               ))}
-            </div>
-            <div className="flex justify-center mt-4 space-x-4">
-              <button
-                className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
-                onClick={() => {
-                  const newOffset = Math.max(0, offset - limit);
-                  setOffset(newOffset);
-                  fetchUserData(newOffset);
-                }}
-                disabled={offset === 0} // Désactive si déjà à la première page
-              >
-                Précédent
-              </button>
-
-              {/* Numéro de page */}
-              <span className="text-gray-700 font-semibold">
-                Page {Math.floor(offset / limit) + 1}
-              </span>
-
-              <button
-                className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
-                onClick={() => {
-                  const newOffset = offset + limit;
-                  setOffset(newOffset);
-                  fetchUserData(newOffset);
-                }}
-                disabled={allUsers.length < limit} // Désactive si moins d'éléments que le limit (fin)
-              >
-                Suivant
-              </button>
-            </div>
-
           </div>
-        )}
+          <div className="flex justify-center mt-4 space-x-4">
+            <button
+              className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
+              onClick={() => {
+                const newOffset = Math.max(0, offset - limit);
+                setOffset(newOffset);
+                fetchUserData(newOffset);
+              }}
+              disabled={offset === 0} // Désactive si déjà à la première page
+            >
+              Précédent
+            </button>
+
+            {/* Numéro de page */}
+            <span className="text-gray-700 font-semibold">
+              Page {Math.floor(offset / limit) + 1}
+            </span>
+
+            <button
+              className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
+              onClick={() => {
+                const newOffset = offset + limit;
+                setOffset(newOffset);
+                fetchUserData(newOffset);
+              }}
+              disabled={allUsers.length < limit} // Désactive si moins d'éléments que le limit (fin)
+            >
+              Suivant
+            </button>
+          </div>
+
+        </div>
+      )}
 
 
       {isModalOpen && selectedUser && (

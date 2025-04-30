@@ -2,11 +2,11 @@ import { ChartOptions } from "chart.js";
 
 export const barHoursChartData = (top5HoursData: { hour: string; total_routes: number }[]) => {
   const colors = [
-    "#3D2683", 
-    "#F15B4E", 
-    "#56A3A6", 
-    "#6C5A49", 
-    "#F3DFC1", 
+    "#3D2683",
+    "#F15B4E",
+    "#56A3A6",
+    "#6C5A49",
+    "#F3DFC1",
   ];
 
   return {
@@ -15,7 +15,7 @@ export const barHoursChartData = (top5HoursData: { hour: string; total_routes: n
       {
         label: "Nombre de trajets",
         data: top5HoursData.map(item => item.total_routes),
-        backgroundColor: colors, 
+        backgroundColor: colors,
         borderWidth: 1,
       },
     ],
@@ -23,7 +23,7 @@ export const barHoursChartData = (top5HoursData: { hour: string; total_routes: n
 };
 
 export const barHoursChartOptions: ChartOptions<"bar"> = {
-  indexAxis: 'y', 
+  indexAxis: 'y',
   responsive: true,
   maintainAspectRatio: false,
   scales: {
@@ -44,7 +44,7 @@ export const barHoursChartOptions: ChartOptions<"bar"> = {
           const label = this.getLabelForValue(value as number);
           return `${label}h`;
         }
-      },  
+      },
     },
   },
   plugins: {
@@ -61,7 +61,7 @@ export const barHoursChartOptions: ChartOptions<"bar"> = {
   animation: {
     duration: 1000,
     delay(ctx) {
-      return ctx.dataIndex * 150; 
+      return ctx.dataIndex * 150;
     },
     easing: "easeOutBounce",
   },

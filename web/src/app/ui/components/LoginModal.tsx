@@ -29,7 +29,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
     const url = isSignUp
       ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/users`
       : `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/signin`;
-    
+
     const body = isSignUp ? { email, name, password } : { email, password };
 
     try {
@@ -46,9 +46,8 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
       }
 
       const data = await response.json();
-      console.log(`${isSignUp ? "Inscription" : "Connexion"} réussie:`, data.token);
 
-          // Stocker le token dans un cookie
+      // Stocker le token dans un cookie
       Cookie.set('auth_token', data.token, { expires: 7, secure: true, sameSite: 'None' });
       localStorage.setItem("token", data.token);
       window.location.href = "/"; // Recharger la page pour mettre à jour l'état de l'application
@@ -62,16 +61,16 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   async function fetchAndRedirectGoogle() {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/google`);
-  
+
       if (!response.ok) {
         throw new Error(`Erreur HTTP ${response.status}`);
       }
-  
+
       const result = await response.json();
-  
+
       // Supposons que le lien de redirection est contenu dans `result.redirectUrl`
       const redirectUrl = result.url;
-  
+
       if (redirectUrl && typeof redirectUrl === "string") {
         window.location.href = redirectUrl;
       } else {
@@ -81,7 +80,7 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
       console.error("Erreur lors du fetch et de la redirection :", error);
     }
   }
-  
+
 
   if (!isOpen) return null;
 
