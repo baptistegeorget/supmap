@@ -40,7 +40,7 @@ const RouteForm = ({
 
   const initAutocomplete = useCallback(() => {
 
-    if (typeof window === "undefined" || !window.google || !fromInputRef.current || !toInputRef.current) return;
+    if (!window.google || !fromInputRef.current || !toInputRef.current) return;
 
     const fromAutocomplete = new window.google.maps.places.Autocomplete(fromInputRef.current, {
       types: ["geocode"],
@@ -76,16 +76,15 @@ const RouteForm = ({
   }, [setFrom, setFromCoords, setTo, setToCoords]);;
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const existingScript = document.querySelector("script[src^='https://maps.googleapis.com/maps/api/js']");
-    if (existingScript && existingScript instanceof HTMLScriptElement) {
-      existingScript.addEventListener("load", initAutocomplete);
-    } else if (window.google && window.google.maps) {
+    if (typeof window !== "undefined" && !window.google) {
+      const existingScript = document.querySelector("script[src^='https://maps.googleapis.com/maps/api/js']");
+      if (existingScript && existingScript instanceof HTMLScriptElement) {
+        existingScript.addEventListener("load", initAutocomplete);
+      }
+    } else {
       initAutocomplete();
     }
   }, [initAutocomplete]);
-
 
   return (
     <div className="absolute top-4 left-4 z-10 w-2/3 max-w-lg p-4 flex flex-col items-center bg-white rounded-lg shadow-md">
