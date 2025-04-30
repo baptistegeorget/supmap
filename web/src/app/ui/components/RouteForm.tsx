@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { ArrowsUpDownIcon, DevicePhoneMobileIcon } from "@heroicons/react/24/outline";
 
 const RouteForm = ({
@@ -38,19 +38,9 @@ const RouteForm = ({
   const fromInputRef = useRef<HTMLInputElement>(null);
   const toInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (typeof window !== "undefined" && !window.google) {
-      const existingScript = document.querySelector("script[src^='https://maps.googleapis.com/maps/api/js']");
-      if (existingScript && existingScript instanceof HTMLScriptElement) {
-        existingScript.addEventListener("load", initAutocomplete);
-      }
-    } else {
-      initAutocomplete();
-    }
-  }, []);
+  const initAutocomplete = useCallback(() => {
 
-  const initAutocomplete = () => {
-    if (!window.google || !fromInputRef.current || !toInputRef.current) return;
+    if (typeof window === "undefined" || !window.google || !fromInputRef.current || !toInputRef.current) return;
 
     const fromAutocomplete = new window.google.maps.places.Autocomplete(fromInputRef.current, {
       types: ["geocode"],
@@ -83,7 +73,19 @@ const RouteForm = ({
         setToCoords({ lat, lng });
       }
     });
-  };
+  }, [setFrom, setFromCoords, setTo, setToCoords]);;
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const existingScript = document.querySelector("script[src^='https://maps.googleapis.com/maps/api/js']");
+    if (existingScript && existingScript instanceof HTMLScriptElement) {
+      existingScript.addEventListener("load", initAutocomplete);
+    } else if (window.google && window.google.maps) {
+      initAutocomplete();
+    }
+  }, [initAutocomplete]);
+
 
   return (
     <div className="absolute top-4 left-4 z-10 w-2/3 max-w-lg p-4 flex flex-col items-center bg-white rounded-lg shadow-md">

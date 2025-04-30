@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 
 interface LocateButtonProps {
   setPosition: React.Dispatch<React.SetStateAction<[number, number] | null>>;
@@ -13,7 +14,6 @@ const LocateButton = ({ setPosition, mapRef }: LocateButtonProps) => {
           const { latitude, longitude } = position.coords;
           setPosition([longitude, latitude]);
 
-          // Recentrer la carte sur la position de l'utilisateur
           if (mapRef.current) {
             const newCenter = new google.maps.LatLng(latitude, longitude);
             mapRef.current.setCenter(newCenter);
@@ -33,10 +33,12 @@ const LocateButton = ({ setPosition, mapRef }: LocateButtonProps) => {
         className="w-10 h-10 rounded-[25px] text-xl cursor-pointer m-0"
         onClick={handleLocate}
       >
-        <img
+        <Image
           src="/recentrer.png"
           alt="Recentrer"
-          className="w-full h-full object-cover rounded-[10px] hover:content-[url('/recentrer_hover.png')]"
+          width={40}
+          height={40}
+          className="rounded-[10px] object-cover hover:opacity-80"
         />
       </button>
     </div>
