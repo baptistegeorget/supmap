@@ -29,6 +29,7 @@ const MapPage = () => {
   const [isPreviewed, setIsPreviewed] = useState(false);
   const [avoidTolls, setAvoidTolls] = useState(false);
   const [isLoadingRoute, setIsLoadingRoute] = useState(false);
+  const [id_route, setIdRoute] = useState<number | null>(null); // ID de l'itinéraire
 
 
   // Référence à la carte
@@ -120,7 +121,8 @@ const MapPage = () => {
 
       console.log("Réponse de l'itinéraire:", data);
 
-      // Mise à jour de l'état avec l'itinéraire
+      // Mise à jour de l'état avec l'itinéraire et l'ID
+      setIdRoute(data.id); // Enregistre l'ID de l'itinéraire
       setRoute(data.graphhopper_response); // Met à jour avec la réponse complète
 
     } catch (error: unknown) {  // Utilisation de `unknown` au lieu de `Error`
@@ -215,7 +217,7 @@ const MapPage = () => {
       )}
 
       {showQRPopup && (
-        <QRCodePopup from={from} to={to} onClose={() => setShowQRPopup(false)} />
+        <QRCodePopup id_route={id_route} onClose={() => setShowQRPopup(false)} />
       )}
     </div>
   );

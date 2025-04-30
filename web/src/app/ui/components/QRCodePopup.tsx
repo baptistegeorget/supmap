@@ -3,23 +3,20 @@ import { useEffect, useRef } from "react";
 import QRCodeStyling from "qr-code-styling";
 
 const QRCodePopup = ({
-  from,
-  to,
+  id_route,
   onClose,
 }: {
-  from: string;
-  to: string;
+  id_route: number | null; // ID de l'itinéraire
   onClose: () => void;
 }) => {
   const qrRef = useRef<HTMLDivElement>(null);
   const qrCode = useRef<QRCodeStyling | null>(null);
 
-
   useEffect(() => {
     qrCode.current = new QRCodeStyling({
       width: 350,
       height: 350,
-      data: `https://example.com/from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+      data: `supmap://route?routeId=${id_route}`,
       image: "/logo_wt.png", // Chemin vers ton logo
       dotsOptions: {
         color: "#3D2683",
@@ -39,7 +36,7 @@ const QRCodePopup = ({
     
       imageOptions: {
         crossOrigin: "anonymous",
-        imageSize: 0.1, // Taille relative du logo
+        imageSize: 0.3, // Taille relative du logo
       },
     });
 
@@ -47,7 +44,7 @@ const QRCodePopup = ({
       qrRef.current.innerHTML = ""; // Nettoie si déjà existant
       qrCode.current.append(qrRef.current);
     }
-  }, [from, to]);
+  }, [id_route]);
 
   return (
     <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
