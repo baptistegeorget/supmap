@@ -28,7 +28,7 @@ const LocateButton = ({ setPosition, mapRef }: LocateButtonProps) => {
   };
 
   return (
-    <div className="absolute right-3 top-[calc(45%+120px)] transform -translate-y-1/2 z-[1000] flex flex-col gap-0 text-customPurple">
+    <div className="absolute right-3 top-[calc(45%+120px)] transform -translate-y-1/2 z-30 flex flex-col gap-0 text-customPurple">
       <button
         className="w-10 h-10 rounded-[25px] text-xl cursor-pointer m-0"
         onClick={handleLocate}
