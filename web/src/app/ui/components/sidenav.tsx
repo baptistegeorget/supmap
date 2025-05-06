@@ -87,10 +87,10 @@ function SideNavContent() {
   };
 
   return (
-    <div className="flex h-full flex-col px-3 py-4 md:px-2">
+    <div className="flex h-screen flex-col px-3 py-4 md:px-2">
       {/* Logo */}
       <Link className="mb-2 flex h-20 items-center justify-center rounded-md bg-gray-50 p-4 md:h-40" href="/">
-        <div className="flex items-center justify-center w-32 h-full md:w-40">
+        <div className="flex items-center justify-center w-32 h-screen md:w-40">
           <Image src="/logo_SupMap.svg" alt="Logo de l'application" width={100} height={116} priority />
         </div>
       </Link>

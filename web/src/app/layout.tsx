@@ -23,12 +23,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }
         `}</style>
       </head>
-      <body className="h-full w-full bg-gray-100 text-gray-800 overflow-hidden">
+      <body className="h-screen w-full bg-gray-100 text-gray-800 overflow-hidden">
         <div className="flex h-screen flex-col md:flex-row md:overflow-hidden">
           <div className="w-full flex-none md:w-64">
             <SideNav />
           </div>
-          <div className="flex-1 px-3 py-4 overflow-auto">{children}</div>
+          <div className="flex-1 h-screen mx-3 my-4 overflow-auto">{children}</div>
         </div>
       </body>
     </html>
