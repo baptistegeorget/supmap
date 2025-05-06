@@ -53,6 +53,8 @@ const MapComponent = ({ position, route, mapRef }: MapComponentProps) => {
   const [selectedRouteIndex, setSelectedRouteIndex] = useState<number | null>(null);
   const allMarkersRef = useRef<google.maps.Marker[]>([]);
   const allPopupsRef = useRef<google.maps.OverlayView[]>([]);
+  const [selectedPopupIndex, setSelectedPopupIndex] = useState<number | null>(null);
+
 
 
   useEffect(() => {
@@ -77,47 +79,61 @@ const MapComponent = ({ position, route, mapRef }: MapComponentProps) => {
         position: google.maps.LatLng;
         content: string;
         div: HTMLDivElement | null;
-
-        constructor(position: google.maps.LatLng, content: string, map: google.maps.Map) {
+        index: number;
+        setSelectedRouteIndex: (index: number) => void;
+        selectedPopupIndex: number | null;
+        setSelectedPopupIndex: (index: number) => void;
+      
+        constructor(
+          position: google.maps.LatLng,
+          content: string,
+          map: google.maps.Map,
+          index: number,
+          setSelectedRouteIndex: (index: number) => void,
+          selectedPopupIndex: number | null,
+          setSelectedPopupIndex: (index: number) => void
+        ) {
           super();
           this.position = position;
           this.content = content;
           this.div = null;
+          this.index = index;
+          this.setSelectedRouteIndex = setSelectedRouteIndex;
+          this.selectedPopupIndex = selectedPopupIndex;
+          this.setSelectedPopupIndex = setSelectedPopupIndex;
           this.setMap(map);
         }
-
+      
         onAdd() {
           this.div = document.createElement("div");
           this.div.innerHTML = this.content;
           this.div.style.position = "absolute";
           this.div.style.transform = "translate(-50%, -100%)";
-          this.div.style.zIndex = "1";
-
+          this.div.style.zIndex = this.index === this.selectedPopupIndex ? "100" : "1";
+          this.div.style.cursor = "pointer";
+      
           this.div.addEventListener("click", () => {
-            allPopupsRef.current.forEach((popup) => {
-              const customPopup = popup as CustomPopup;
-              if (customPopup.div) customPopup.div.style.zIndex = "1";
-            });
-            this.div!.style.zIndex = "100";
+            this.setSelectedRouteIndex(this.index);
+            this.setSelectedPopupIndex(this.index);
           });
-
+      
           const panes = this.getPanes();
           if (panes) {
             panes.floatPane.appendChild(this.div);
           }
         }
-
+      
         draw() {
           const projection = this.getProjection();
           if (!projection || !this.div) return;
-
+      
           const position = projection.fromLatLngToDivPixel(this.position);
           if (position) {
             this.div.style.left = `${position.x}px`;
             this.div.style.top = `${position.y}px`;
           }
         }
-
+      
         onRemove() {
           if (this.div && this.div.parentNode) {
             this.div.parentNode.removeChild(this.div);
@@ -125,6 +141,7 @@ const MapComponent = ({ position, route, mapRef }: MapComponentProps) => {
           }
         }
       }
+      
 
       const decodePolyline = (encoded: string) => {
         if (google.maps.geometry && google.maps.geometry.encoding) {
@@ -213,7 +230,11 @@ const MapComponent = ({ position, route, mapRef }: MapComponentProps) => {
                   <span style="color: #3D2683;">${durationLabel}</span> <br>
                   <span style="color: #555;">${distanceInKm} km</span>
                 </div>`,
-                mapRef.current
+                mapRef.current,
+                index,
+                setSelectedRouteIndex,
+                selectedPopupIndex,
+                setSelectedPopupIndex
               );
 
               allPopupsRef.current.push(infoPopup);
@@ -232,7 +253,7 @@ const MapComponent = ({ position, route, mapRef }: MapComponentProps) => {
     }
   }, [isGoogleMapsLoaded, route, selectedRouteIndex, mapRef]);
 
-  return <div ref={mapDivRef} className="h-full w-full z-0"></div>;
+  return <div ref={mapDivRef} className="w-full z-0 rounded-md" style={{ height: "95vh" }}></div>;
 };
 
 export default MapComponent;

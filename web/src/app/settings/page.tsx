@@ -182,7 +182,7 @@ export default function Page() {
 
   if (!token) {
     return (
-      <div className="p-5 bg-gray-50">
+      <div className="p-5 bg-gray-50 rounded-md">
         {/* Profil */}
         <div className="bg-white p-5 rounded-lg shadow-md mb-5">
           <h2 className="text-customOrange text-lg border-customOrange border-b-2 pb-2 mb-5" style={{ textIndent: "10px" }}>
@@ -230,7 +230,7 @@ export default function Page() {
   }
 
   return (
-    <div className="p-5 bg-gray-50">
+    <div className="p-5 bg-gray-50 rounded-md">
       {/* Profil */}
       <div className="bg-white p-5 rounded-lg shadow-md mb-5">
         <h2 className="text-customOrange text-lg border-customOrange border-b-2 pb-2 mb-5" style={{ textIndent: "10px" }}>

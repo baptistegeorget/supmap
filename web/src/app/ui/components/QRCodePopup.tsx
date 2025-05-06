@@ -47,7 +47,7 @@ const QRCodePopup = ({
   }, [id_route]);
 
   return (
-    <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed top-0 left-0 w-full h-screen bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center relative">
         <h2 className="text-lg font-bold text-customPurple mb-4">
           Scannez ce QR code pour accéder à votre trajet sur mobile
