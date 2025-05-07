@@ -36,11 +36,12 @@ interface StatsData {
   total_police_control: number;
   total_roadblock: number;
   recommended_hours: RecommendedHour[];
+  monthly_routes: number[];
 }
 
-interface Route {
-  created_on: string;
-}
+// interface Route {
+//   created_on: string;
+// }
 
 ChartJS.register(
   ArcElement,
@@ -115,40 +116,42 @@ export default function Page() {
   }, [token]);
 
   // Fonction pour récupérer les trajets
-  const fetchRoutesData = async (): Promise<Route[]> => {
-    if (!token || !userData.id || !startDate || !endDate || !isDateRangeValid) return [];
+  // const fetchRoutesData = async (): Promise<Route[]> => {
+  //   if (!token || !userData.id || !startDate || !endDate || !isDateRangeValid) return [];
 
-    const startParam = `${startDate}T00:00:00Z`;
-    const endParam = `${endDate}T23:59:59Z`;
+  //   const startParam = `${startDate}T00:00:00Z`;
+  //   const endParam = `${endDate}T23:59:59Z`;
 
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/${userData.id}/routes?start=${startParam}&end=${endParam}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      if (!response.ok) throw new Error("Impossible de récupérer les trajets");
+  //   try {
+  //     const response = await fetch(
+  //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/${userData.id}/routes?start=${startParam}&end=${endParam}`,
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       }
+  //     );
+  //     if (!response.ok) throw new Error("Impossible de récupérer les trajets");
 
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Erreur routes :", error);
-      return [];
-    }
-  };
+  //     const data = await response.json();
+  //     return data;
+  //   } catch (error) {
+  //     console.error("Erreur routes :", error);
+  //     return [];
+  //   }
+  // };
 
 
   // Regroupement des trajets par mois
-  const countRoutesPerMonth = (routes: Route[]) => {
-    const counts = Array(12).fill(0);
-    routes.forEach((route) => {
-      const date = new Date(route.created_on);
-      const month = date.getUTCMonth();
-      counts[month]++;
-    });
-    return counts;
-  };
+  // const countRoutesPerMonth = (routes: Route[]) => {
+  //   const counts = Array(12).fill(0);
+  //   routes.forEach((route) => {
+  //     const date = new Date(route.created_on);
+  //     const month = date.getUTCMonth();
+  //     counts[month]++;
+  //   });
+  //   return counts;
+  // };
+
+ 
 
   // Fonction principale de récupération des stats
   const fetchStatsData = async (): Promise<void> => {
@@ -180,9 +183,7 @@ export default function Page() {
         });
 
         // Récupérer les routes et compter par mois
-        const routes = await fetchRoutesData();
-        const routesPerMonthCounts = countRoutesPerMonth(routes);
-        setRoutesPerMonthData(routesPerMonthCounts);
+        setRoutesPerMonthData(stats?.monthly_routes || []);
 
       } catch (error) {
         console.error("Erreur stats :", error);

@@ -80,7 +80,7 @@ interface Stats {
   average_distance_km: number,
   total_distance_km: number,
   total_time: number,
-  monthly_routes: number,
+  monthly_routes: number[],
   average_time: number,
   total_signalements: number,
   total_accidents: number,

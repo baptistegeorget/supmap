@@ -262,14 +262,38 @@ export class UserModel {
           ) AS recommended_hours
         `;
 
+      const monthlyRoutesQuery = `
+        SELECT
+          m.month,
+          COALESCE(COUNT(r.id), 0) AS route_count
+        FROM
+          generate_series(1, 12) AS m(month)
+        LEFT JOIN route r
+          ON EXTRACT(MONTH FROM r.created_on) = m.month
+          AND r.created_on BETWEEN $1 AND $2
+          AND r.created_by = $3
+        GROUP BY m.month
+        ORDER BY m.month
+      `;
+
       const values = [start, end, id];
 
       const client = await pool.connect();
       const result = await client.query<Stats>(query, values);
-      
 
+      const monthlyRoutesResult = await client.query(monthlyRoutesQuery, values);
+      const monthlyRoutesArray = Array(12).fill(0);
+    
+      for (const row of monthlyRoutesResult.rows) {
+        const index = parseInt(row.month, 10) - 1;
+        monthlyRoutesArray[index] = parseInt(row.route_count, 10);
+      }
+      
       client.release();
-      return result.rows[0]
+      return {
+        ...result.rows[0],
+        monthly_routes: monthlyRoutesArray,
+      };
         
     } catch (error) {
       throw error;
