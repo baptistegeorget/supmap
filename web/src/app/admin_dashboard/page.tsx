@@ -118,7 +118,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="flex flex-col px-4 py-4 h-screen w-full bg-gray-50 overflow-auto analyse_container rounded-md">
+    <div className="flex flex-col px-4 py-4 h-screen w-full bg-gray-50 overflow-scroll analyse_container rounded-md">
       <div className="analyse_header">
         <div className="analyse_header--welcome">
           <h1 className="text-2xl font-bold">
