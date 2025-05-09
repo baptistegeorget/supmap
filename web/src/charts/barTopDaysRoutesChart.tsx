@@ -1,3 +1,6 @@
+// Fichier de configuration du graphique à barres pour les incidents
+// Ce fichier est utilisé sur la page administrateur
+
 import { ChartOptions } from "chart.js";
 
 export const barTopDaysRoutesChartData = (top5Days: { day: string; total_routes: number }[]) => ({
@@ -15,6 +18,8 @@ export const barTopDaysRoutesChartData = (top5Days: { day: string; total_routes:
   ],
 });
 
+// Options pour le graphique à barres des trajets par jour
+// Ces options définissent l'apparence et le comportement du graphique
 export const barTopDaysRoutesChartOptions: ChartOptions<"bar"> = {
   responsive: true,
   maintainAspectRatio: false,

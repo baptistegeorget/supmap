@@ -138,6 +138,7 @@ export class UserModel {
     }
   }
 
+  // Fonction pour récupérer les statistiques globales (vue administrateur)
   async getStats(start: Date, end: Date): Promise<Stats> {
     try {
       const query = `
@@ -226,6 +227,7 @@ export class UserModel {
     }
   }
 
+  // Fonctions pour récupérer les statistiques par utilisateur
   async getStatsById(id: string, start: Date, end: Date): Promise<Stats> {
     try {
       const query = `
@@ -276,11 +278,10 @@ export class UserModel {
         ORDER BY m.month
       `;
 
+      
       const values = [start, end, id];
-
       const client = await pool.connect();
       const result = await client.query<Stats>(query, values);
-
       const monthlyRoutesResult = await client.query(monthlyRoutesQuery, values);
       const monthlyRoutesArray = Array(12).fill(0);
     

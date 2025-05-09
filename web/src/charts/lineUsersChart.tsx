@@ -1,3 +1,5 @@
+// Fichier de configuration du graphique à barres pour les incidents
+// Graphique utilisé sur la page administrateur
 import { ChartOptions } from "chart.js";
 
 const allMonthLabels = [
@@ -25,6 +27,8 @@ export const lineUsersChartData = (monthlyUserCounts: number[]) => {
   };
 };
 
+// Options pour le graphique de l'évolution mensuelle des utilisateurs
+// Ces options définissent l'apparence et le comportement du graphique
 export const lineUsersChartOptions: ChartOptions<"line"> = {
   responsive: true,
   maintainAspectRatio: false,

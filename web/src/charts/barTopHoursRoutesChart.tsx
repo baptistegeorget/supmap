@@ -1,3 +1,6 @@
+// Graphique utilisé sur la page administrateur
+// Configuration des données pour le graphique des trajets par heure
+
 import { ChartOptions } from "chart.js";
 
 export const barHoursChartData = (top5HoursData: { hour: string; total_routes: number }[]) => {
@@ -22,6 +25,8 @@ export const barHoursChartData = (top5HoursData: { hour: string; total_routes: n
   };
 };
 
+// Options pour le graphique des trajets par heure
+// Ces options définissent l'apparence et le comportement du graphique
 export const barHoursChartOptions: ChartOptions<"bar"> = {
   indexAxis: 'y',
   responsive: true,

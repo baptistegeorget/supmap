@@ -21,6 +21,7 @@ import { barTopDaysRoutesChartData, barTopDaysRoutesChartOptions } from "@/chart
 import { barHoursChartData, barHoursChartOptions } from "@/charts/barTopHoursRoutesChart";
 import { lineIncidentsChartData, lineIncidentsChartOptions } from "@/charts/lineIncidentsChart";
 
+// Enregistrement des composants nécessaires pour les graphiques
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -33,6 +34,8 @@ ChartJS.register(
   Title
 );
 
+// Définition de l'interface pour les données statistiques
+// Les interfaces TypeScript permettent de définir la structure des données
 interface StatsData {
   total_users: number;
   total_routes: number;
@@ -49,7 +52,7 @@ interface StatsData {
 }
 
 export default function AdminDashboard() {
-  // const [userData, setUserData] = useState({ id: "", email: "", username: "", picture: "", role: "" });
+  // Création des états pour gérer les données et l'interface utilisateur
   const [token, setToken] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [startDate, setStartDate] = useState("2025-01-01");
@@ -58,10 +61,7 @@ export default function AdminDashboard() {
   const [top5DaysRoutes, setTop5DaysRoutes] = useState<{ day: string; total_routes: number }[]>([]);
   const [top5HoursData, setTop5HoursData] = useState<{ hour: string; total_routes: number }[]>([]);
   const [monthlyIncidentsData, setMonthlyIncidentsData] = useState<number[]>(Array(12).fill(0));
-
   const [statsData, setStatsData] = useState<StatsData | null>(null);
-
-
   const isDateRangeValid = new Date(startDate) <= new Date(endDate);
   const router = useRouter();
 
@@ -71,6 +71,7 @@ export default function AdminDashboard() {
     setToken(localToken || cookieToken);
   }, []);
 
+  // Fonction pour récupérer les statistiques
   const fetchAdminStats = async () => {
     if (!token || !isDateRangeValid) return;
     setLoading(true);
@@ -83,13 +84,6 @@ export default function AdminDashboard() {
       );
       if (!response.ok) throw new Error("Erreur récupération stats admin");
       const data = await response.json();
-      // setUserData({
-      //   id: data.id,
-      //   email: data.email,
-      //   username: data.name,
-      //   picture: data.picture || "",
-      //   role: data.role,
-      // });
       const monthlyUsersArray = Array(12).fill(0);
       if (data?.monthly_users) {
         data.monthly_users.forEach((item: { month: number; user_count: number }) => {
@@ -117,6 +111,7 @@ export default function AdminDashboard() {
     }
   };
 
+  // Affichage en front
   return (
     <div className="flex flex-col px-4 py-4 h-screen w-full bg-gray-50 overflow-scroll analyse_container rounded-md">
       <div className="analyse_header">

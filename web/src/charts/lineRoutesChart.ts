@@ -1,3 +1,4 @@
+// Fichier de configuration pour le graphique de l'évolution mensuelle des trajets
 import { ChartOptions } from "chart.js";
 
 export const lineRoutesChartData = (monthlyCounts: number[]) => {
@@ -6,10 +7,12 @@ export const lineRoutesChartData = (monthlyCounts: number[]) => {
     'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
   ];
 
+  // On filtre les mois pour n'afficher que ceux jusqu'au mois actuel
   const currentMonthIndex = new Date().getUTCMonth();
   const filteredLabels = monthLabels.slice(0, currentMonthIndex + 1);
   const filteredCounts = monthlyCounts.slice(0, currentMonthIndex + 1);
 
+  // On crée le jeu de données pour le graphique
   return {
     labels: filteredLabels,
     datasets: [
@@ -27,6 +30,8 @@ export const lineRoutesChartData = (monthlyCounts: number[]) => {
   };
 };
 
+// Options pour le graphique de l'évolution mensuelle des trajets
+// Ces options définissent l'apparence et le comportement du graphique
 export const lineRoutesChartOptions: ChartOptions<'line'> = {
   responsive: true,
   maintainAspectRatio: false,

@@ -19,6 +19,8 @@ import {
 import { lineRoutesChartData, lineRoutesChartOptions } from "@/charts/lineRoutesChart";
 import { barIncidentsChartData, barIncidentsChartOptions } from "@/charts/barIncidentsChart";
 
+// Création des inferfaces
+// Les interfaces sont utilisées pour typer les données que l'on va récupérer de l'API
 interface RecommendedHour {
   quarter_hour: string;
   traffic_jams: number;
@@ -39,10 +41,8 @@ interface StatsData {
   monthly_routes: number[];
 }
 
-// interface Route {
-//   created_on: string;
-// }
-
+// Enregistrement des composants de Chart.js
+// Ces composants sont nécessaires pour le bon fonctionnement des graphiques
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -56,17 +56,13 @@ ChartJS.register(
 );
 
 export default function Page() {
-  // States utilisateur et token
+  // Création des states
   const [userData, setUserData] = useState({ id: "", email: "", username: "", picture: "", role: "" });
   const [token, setToken] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
-
-  // States filtres dates
   const [startDate, setStartDate] = useState("2025-01-01");
   const [endDate, setEndDate] = useState("2025-12-31");
   const isDateRangeValid = new Date(startDate) <= new Date(endDate);
-
-  // Stats data
   const [statsData, setStatsData] = useState<StatsData | null>(null);
   const [routesPerMonthData, setRoutesPerMonthData] = useState<number[]>(Array(12).fill(0));
   const [incidentCounts, setIncidentCounts] = useState({
@@ -80,8 +76,6 @@ export default function Page() {
 
   const router = useRouter();
 
-
-
   // Récupération token
   useEffect(() => {
     const localToken = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -89,7 +83,7 @@ export default function Page() {
     setToken(localToken || cookieToken);
   }, []);
 
-  // Récupération utilisateur
+  // Récupération des données utilisateur
   useEffect(() => {
     async function fetchUserData() {
       if (token) {
@@ -114,44 +108,6 @@ export default function Page() {
 
     fetchUserData();
   }, [token]);
-
-  // Fonction pour récupérer les trajets
-  // const fetchRoutesData = async (): Promise<Route[]> => {
-  //   if (!token || !userData.id || !startDate || !endDate || !isDateRangeValid) return [];
-
-  //   const startParam = `${startDate}T00:00:00Z`;
-  //   const endParam = `${endDate}T23:59:59Z`;
-
-  //   try {
-  //     const response = await fetch(
-  //       `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/${userData.id}/routes?start=${startParam}&end=${endParam}`,
-  //       {
-  //         headers: { Authorization: `Bearer ${token}` },
-  //       }
-  //     );
-  //     if (!response.ok) throw new Error("Impossible de récupérer les trajets");
-
-  //     const data = await response.json();
-  //     return data;
-  //   } catch (error) {
-  //     console.error("Erreur routes :", error);
-  //     return [];
-  //   }
-  // };
-
-
-  // Regroupement des trajets par mois
-  // const countRoutesPerMonth = (routes: Route[]) => {
-  //   const counts = Array(12).fill(0);
-  //   routes.forEach((route) => {
-  //     const date = new Date(route.created_on);
-  //     const month = date.getUTCMonth();
-  //     counts[month]++;
-  //   });
-  //   return counts;
-  // };
-
- 
 
   // Fonction principale de récupération des stats
   const fetchStatsData = async (): Promise<void> => {
@@ -182,7 +138,7 @@ export default function Page() {
           roadblock: stats?.total_roadblock || 0,
         });
 
-        // Récupérer les routes et compter par mois
+        // Récupération des trajets par mois
         setRoutesPerMonthData(stats?.monthly_routes || []);
 
       } catch (error) {
@@ -194,7 +150,7 @@ export default function Page() {
   };
 
 
-  // AFFICHAGE
+  // AFFICHAGE EN FRONT
   return (
     <div className="flex flex-col px-4 py-4 h-screen w-full bg-gray-50 overflow-scroll analyse_container rounded-md">
       <div className="analyse_header">

@@ -1,3 +1,6 @@
+// Fichier de configuration du graphique à barres pour les incidents
+// Ce graphique est utilisé sur la page administrateur
+
 import { ChartOptions } from "chart.js";
 
 export const lineIncidentsChartData = (monthlyIncidentsCounts: number[]) => {
@@ -25,6 +28,8 @@ export const lineIncidentsChartData = (monthlyIncidentsCounts: number[]) => {
   };
 };
 
+// Options pour le graphique de l'évolution mensuelle des incidents
+// Ces options définissent l'apparence et le comportement du graphique
 export const lineIncidentsChartOptions: ChartOptions<"line"> = {
   responsive: true,
   maintainAspectRatio: false,

@@ -1,3 +1,6 @@
+// Fichier de configuration du graphique à barres pour les incidents
+// Ce graphique est utilisé sur la page utilisateur
+
 import { ChartOptions } from "chart.js";
 
 // Définition des couleurs personnalisées par type d'incident
@@ -17,7 +20,7 @@ export const barIncidentsChartData = (incidentCounts: Record<string, number>) =>
     borderColor: type.border,
   }));
 
-  const sorted = enriched.sort((a, b) => b.value - a.value); // tri décroissant
+  const sorted = enriched.sort((a, b) => b.value - a.value); // tri décroissant pour afficher les plus grandes valeurs en premier
 
   return {
     labels: sorted.map((item) => item.label),
@@ -33,6 +36,8 @@ export const barIncidentsChartData = (incidentCounts: Record<string, number>) =>
   };
 };
 
+// Options pour le graphique à barres des incidents
+// Ces options définissent l'apparence et le comportement du graphique
 export const barIncidentsChartOptions: ChartOptions<'bar'> = {
   responsive: true,
   maintainAspectRatio: false,
