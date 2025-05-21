@@ -42,6 +42,6 @@ docker-compose up
 - [Mathieu Perrot](https://github.com/Mathieuprt)
 - [Baptiste Georget](https://github.com/baptistegeorget)
 
-## Remrciements
+## Remerciements
 
 Un grand merci à [GraphHopper](https://www.graphhopper.com) de nous avoir fourni un compte payant pour nos tests et notre démonstration.
